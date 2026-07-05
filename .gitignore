@@ -1,0 +1,12 @@
+node_modules
+dist
+web/public/data
+web/public/config
+mobile/.expo
+mobile/android
+mobile/ios
+mobile/assets/data
+*.local
+__pycache__
+*.pyc
+*.sr.lock

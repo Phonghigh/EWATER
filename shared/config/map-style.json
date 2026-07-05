@@ -1,0 +1,38 @@
+{
+  "center": [105.9787, 10.2415],
+  "zoom": 13.2,
+  "bounds": [[105.939, 10.213], [106.05, 10.262]],
+  "basemaps": {
+    "osm": {
+      "name": "Streets",
+      "tiles": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    "satellite": {
+      "name": "Satellite",
+      "tiles": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      "attribution": "Esri, Maxar, Earthstar Geographics"
+    }
+  },
+  "colors": {
+    "manhole": "#2f6fb0",
+    "manholeStroke": "#ffffff",
+    "outlet": "#d1495b",
+    "river": "#7ec8e3",
+    "riverCasing": "#4a90b8",
+    "boundary": "#6b7280",
+    "catchmentFill": "rgba(107,114,128,0.06)",
+    "highlight": "#f59e0b",
+    "traceUp": "#8b5cf6",
+    "traceDown": "#059669",
+    "pipeSmall": "#94a3b8",
+    "pipeMedium": "#475569",
+    "pipeLarge": "#1e293b",
+    "simOk": "#22c55e",
+    "simWarn": "#f59e0b",
+    "simSurcharge": "#dc2626",
+    "flood": "#3b82f6"
+  },
+  "pipeDiameterBreaks": [0.6, 1.0],
+  "simThresholds": { "warn": 0.7, "surcharge": 1.0 }
+}

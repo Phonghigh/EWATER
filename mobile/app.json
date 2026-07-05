@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "EWATER Vĩnh Long",
+    "slug": "ewater-vinh-long",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "android": {
+      "package": "com.ewater.vinhlong",
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+    },
+    "ios": {
+      "bundleIdentifier": "com.ewater.vinhlong",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Show your position relative to the drainage network."
+      }
+    },
+    "plugins": [
+      "@maplibre/maplibre-react-native",
+      [
+        "expo-location",
+        { "locationWhenInUsePermission": "Show your position relative to the drainage network." }
+      ]
+    ]
+  }
+}
