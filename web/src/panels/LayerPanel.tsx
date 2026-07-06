@@ -1,17 +1,19 @@
 import type { LayerKey, MapStyleConfig } from "../types";
 import { useStore } from "../state/store";
+import { useT } from "../i18n/I18nContext";
 
-const LABELS: { key: LayerKey; label: string; swatchKey: string; shape: "line" | "dot" | "area" }[] = [
-  { key: "manholes", label: "Manholes", swatchKey: "manhole", shape: "dot" },
-  { key: "links", label: "Pipes", swatchKey: "pipeMedium", shape: "line" },
-  { key: "outlets", label: "Outlets", swatchKey: "outlet", shape: "dot" },
-  { key: "rivers", label: "Rivers & canals", swatchKey: "river", shape: "line" },
-  { key: "boundary", label: "City boundary", swatchKey: "boundary", shape: "line" },
-  { key: "catchment", label: "Catchment", swatchKey: "boundary", shape: "area" },
-  { key: "flood", label: "Flood zones (sim)", swatchKey: "flood", shape: "area" },
+const LABELS: { key: LayerKey; labelKey: string; swatchKey: string; shape: "line" | "dot" | "area" }[] = [
+  { key: "manholes", labelKey: "map.layer.manholes", swatchKey: "manhole", shape: "dot" },
+  { key: "links", labelKey: "map.layer.pipes", swatchKey: "pipeMedium", shape: "line" },
+  { key: "outlets", labelKey: "map.layer.outlets", swatchKey: "outlet", shape: "dot" },
+  { key: "rivers", labelKey: "map.layer.rivers", swatchKey: "river", shape: "line" },
+  { key: "boundary", labelKey: "map.layer.boundary", swatchKey: "boundary", shape: "line" },
+  { key: "catchment", labelKey: "map.layer.catchment", swatchKey: "boundary", shape: "area" },
+  { key: "flood", labelKey: "map.layer.flood", swatchKey: "flood", shape: "area" },
 ];
 
 export default function LayerPanel({ config }: { config: MapStyleConfig }) {
+  const t = useT();
   const layers = useStore((s) => s.layers);
   const toggleLayer = useStore((s) => s.toggleLayer);
   const simMode = useStore((s) => s.simMode);
@@ -20,8 +22,8 @@ export default function LayerPanel({ config }: { config: MapStyleConfig }) {
 
   return (
     <div className="panel layer-panel">
-      <h3>Layers</h3>
-      {LABELS.map(({ key, label, swatchKey, shape }) => (
+      <h3>{t("map.layers")}</h3>
+      {LABELS.map(({ key, labelKey, swatchKey, shape }) => (
         <label key={key} className={`layer-row ${key === "flood" && !simMode ? "disabled" : ""}`}>
           <input
             type="checkbox"
@@ -30,10 +32,10 @@ export default function LayerPanel({ config }: { config: MapStyleConfig }) {
             disabled={key === "flood" && !simMode}
           />
           <span className={`swatch swatch-${shape}`} style={{ background: config.colors[swatchKey] }} />
-          {label}
+          {t(labelKey)}
         </label>
       ))}
-      <h3>Basemap</h3>
+      <h3>{t("map.basemap")}</h3>
       <div className="basemap-row">
         {Object.entries(config.basemaps).map(([key, bm]) => (
           <button
@@ -47,11 +49,11 @@ export default function LayerPanel({ config }: { config: MapStyleConfig }) {
       </div>
       {simMode && (
         <>
-          <h3>Legend - fill level</h3>
+          <h3>{t("map.legendFill")}</h3>
           <div className="legend-gradient">
-            <span style={{ background: config.colors.simOk }} /> OK
-            <span style={{ background: config.colors.simWarn }} /> High
-            <span style={{ background: config.colors.simSurcharge }} /> Surcharged
+            <span style={{ background: config.colors.simOk }} /> {t("map.legend.ok")}
+            <span style={{ background: config.colors.simWarn }} /> {t("map.legend.high")}
+            <span style={{ background: config.colors.simSurcharge }} /> {t("map.legend.surcharged")}
           </div>
         </>
       )}

@@ -1,36 +1,12 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Pressable, SafeAreaView, ScrollView, StyleSheet, Switch, Text, View,
+  Pressable, SafeAreaView, StyleSheet, Switch, Text, View,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import Slider from "@react-native-community/slider";
-import MapLibreGL from "@maplibre/maplibre-react-native";
-import * as Location from "expo-location";
 
 // Data bundled at build time by scripts/sync-data.mjs
-const config = require("./assets/data/map-style.json");
-const manholes = require("./assets/data/manholes.json");
-const links = require("./assets/data/links.json");
-const outlets = require("./assets/data/outlets.json");
-const rivers = require("./assets/data/rivers.json");
-const boundary = require("./assets/data/boundary.json");
-const floodZones = require("./assets/data/flood-zones.json");
 const simulation = require("./assets/data/simulation.json");
-
-MapLibreGL.setAccessToken(null);
-
-const RASTER_STYLE = {
-  version: 8,
-  sources: {
-    osm: {
-      type: "raster",
-      tiles: [config.basemaps.osm.tiles],
-      tileSize: 256,
-      attribution: config.basemaps.osm.attribution,
-    },
-  },
-  layers: [{ id: "osm", type: "raster", source: "osm" }],
-};
 
 function stepLabel(step: number): string {
   const minutes = step * simulation.stepMinutes;
@@ -39,36 +15,10 @@ function stepLabel(step: number): string {
   return `${h}:${m}`;
 }
 
-/** GeoJSON with per-feature sim fill baked into properties for the current step. */
-function withFill(fc: any, step: number): any {
-  return {
-    ...fc,
-    features: fc.features.map((f: any) => ({
-      ...f,
-      properties: {
-        ...f.properties,
-        fill: simulation.nodeFill[String(f.properties.muid)]?.[step] ?? 0,
-      },
-    })),
-  };
-}
-
-function floodWithSeverity(step: number): any {
-  return {
-    ...floodZones,
-    features: floodZones.features.map((f: any) => ({
-      ...f,
-      properties: { ...f.properties, sev: f.properties.severity[step] ?? 0 },
-    })),
-  };
-}
-
 export default function App() {
   const [simMode, setSimMode] = useState(false);
   const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [selected, setSelected] = useState<Record<string, unknown> | null>(null);
-  const cameraRef = useRef<MapLibreGL.Camera>(null);
 
   useEffect(() => {
     if (!playing || !simMode) return;
@@ -78,32 +28,6 @@ export default function App() {
     );
     return () => clearInterval(id);
   }, [playing, simMode]);
-
-  const manholeData = useMemo(
-    () => (simMode ? withFill(manholes, step) : manholes),
-    [simMode, step],
-  );
-  const floodData = useMemo(
-    () => (simMode ? floodWithSeverity(step) : null),
-    [simMode, step],
-  );
-
-  const locateMe = async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") return;
-    const pos = await Location.getCurrentPositionAsync({});
-    cameraRef.current?.setCamera({
-      centerCoordinate: [pos.coords.longitude, pos.coords.latitude],
-      zoomLevel: 16,
-      animationDuration: 800,
-    });
-  };
-
-  const c = config.colors;
-  const simColor = [
-    "interpolate", ["linear"], ["coalesce", ["get", "fill"], 0],
-    0, c.simOk, config.simThresholds.warn, c.simWarn, config.simThresholds.surcharge, c.simSurcharge,
-  ];
 
   return (
     <SafeAreaView style={styles.root}>
@@ -116,75 +40,14 @@ export default function App() {
         </View>
       </View>
 
-      <MapLibreGL.MapView style={styles.map} styleJSON={JSON.stringify(RASTER_STYLE)}>
-        <MapLibreGL.Camera
-          ref={cameraRef}
-          defaultSettings={{ centerCoordinate: config.center, zoomLevel: config.zoom }}
-        />
-        <MapLibreGL.UserLocation visible />
-
-        <MapLibreGL.ShapeSource id="boundary" shape={boundary}>
-          <MapLibreGL.LineLayer
-            id="boundary-line"
-            style={{ lineColor: c.boundary, lineWidth: 2, lineDasharray: [3, 2] }}
-          />
-        </MapLibreGL.ShapeSource>
-
-        <MapLibreGL.ShapeSource id="rivers" shape={rivers}>
-          <MapLibreGL.LineLayer id="rivers-line" style={{ lineColor: c.river, lineWidth: 3 }} />
-        </MapLibreGL.ShapeSource>
-
-        {floodData && (
-          <MapLibreGL.ShapeSource id="flood" shape={floodData}>
-            <MapLibreGL.FillLayer
-              id="flood-fill"
-              style={{ fillColor: c.flood, fillOpacity: ["*", 0.55, ["get", "sev"]] as any }}
-            />
-          </MapLibreGL.ShapeSource>
-        )}
-
-        <MapLibreGL.ShapeSource
-          id="links"
-          shape={links}
-          onPress={(e) => setSelected({ kind: "Pipe", ...e.features[0]?.properties })}
-        >
-          <MapLibreGL.LineLayer
-            id="links-line"
-            style={{ lineColor: c.pipeMedium, lineWidth: 2 }}
-          />
-        </MapLibreGL.ShapeSource>
-
-        <MapLibreGL.ShapeSource
-          id="manholes"
-          shape={manholeData}
-          onPress={(e) => setSelected({ kind: "Manhole", ...e.features[0]?.properties })}
-        >
-          <MapLibreGL.CircleLayer
-            id="manholes-circle"
-            style={{
-              circleColor: (simMode ? simColor : c.manhole) as any,
-              circleRadius: 4,
-              circleStrokeColor: "#fff",
-              circleStrokeWidth: 1,
-            }}
-          />
-        </MapLibreGL.ShapeSource>
-
-        <MapLibreGL.ShapeSource
-          id="outlets"
-          shape={outlets}
-          onPress={(e) => setSelected({ kind: "Outlet", ...e.features[0]?.properties })}
-        >
-          <MapLibreGL.CircleLayer
-            id="outlets-circle"
-            style={{ circleColor: c.outlet, circleRadius: 6, circleStrokeColor: "#fff", circleStrokeWidth: 1.5 }}
-          />
-        </MapLibreGL.ShapeSource>
-      </MapLibreGL.MapView>
-
-      <Pressable style={styles.locateBtn} onPress={locateMe}>
-        <Text style={styles.locateTxt}>📍</Text>
-      </Pressable>
+      <View style={styles.map}>
+        <Text style={styles.mapPlaceholderTitle}>Map view unavailable</Text>
+        <Text style={styles.mapPlaceholderText}>
+          The drainage map needs a custom dev client build (MapLibre's native
+          module doesn't run in Expo Go). Run `npm run android` or
+          `npm run ios` to build one.
+        </Text>
+      </View>
 
       {simMode && (
         <View style={styles.simBar}>
@@ -207,31 +70,6 @@ export default function App() {
           </Text>
         </View>
       )}
-
-      {selected && (
-        <View style={styles.sheet}>
-          <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>
-              {String(selected.kind)} {String(selected.muid ?? "")}
-            </Text>
-            <Pressable onPress={() => setSelected(null)}>
-              <Text style={styles.close}>✕</Text>
-            </Pressable>
-          </View>
-          <ScrollView style={{ maxHeight: 180 }}>
-            {Object.entries(selected)
-              .filter(([k]) => !["kind", "fill"].includes(k))
-              .map(([k, v]) => (
-                <View key={k} style={styles.row}>
-                  <Text style={styles.rowKey}>{k}</Text>
-                  <Text style={styles.rowVal}>
-                    {typeof v === "number" ? v.toFixed(2) : String(v)}
-                  </Text>
-                </View>
-              ))}
-          </ScrollView>
-        </View>
-      )}
     </SafeAreaView>
   );
 }
@@ -245,13 +83,12 @@ const styles = StyleSheet.create({
   title: { color: "#fff", fontSize: 17, fontWeight: "700" },
   headerLabel: { color: "#9fb8cf", marginRight: 8, fontSize: 13 },
   simSwitch: { flexDirection: "row", alignItems: "center" },
-  map: { flex: 1 },
-  locateBtn: {
-    position: "absolute", right: 14, top: 110, backgroundColor: "#fff",
-    borderRadius: 22, width: 44, height: 44, alignItems: "center",
-    justifyContent: "center", elevation: 4,
+  map: {
+    flex: 1, backgroundColor: "#0f2a43", alignItems: "center",
+    justifyContent: "center", paddingHorizontal: 32, gap: 8,
   },
-  locateTxt: { fontSize: 20 },
+  mapPlaceholderTitle: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  mapPlaceholderText: { color: "#9fb8cf", fontSize: 13, textAlign: "center" },
   simBar: { backgroundColor: "#fff", paddingHorizontal: 12, paddingVertical: 8 },
   simRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   playBtn: {
@@ -261,17 +98,4 @@ const styles = StyleSheet.create({
   playTxt: { color: "#fff", fontSize: 16 },
   clock: { fontWeight: "700", width: 48, textAlign: "right" },
   demoBadge: { color: "#92600a", fontSize: 11, fontWeight: "700", marginTop: 4 },
-  sheet: {
-    position: "absolute", left: 10, right: 10, bottom: 10, backgroundColor: "#fff",
-    borderRadius: 12, padding: 14, elevation: 6,
-  },
-  sheetHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 6 },
-  sheetTitle: { fontSize: 16, fontWeight: "700" },
-  close: { fontSize: 18, color: "#64748b" },
-  row: {
-    flexDirection: "row", justifyContent: "space-between",
-    borderBottomWidth: StyleSheet.hairlineWidth, borderColor: "#e2e8f0", paddingVertical: 4,
-  },
-  rowKey: { color: "#64748b" },
-  rowVal: { fontWeight: "600" },
 });
