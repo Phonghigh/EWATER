@@ -64,11 +64,6 @@ export default function App() {
     await location.refresh();
   }
 
-  async function handleSaveLocation() {
-    if (!center) return;
-    await location.setManual(center);
-  }
-
   return (
     <SafeAreaView style={styles.root}>
       <StatusBar style="dark" />
@@ -89,7 +84,6 @@ export default function App() {
         flyToPoint={flyToPoint}
         onCenterChange={setCenter}
         onLocateMe={handleLocateMe}
-        onSaveLocation={handleSaveLocation}
       />
     </SafeAreaView>
   );

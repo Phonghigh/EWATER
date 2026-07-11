@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import type { FeatureCollection } from "geojson";
 import type { CurrentLocationState } from "../location/useCurrentLocation";
@@ -22,21 +21,12 @@ export interface HomeScreenProps {
   flyToPoint: LocationPoint | null;
   onCenterChange: (point: LocationPoint) => void;
   onLocateMe: () => void;
-  onSaveLocation: () => void;
 }
 
 export default function HomeScreen({
   location, center, area, config, boundary, provinceBoundary, rivers, floodZones,
-  flyToSignal, flyToPoint, onCenterChange, onLocateMe, onSaveLocation,
+  flyToSignal, flyToPoint, onCenterChange, onLocateMe,
 }: HomeScreenProps) {
-  const [justSaved, setJustSaved] = useState(false);
-
-  function handleSave() {
-    onSaveLocation();
-    setJustSaved(true);
-    setTimeout(() => setJustSaved(false), 2000);
-  }
-
   const pinColor = area ? STATUS_COLORS[area.status].fg : "#64748b";
 
   return (
@@ -93,10 +83,6 @@ export default function HomeScreen({
             </View>
             <Text style={styles.forecast}>{forecastText(area)}</Text>
             <Text style={styles.recommendation}>{area.recommendation}</Text>
-
-            <Pressable style={styles.primaryBtn} onPress={handleSave}>
-              <Text style={styles.primaryBtnText}>{justSaved ? strings.savedConfirmation : strings.saveThisLocation}</Text>
-            </Pressable>
           </View>
         )}
       </ScrollView>
@@ -152,6 +138,4 @@ const styles = StyleSheet.create({
   statLabel: { fontSize: 11, color: "#64748b", marginTop: 2, textAlign: "center" },
   forecast: { fontSize: 15, color: "#334155", lineHeight: 21 },
   recommendation: { fontSize: 14, fontWeight: "700", color: "#1d4ed8", lineHeight: 20 },
-  primaryBtn: { backgroundColor: "#1d4ed8", borderRadius: 10, paddingVertical: 14, alignItems: "center", marginTop: 4 },
-  primaryBtnText: { color: "#fff", fontSize: 15, fontWeight: "700" },
 });

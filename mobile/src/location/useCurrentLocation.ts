@@ -4,7 +4,7 @@ import type { LocationPoint } from "../domain/types";
 import { strings } from "../domain/i18n";
 import { loadLocation, saveLocation } from "./storage";
 
-export type LocationSource = "gps" | "manual" | "saved" | "none";
+export type LocationSource = "gps" | "saved" | "none";
 
 export interface CurrentLocationState {
   point: LocationPoint | null;
@@ -12,7 +12,6 @@ export interface CurrentLocationState {
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
-  setManual: (point: LocationPoint) => Promise<void>;
 }
 
 async function fetchGps(): Promise<LocationPoint> {
@@ -109,12 +108,5 @@ export function useCurrentLocation(): CurrentLocationState {
     }
   }, []);
 
-  const setManual = useCallback(async (p: LocationPoint) => {
-    setPoint(p);
-    setSource("manual");
-    setError(null);
-    await saveLocation(p, "manual");
-  }, []);
-
-  return { point, source, loading, error, refresh, setManual };
+  return { point, source, loading, error, refresh };
 }

@@ -20,9 +20,6 @@ export const strings = {
   minutesUnit: "phút",
   riskIndexLabel: "Chỉ số rủi ro",
   dragHint: "Kéo bản đồ để xem tình trạng ngập ở nơi khác",
-  locateMe: "Vị trí của tôi",
-  saveThisLocation: "Lưu vị trí này",
-  savedConfirmation: "Đã lưu ✓",
   manualFallbackHint: "Bạn vẫn có thể kéo bản đồ để chọn vị trí.",
   recommendation: {
     ok: "Có thể di chuyển bình thường.",

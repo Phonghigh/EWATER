@@ -3,7 +3,7 @@ import type { LocationPoint } from "../domain/types";
 
 const KEY = "ewater:homeLocation:v1";
 
-export type LocationSource = "gps" | "manual";
+export type LocationSource = "gps";
 
 export interface StoredLocation {
   lng: number;
