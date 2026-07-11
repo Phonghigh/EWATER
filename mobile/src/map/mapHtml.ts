@@ -1,5 +1,5 @@
 import type { FeatureCollection } from "geojson";
-import type { MapStyleConfig } from "../domain/types";
+import type { MapStyleConfig, LocationPoint } from "../domain/types";
 import { NOW_STEP } from "../domain/nowStep";
 import { strings } from "../domain/i18n";
 
@@ -29,6 +29,7 @@ export function buildMapHtml(data: {
   provinceBoundary: FeatureCollection;
   rivers: FeatureCollection;
   floodZones: FeatureCollection;
+  initialCenter: LocationPoint;
 }): string {
   const config = data.config;
   const floodZones = withSeverityNow(data.floodZones);
@@ -46,10 +47,6 @@ export function buildMapHtml(data: {
       text-align: center; padding: 24px; font: 14px -apple-system, Roboto, sans-serif; color: #64748b;
       background: #f8fafc;
     }
-    .home-marker {
-      width: 22px; height: 22px; border-radius: 50%; border: 3px solid #fff;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
-    }
   </style>
 </head>
 <body>
@@ -62,6 +59,7 @@ export function buildMapHtml(data: {
     var PROVINCE = ${embed(data.provinceBoundary)};
     var RIVERS = ${embed(data.rivers)};
     var FLOOD = ${embed(floodZones)};
+    var INITIAL_CENTER = ${embed(data.initialCenter)};
 
     function severityColor(v) {
       var t = CONFIG.simThresholds;
@@ -69,9 +67,6 @@ export function buildMapHtml(data: {
       if (v >= t.warn) return CONFIG.colors.simWarn;
       return CONFIG.colors.simOk;
     }
-
-    var pickMode = false;
-    var marker = null;
 
     function showError() {
       document.getElementById("error").style.display = "flex";
@@ -89,8 +84,8 @@ export function buildMapHtml(data: {
           },
           layers: [{ id: "basemap", type: "raster", source: "basemap" }],
         },
-        center: CONFIG.center,
-        zoom: CONFIG.zoom,
+        center: INITIAL_CENTER,
+        zoom: 17,
         attributionControl: false,
       });
 
@@ -141,30 +136,26 @@ export function buildMapHtml(data: {
         window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({ type: "ready" }));
       });
 
-      map.on("click", function (e) {
-        if (pickMode) {
-          window.ReactNativeWebView && window.ReactNativeWebView.postMessage(
-            JSON.stringify({ type: "pick", lngLat: [e.lngLat.lng, e.lngLat.lat] })
-          );
-        }
-      });
-
-      function setMarker(point) {
-        if (marker) { marker.remove(); marker = null; }
-        if (!point) return;
-        var el = document.createElement("div");
-        el.className = "home-marker";
-        el.style.background = severityColor(
-          point.status === "bad" ? 1 : point.status === "warn" ? CONFIG.simThresholds.warn : 0
+      var moveScheduled = false;
+      function postCenter() {
+        var c = map.getCenter();
+        window.ReactNativeWebView && window.ReactNativeWebView.postMessage(
+          JSON.stringify({ type: "center", lngLat: [c.lng, c.lat] })
         );
-        marker = new maplibregl.Marker({ element: el }).setLngLat(point.lngLat).addTo(map);
       }
+      map.on("move", function () {
+        if (moveScheduled) return;
+        moveScheduled = true;
+        requestAnimationFrame(function () { moveScheduled = false; postCenter(); });
+      });
+      map.on("moveend", postCenter);
 
       function handleMessage(raw) {
         var msg;
         try { msg = JSON.parse(raw); } catch (e) { return; }
-        if (msg.type === "marker") setMarker(msg.point);
-        else if (msg.type === "pickMode") pickMode = !!msg.enabled;
+        if (msg.type === "flyTo" && msg.lngLat) {
+          map.flyTo({ center: msg.lngLat, duration: 600 });
+        }
       }
 
       document.addEventListener("message", function (e) { handleMessage(e.data); });

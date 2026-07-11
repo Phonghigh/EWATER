@@ -23,7 +23,7 @@ export default function StepControl() {
         value={step}
         onChange={(e) => setStep(Number(e.target.value))}
       />
-      <span className="step-day">24h storm</span>
+      <span className="step-day">{t("dash.stormLabel")}</span>
       <DemoBadge title />
     </div>
   );

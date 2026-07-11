@@ -1,4 +1,5 @@
 import type { FeatureCollection } from "geojson";
+import type { Status } from "./status";
 
 export interface MapStyleConfig {
   center: [number, number];
@@ -29,3 +30,10 @@ export interface MobileData {
 }
 
 export type LocationPoint = [number, number];
+
+export interface AreaStatus {
+  status: Status;
+  forecastMinutes: number | null;
+  riskPercent: number;
+  recommendation: string;
+}

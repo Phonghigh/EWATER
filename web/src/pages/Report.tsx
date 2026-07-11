@@ -41,7 +41,7 @@ export default function Report() {
     setApplied({ type: next, from: 0, to: len - 1 });
   }
 
-  const report = useMemo(() => (applied ? buildReport(applied, mon, sim, data) : null), [applied, mon, sim, data]);
+  const report = useMemo(() => (applied ? buildReport(applied, mon, sim, data, t) : null), [applied, mon, sim, data, t]);
 
   function exportCsv() {
     if (!report) return;
@@ -140,6 +140,7 @@ function buildReport(
   mon: import("../monitoring/stations").Monitoring,
   sim: import("../types").Simulation,
   data: AppData,
+  t: (key: string) => string,
 ): BuiltReport {
   const range = <T,>(arr: T[]) => arr.slice(a.from, a.to + 1);
   const labels = (i: number) => stepLabel(sim, a.from + i);
@@ -153,9 +154,14 @@ function buildReport(
     const minTide = Math.min(...tideLevels);
     const maxTide = Math.max(...tideLevels);
     return {
-      summary: `Rain + tide forecast ${formatTick(times[0])}–${formatTick(times[times.length - 1])}: `
-        + `total rain ${totalmm.toFixed(1)} mm, peak ${peak.toFixed(1)} mm/h; tide ${minTide.toFixed(2)}–${maxTide.toFixed(2)} m.`,
-      headers: ["Time", "Rainfall (mm/h)", "Tide level (m)"],
+      summary: t("report.summary.rainTide")
+        .replace("{from}", formatTick(times[0]))
+        .replace("{to}", formatTick(times[times.length - 1]))
+        .replace("{total}", totalmm.toFixed(1))
+        .replace("{peak}", peak.toFixed(1))
+        .replace("{minTide}", minTide.toFixed(2))
+        .replace("{maxTide}", maxTide.toFixed(2)),
+      headers: [t("report.col.time"), t("report.col.rainfall"), t("report.col.tideLevel")],
       rows: times.map((iso, i) => [formatTick(iso), rain[i].toFixed(1), tideLevels[i].toFixed(2)]),
     };
   }
@@ -165,8 +171,12 @@ function buildReport(
     const totalmm = rainfall.reduce((s, v) => s + v * 0.25, 0);
     const peak = Math.max(...rainfall);
     return {
-      summary: `Rainfall ${stepLabel(sim, a.from)}–${stepLabel(sim, a.to)}: total ${totalmm.toFixed(1)} mm, peak intensity ${peak.toFixed(1)} mm/h.`,
-      headers: ["Time", "Intensity (mm/h)", "Cumulative (mm)"],
+      summary: t("report.summary.rainfall")
+        .replace("{from}", stepLabel(sim, a.from))
+        .replace("{to}", stepLabel(sim, a.to))
+        .replace("{total}", totalmm.toFixed(1))
+        .replace("{peak}", peak.toFixed(1)),
+      headers: [t("report.col.time"), t("report.col.intensity"), t("report.col.cumulative")],
       rows: rainfall.map((v, i) => {
         const cum = rainfall.slice(0, i + 1).reduce((s, x) => s + x * 0.25, 0);
         return [labels(i), v.toFixed(1), cum.toFixed(1)];
@@ -185,8 +195,12 @@ function buildReport(
     });
     const nExceed = rows.filter((r) => r[4] !== "0 × 15'").length;
     return {
-      summary: `Water-level exceedances ${stepLabel(sim, a.from)}–${stepLabel(sim, a.to)}: ${nExceed} of ${mon.level.length} stations exceeded alert 3.`,
-      headers: ["Station", "Name", "Max level (m)", "Alert 3 (m)", "Time above A3"],
+      summary: t("report.summary.waterLevel")
+        .replace("{from}", stepLabel(sim, a.from))
+        .replace("{to}", stepLabel(sim, a.to))
+        .replace("{n}", String(nExceed))
+        .replace("{total}", String(mon.level.length)),
+      headers: [t("col.stationId"), t("col.name"), t("report.col.maxLevel"), t("col.alert3"), t("report.col.timeAboveA3")],
       rows,
     };
   }
@@ -198,8 +212,11 @@ function buildReport(
       return [g.id, g.name, g.type, `${closed} × 15'`, g.status[a.to]];
     });
     return {
-      summary: `Gate/pump operations ${stepLabel(sim, a.from)}–${stepLabel(sim, a.to)}: ${mon.gates.length} structures.`,
-      headers: ["Code", "Name", "Type", "Time closed", "Final state"],
+      summary: t("report.summary.gates")
+        .replace("{from}", stepLabel(sim, a.from))
+        .replace("{to}", stepLabel(sim, a.to))
+        .replace("{n}", String(mon.gates.length)),
+      headers: [t("col.code"), t("col.name"), t("col.type"), t("report.col.timeClosed"), t("report.col.finalState")],
       rows,
     };
   }
@@ -214,8 +231,11 @@ function buildReport(
   );
   const peakSur = Math.max(...surchargeSeries);
   return {
-    summary: `Flood event ${stepLabel(sim, a.from)}–${stepLabel(sim, a.to)}: peak ${peakSur} surcharged manholes.`,
-    headers: ["Time", "Surcharged manholes"],
+    summary: t("report.summary.flood")
+      .replace("{from}", stepLabel(sim, a.from))
+      .replace("{to}", stepLabel(sim, a.to))
+      .replace("{n}", String(peakSur)),
+    headers: [t("report.col.time"), t("dash.surcharged")],
     rows: surchargeSeries.map((v, i) => [labels(i), v]),
     chart: { kind: "line", data: surchargeSeries.map((v, i) => ({ t: labels(i), v })) },
   };

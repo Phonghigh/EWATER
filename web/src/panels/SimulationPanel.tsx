@@ -2,9 +2,11 @@ import { useEffect, useMemo } from "react";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
 import type { AppData } from "../types";
 import { useStore } from "../state/store";
+import { useT } from "../i18n/I18nContext";
 import { stepLabel, surchargedCount } from "../sim/simEngine";
 
 export default function SimulationPanel({ data }: { data: AppData }) {
+  const t = useT();
   const simMode = useStore((s) => s.simMode);
   const setSimMode = useStore((s) => s.setSimMode);
   const simStep = useStore((s) => s.simStep);
@@ -40,7 +42,7 @@ export default function SimulationPanel({ data }: { data: AppData }) {
     return (
       <div className="sim-bar collapsed">
         <button className="sim-toggle" onClick={() => setSimMode(true)}>
-          ▶ Flood simulation
+          {t("sim.toggle")}
         </button>
       </div>
     );
@@ -51,7 +53,7 @@ export default function SimulationPanel({ data }: { data: AppData }) {
   return (
     <div className="sim-bar">
       <div className="sim-controls">
-        <button className="sim-toggle active" onClick={() => setSimMode(false)}>✕ Exit simulation</button>
+        <button className="sim-toggle active" onClick={() => setSimMode(false)}>{t("sim.exit")}</button>
         <button onClick={() => setPlaying(!playing)}>{playing ? "⏸" : "▶"}</button>
         <select value={speed} onChange={(e) => setSpeed(Number(e.target.value))}>
           <option value={2}>1×</option>
@@ -67,16 +69,16 @@ export default function SimulationPanel({ data }: { data: AppData }) {
         />
         <span className="sim-clock">{stepLabel(sim, simStep)}</span>
         <span className="sim-stat">
-          Rain <b>{sim.rainfall[simStep]?.toFixed(1)} mm/h</b> · Surcharged <b>{surcharged}</b>
+          {t("sim.rain")} <b>{sim.rainfall[simStep]?.toFixed(1)} mm/h</b> · {t("sim.surcharged")} <b>{surcharged}</b>
         </span>
-        <span className="demo-badge">DEMO DATA</span>
+        <span className="demo-badge">{t("app.demoBadge")}</span>
       </div>
       <div className="sim-chart">
         <ResponsiveContainer width="100%" height={64}>
           <BarChart data={rainData} margin={{ top: 2, right: 8, bottom: 0, left: -24 }} barCategoryGap={0}>
             <XAxis dataKey="t" tick={{ fontSize: 9 }} interval={23} />
             <YAxis tick={{ fontSize: 9 }} />
-            <Tooltip formatter={(v) => [`${v} mm/h`, "rain"]} />
+            <Tooltip formatter={(v) => [`${v} mm/h`, t("sim.rain")]} />
             <Bar dataKey="mm" onClick={(d) => d && setSimStep((d as { i: number }).i)}>
               {rainData.map((d) => (
                 <Cell key={d.i} fill={d.i === simStep ? "#1d4ed8" : "#93c5fd"} />

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import type { AppData, Selection } from "../types";
 import { useStore } from "../state/store";
+import { useT } from "../i18n/I18nContext";
 
 interface Entry {
   kind: Selection["kind"];
@@ -23,6 +24,7 @@ export default function SearchBox({ data, onFlyTo }: {
   data: AppData;
   onFlyTo: (lngLat: [number, number]) => void;
 }) {
+  const t = useT();
   const [q, setQ] = useState("");
   const setSelection = useStore((s) => s.setSelection);
 
@@ -30,18 +32,18 @@ export default function SearchBox({ data, onFlyTo }: {
     const entries: Entry[] = [];
     for (const f of data.manholes.features) {
       const p = f.properties as Record<string, unknown>;
-      entries.push({ kind: "manhole", muid: String(p.muid), label: `Manhole ${p.muid}`, lngLat: firstCoord(f.geometry), properties: p });
+      entries.push({ kind: "manhole", muid: String(p.muid), label: `${t("feature.kind.manhole")} ${p.muid}`, lngLat: firstCoord(f.geometry), properties: p });
     }
     for (const f of data.outlets.features) {
       const p = f.properties as Record<string, unknown>;
-      entries.push({ kind: "outlet", muid: String(p.muid), label: `Outlet ${p.muid}`, lngLat: firstCoord(f.geometry), properties: p });
+      entries.push({ kind: "outlet", muid: String(p.muid), label: `${t("feature.kind.outlet")} ${p.muid}`, lngLat: firstCoord(f.geometry), properties: p });
     }
     for (const f of data.links.features) {
       const p = f.properties as Record<string, unknown>;
-      entries.push({ kind: "link", muid: String(p.muid), label: `Pipe ${p.muid}`, lngLat: firstCoord(f.geometry), properties: p });
+      entries.push({ kind: "link", muid: String(p.muid), label: `${t("feature.kind.link")} ${p.muid}`, lngLat: firstCoord(f.geometry), properties: p });
     }
     return entries;
-  }, [data]);
+  }, [data, t]);
 
   const results = useMemo(() => {
     const t = q.trim().toLowerCase();
@@ -52,7 +54,7 @@ export default function SearchBox({ data, onFlyTo }: {
   return (
     <div className="search-box">
       <input
-        placeholder="Search by ID (manhole, pipe, outlet)…"
+        placeholder={t("search.placeholder")}
         value={q}
         onChange={(e) => setQ(e.target.value)}
       />

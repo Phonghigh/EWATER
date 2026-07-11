@@ -22,7 +22,7 @@ export default function MapPage() {
           onFlyTo={(lngLat) => mapRegistry.current?.flyTo({ center: lngLat, zoom: 17 })}
         />
         <button className="about-btn" onClick={() => setShowAbout(true)}>
-          <Icon name="info" size={15} /> About
+          <Icon name="info" size={15} /> {t("map.about")}
         </button>
       </div>
       <div className="map-main">
@@ -37,7 +37,7 @@ export default function MapPage() {
             <h2>{t("app.title")}</h2>
             <p>{t("app.subtitle")}</p>
             <p>{t("app.demoNote")}</p>
-            <button onClick={() => setShowAbout(false)}>OK</button>
+            <button onClick={() => setShowAbout(false)}>{t("common.close")}</button>
           </div>
         </div>
       )}

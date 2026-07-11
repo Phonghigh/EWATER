@@ -2,6 +2,11 @@ import type { LayerKey, MapStyleConfig } from "../types";
 import { useStore } from "../state/store";
 import { useT } from "../i18n/I18nContext";
 
+const BASEMAP_LABEL_KEYS: Record<string, string> = {
+  osm: "map.basemap.streets",
+  satellite: "map.basemap.satellite",
+};
+
 const LABELS: { key: LayerKey; labelKey: string; swatchKey: string; shape: "line" | "dot" | "area" }[] = [
   { key: "manholes", labelKey: "map.layer.manholes", swatchKey: "manhole", shape: "dot" },
   { key: "links", labelKey: "map.layer.pipes", swatchKey: "pipeMedium", shape: "line" },
@@ -44,7 +49,7 @@ export default function LayerPanel({ config }: { config: MapStyleConfig }) {
             className={basemap === key ? "active" : ""}
             onClick={() => setBasemap(key)}
           >
-            {bm.name}
+            {BASEMAP_LABEL_KEYS[key] ? t(BASEMAP_LABEL_KEYS[key]) : bm.name}
           </button>
         ))}
       </div>

@@ -40,7 +40,7 @@ export default function Portal() {
       </section>
 
       <footer className="portal-footer">
-        <span>EWATER · Vĩnh Long · FRMIS demo</span>
+        <span>{t("portal.footer")}</span>
       </footer>
     </div>
   );

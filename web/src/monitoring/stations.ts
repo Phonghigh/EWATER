@@ -150,7 +150,7 @@ export function buildLevelStations(data: AppData): LevelStation[] {
   return out;
 }
 
-export function buildGates(data: AppData): Gate[] {
+export function buildGates(data: AppData, t: (key: string) => string): Gate[] {
   const feats = data.outlets.features;
   const steps = data.simulation.steps;
   const rain = data.simulation.rainfall;
@@ -163,7 +163,7 @@ export function buildGates(data: AppData): Gate[] {
       type === "gate"
         ? `VL-WCS-GL${String(seq).padStart(2, "0")}`
         : `VL-PS-${String(seq).padStart(2, "0")}`;
-    const name = type === "gate" ? `WCS ${pickName(i)}` : `Trạm bơm ${pickName(i)}`;
+    const name = type === "gate" ? `WCS ${pickName(i)}` : `${t("dash.pump")} ${pickName(i)}`;
     const [lng, lat] = coordsOf(feats[fi]);
     const rng = seededFrom(id);
     const phase = rng() * 0.4; // per-gate river-level offset
@@ -193,10 +193,10 @@ export interface Monitoring {
   gates: Gate[];
 }
 
-export function buildMonitoring(data: AppData): Monitoring {
+export function buildMonitoring(data: AppData, t: (key: string) => string): Monitoring {
   return {
     rain: buildRainStations(data),
     level: buildLevelStations(data),
-    gates: buildGates(data),
+    gates: buildGates(data, t),
   };
 }

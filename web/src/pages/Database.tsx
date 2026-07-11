@@ -172,10 +172,10 @@ function StationTab() {
   const mon = useMonitoring();
 
   const rows = useMemo(() => [
-    ...mon.rain.map((s) => ({ id: s.id, name: s.name, type: "Rainfall", source: s.source, lng: s.lng, lat: s.lat, extra: "-" })),
-    ...mon.level.map((s) => ({ id: s.id, name: s.name, type: "Water level", source: s.source, lng: s.lng, lat: s.lat, extra: `A1/A2/A3 ${s.alert1}/${s.alert2}/${s.alert3}` })),
-    ...mon.gates.map((s) => ({ id: s.id, name: s.name, type: s.type === "gate" ? "Gate" : "Pump", source: "-", lng: s.lng, lat: s.lat, extra: "-" })),
-  ], [mon]);
+    ...mon.rain.map((s) => ({ id: s.id, name: s.name, type: t("db.stationType.rainfall"), source: s.source, lng: s.lng, lat: s.lat, extra: "-" })),
+    ...mon.level.map((s) => ({ id: s.id, name: s.name, type: t("monitor.waterLevel"), source: s.source, lng: s.lng, lat: s.lat, extra: `A1/A2/A3 ${s.alert1}/${s.alert2}/${s.alert3}` })),
+    ...mon.gates.map((s) => ({ id: s.id, name: s.name, type: s.type === "gate" ? t("dash.gate") : t("dash.pump"), source: "-", lng: s.lng, lat: s.lat, extra: "-" })),
+  ], [mon, t]);
 
   type SRow = typeof rows[number];
   const columns: Column<SRow>[] = [
@@ -185,7 +185,7 @@ function StationTab() {
     { key: "source", label: t("col.source") },
     { key: "lng", label: t("col.lng"), align: "right", render: (r) => r.lng.toFixed(5) },
     { key: "lat", label: t("col.lat"), align: "right", render: (r) => r.lat.toFixed(5) },
-    { key: "extra", label: "Thresholds", render: (r) => r.extra },
+    { key: "extra", label: t("db.thresholds"), render: (r) => r.extra },
   ];
 
   function exportCsv() {

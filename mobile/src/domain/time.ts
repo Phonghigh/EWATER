@@ -1,3 +1,5 @@
+import { strings } from "./i18n";
+
 /** "HH:MM" label for a timestep. */
 export function stepLabel(stepMinutes: number, step: number): string {
   const minutes = step * stepMinutes;
@@ -11,5 +13,5 @@ export function formatDuration(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
   if (hours > 0) return `${hours}h${mins > 0 ? mins : ""}`;
-  return `${mins} phút`;
+  return `${mins} ${strings.minutesUnit}`;
 }

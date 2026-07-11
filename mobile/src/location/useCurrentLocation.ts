@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as Location from "expo-location";
 import type { LocationPoint } from "../domain/types";
+import { strings } from "../domain/i18n";
 import { loadLocation, saveLocation } from "./storage";
 
 export type LocationSource = "gps" | "manual" | "saved" | "none";
@@ -62,7 +63,7 @@ export function useCurrentLocation(): CurrentLocationState {
         if (status !== "granted") {
           if (!cancelled) {
             setSource("none");
-            setError("Bạn chưa cho phép ứng dụng truy cập vị trí.");
+            setError(strings.locationPermissionDenied);
             setLoading(false);
           }
           return;
@@ -76,7 +77,7 @@ export function useCurrentLocation(): CurrentLocationState {
       } catch {
         if (!cancelled) {
           setSource("none");
-          setError("Không thể lấy vị trí hiện tại.");
+          setError(strings.locationFetchError);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -94,7 +95,7 @@ export function useCurrentLocation(): CurrentLocationState {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        setError("Bạn chưa cho phép ứng dụng truy cập vị trí.");
+        setError(strings.locationPermissionDenied);
         return;
       }
       const gps = await fetchGps();
@@ -102,7 +103,7 @@ export function useCurrentLocation(): CurrentLocationState {
       setSource("gps");
       await saveLocation(gps, "gps");
     } catch {
-      setError("Không thể lấy vị trí hiện tại.");
+      setError(strings.locationFetchError);
     } finally {
       setLoading(false);
     }

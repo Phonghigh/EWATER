@@ -3,7 +3,6 @@ import { StyleSheet, Text, View } from "react-native";
 import WebView, { WebViewMessageEvent } from "react-native-webview";
 import type { FeatureCollection } from "geojson";
 import type { MapStyleConfig, LocationPoint } from "../domain/types";
-import type { Status } from "../domain/status";
 import { buildMapHtml } from "./mapHtml";
 import { strings } from "../domain/i18n";
 
@@ -13,32 +12,30 @@ export interface FloodMapWebViewProps {
   provinceBoundary: FeatureCollection;
   rivers: FeatureCollection;
   floodZones: FeatureCollection;
-  statusPoint: { lngLat: LocationPoint; status: Status } | null;
-  pickMode: boolean;
-  onPick: (lngLat: LocationPoint) => void;
+  initialCenter: LocationPoint;
+  /** Bump alongside flyToPoint to command the map to animate to a new center (e.g. "locate me"). */
+  flyToSignal: number;
+  flyToPoint: LocationPoint | null;
+  onCenterChange: (point: LocationPoint) => void;
 }
 
 export default function FloodMapWebView({
-  config, boundary, provinceBoundary, rivers, floodZones, statusPoint, pickMode, onPick,
+  config, boundary, provinceBoundary, rivers, floodZones, initialCenter, flyToSignal, flyToPoint, onCenterChange,
 }: FloodMapWebViewProps) {
   const webviewRef = useRef<WebView>(null);
   const ready = useRef(false);
 
   const html = useMemo(
-    () => buildMapHtml({ config, boundary, provinceBoundary, rivers, floodZones }),
+    () => buildMapHtml({ config, boundary, provinceBoundary, rivers, floodZones, initialCenter }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
   useEffect(() => {
-    if (!ready.current) return;
-    webviewRef.current?.postMessage(JSON.stringify({ type: "marker", point: statusPoint }));
-  }, [statusPoint]);
-
-  useEffect(() => {
-    if (!ready.current) return;
-    webviewRef.current?.postMessage(JSON.stringify({ type: "pickMode", enabled: pickMode }));
-  }, [pickMode]);
+    if (!ready.current || !flyToPoint) return;
+    webviewRef.current?.postMessage(JSON.stringify({ type: "flyTo", lngLat: flyToPoint }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flyToSignal]);
 
   function handleMessage(event: WebViewMessageEvent) {
     let msg: { type: string; lngLat?: LocationPoint };
@@ -49,10 +46,8 @@ export default function FloodMapWebView({
     }
     if (msg.type === "ready") {
       ready.current = true;
-      webviewRef.current?.postMessage(JSON.stringify({ type: "marker", point: statusPoint }));
-      webviewRef.current?.postMessage(JSON.stringify({ type: "pickMode", enabled: pickMode }));
-    } else if (msg.type === "pick" && msg.lngLat) {
-      onPick(msg.lngLat);
+    } else if (msg.type === "center" && msg.lngLat) {
+      onCenterChange(msg.lngLat);
     }
   }
 

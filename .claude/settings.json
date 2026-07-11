@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/check-i18n.mjs",
+            "timeout": 15,
+            "statusMessage": "Checking i18n key parity (vi/en)..."
+          }
+        ]
+      }
+    ]
+  }
+}
