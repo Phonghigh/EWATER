@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import type { AppData } from "./types";
 import { loadAppData } from "./loadData";
@@ -8,14 +8,15 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import RequireAuth from "./components/RequireAuth";
 import RequireRole from "./components/RequireRole";
 import TopNav from "./components/TopNav";
-import Login from "./pages/Login";
-import Portal from "./pages/Portal";
-import MyArea from "./pages/MyArea";
-import Dashboard from "./pages/Dashboard";
-import Monitor from "./pages/Monitor";
-import MapPage from "./pages/MapPage";
-import Report from "./pages/Report";
-import Database from "./pages/Database";
+
+const Login = lazy(() => import("./pages/Login"));
+const Portal = lazy(() => import("./pages/Portal"));
+const MyArea = lazy(() => import("./pages/MyArea"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Monitor = lazy(() => import("./pages/Monitor"));
+const MapPage = lazy(() => import("./pages/MapPage"));
+const Report = lazy(() => import("./pages/Report"));
+const Database = lazy(() => import("./pages/Database"));
 
 const STAFF_ROLES = ["authority", "leadership"] as const;
 
@@ -40,6 +41,7 @@ function Shell() {
   return (
     <AppDataProvider data={data}>
       <BrowserRouter>
+        <Suspense fallback={<div className="loading">{t("app.loading")}</div>}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route
@@ -79,6 +81,7 @@ function Shell() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
+        </Suspense>
       </BrowserRouter>
     </AppDataProvider>
   );
