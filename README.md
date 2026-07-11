@@ -11,7 +11,7 @@ SHP/            source shapefiles (input, WGS84 UTM 48N)
 data-pipeline/  Python: SHP → GeoJSON + topology + mock simulation
 shared/         generated data + style config (single source for both apps)
 web/            React + Vite + MapLibre GL JS
-mobile/         Expo (React Native) + MapLibre
+mobile/         Expo (React Native), MapLibre GL JS via WebView
 ```
 
 ## 1. Regenerate data (only when SHP files change)
@@ -41,16 +41,15 @@ simulation mode with time slider, rainfall chart, and per-manhole water-level ch
 
 ## 3. Mobile app
 
-The MapLibre native module is **not supported in Expo Go** - use a dev build:
+A citizen-facing flood-warning app: is my area flooding, what does the flood map look like, how many minutes until it floods. The map is a WebView embedding MapLibre GL JS, so it runs directly in **Expo Go** - no native dev build needed:
 
 ```powershell
 cd mobile
 npm install
-npm run android   # requires Android SDK; runs expo prebuild + build + launch
-# or: npx eas build --profile development --platform android
+npm start   # runs sync-data, then expo start - scan the QR code in Expo Go
 ```
 
-Features: same map/layers, tap-to-inspect bottom sheet, simulation slider, GPS locate-me.
+Features: GPS-detected (or manually picked) location -> nearest-manhole status (ok/warn/bad) + minutes-to-flood forecast; a flood-extent map colored red/amber/green by current severity.
 
 ## Notes
 

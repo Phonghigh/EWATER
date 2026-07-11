@@ -8,6 +8,7 @@ import { trailingRain } from "../monitoring/windows";
 import { Card, StatCard, DonutCard, StatusBarCard } from "../components/Cards";
 import StepControl from "../components/StepControl";
 import DemoBadge from "../components/DemoBadge";
+import RainTideChart from "../components/RainTideChart";
 import type { Area } from "../monitoring/stations";
 
 const BAND_LABEL: Record<Band, string> = {
@@ -88,6 +89,10 @@ export default function Dashboard() {
               ))}
             </tbody>
           </table>
+        </Card>
+
+        <Card title={t("dash.rainTide")} className="span-wide">
+          <RainTideChart />
         </Card>
 
         <Card title={t("dash.links")}>

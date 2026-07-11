@@ -8,6 +8,7 @@ const LABELS: { key: LayerKey; labelKey: string; swatchKey: string; shape: "line
   { key: "outlets", labelKey: "map.layer.outlets", swatchKey: "outlet", shape: "dot" },
   { key: "rivers", labelKey: "map.layer.rivers", swatchKey: "river", shape: "line" },
   { key: "boundary", labelKey: "map.layer.boundary", swatchKey: "boundary", shape: "line" },
+  { key: "province", labelKey: "map.layer.province", swatchKey: "provinceBoundary", shape: "line" },
   { key: "catchment", labelKey: "map.layer.catchment", swatchKey: "boundary", shape: "area" },
   { key: "flood", labelKey: "map.layer.flood", swatchKey: "flood", shape: "area" },
 ];

@@ -24,6 +24,27 @@ export interface Simulation {
   nodeFill: Record<string, number[]>;
 }
 
+export interface RainForecast {
+  source: string;
+  latitude: number;
+  longitude: number;
+  generatedAt: string;
+  stepHours: number;
+  time: string[];
+  precipitation: number[];
+}
+
+export interface TideDemo {
+  note: string;
+  periodHours: number;
+  baselineM: number;
+  amplitudeM: number;
+  seed: number;
+  generatedAt: string;
+  time: string[];
+  levelM: number[];
+}
+
 export interface AppData {
   config: MapStyleConfig;
   manholes: FeatureCollection;
@@ -31,10 +52,13 @@ export interface AppData {
   outlets: FeatureCollection;
   catchment: FeatureCollection;
   boundary: FeatureCollection;
+  provinceBoundary: FeatureCollection;
   rivers: FeatureCollection;
   floodZones: FeatureCollection;
   topology: Topology;
   simulation: Simulation;
+  rainForecast: RainForecast;
+  tide: TideDemo;
 }
 
 export type LayerKey =
@@ -43,6 +67,7 @@ export type LayerKey =
   | "outlets"
   | "rivers"
   | "boundary"
+  | "province"
   | "catchment"
   | "flood";
 

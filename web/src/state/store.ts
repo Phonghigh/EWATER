@@ -34,6 +34,7 @@ export const useStore = create<AppState>((set) => ({
     outlets: true,
     rivers: true,
     boundary: true,
+    province: true,
     catchment: false,
     flood: true,
   },

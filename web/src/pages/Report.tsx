@@ -10,8 +10,10 @@ import { downloadCsv } from "../components/csv";
 import DemoBadge from "../components/DemoBadge";
 import Icon from "../components/Icon";
 import { bandOf } from "../monitoring/aggregate";
+import RainTideChart, { formatTick } from "../components/RainTideChart";
+import type { AppData } from "../types";
 
-type ReportType = "rainfall" | "waterLevel" | "gates" | "flood";
+type ReportType = "rainfall" | "waterLevel" | "gates" | "flood" | "rainTide";
 
 export default function Report() {
   const data = useAppData();
@@ -19,6 +21,7 @@ export default function Report() {
   const mon = useMonitoring();
   const sim = data.simulation;
   const lastStep = sim.steps - 1;
+  const rainTideLastStep = data.rainForecast.time.length - 1;
 
   const [type, setType] = useState<ReportType>("rainfall");
   const [from, setFrom] = useState(0);
@@ -27,7 +30,18 @@ export default function Report() {
     type: "rainfall", from: 0, to: lastStep,
   });
 
-  const report = useMemo(() => (applied ? buildReport(applied, mon, sim) : null), [applied, mon, sim]);
+  const rangeLen = type === "rainTide" ? rainTideLastStep + 1 : sim.steps;
+  const rangeLabel = (i: number) => (type === "rainTide" ? formatTick(data.rainForecast.time[i]) : stepLabel(sim, i));
+
+  function changeType(next: ReportType) {
+    setType(next);
+    const len = next === "rainTide" ? rainTideLastStep + 1 : sim.steps;
+    setFrom(0);
+    setTo(len - 1);
+    setApplied({ type: next, from: 0, to: len - 1 });
+  }
+
+  const report = useMemo(() => (applied ? buildReport(applied, mon, sim, data) : null), [applied, mon, sim, data]);
 
   function exportCsv() {
     if (!report) return;
@@ -43,23 +57,24 @@ export default function Report() {
       <div className="report-controls">
         <label>
           {t("report.type")}
-          <select value={type} onChange={(e) => setType(e.target.value as ReportType)}>
+          <select value={type} onChange={(e) => changeType(e.target.value as ReportType)}>
             <option value="rainfall">{t("report.type.rainfall")}</option>
             <option value="waterLevel">{t("report.type.waterLevel")}</option>
             <option value="gates">{t("report.type.gates")}</option>
             <option value="flood">{t("report.type.flood")}</option>
+            <option value="rainTide">{t("report.type.rainTide")}</option>
           </select>
         </label>
         <label>
           {t("report.from")}
           <select value={from} onChange={(e) => setFrom(Number(e.target.value))}>
-            {Array.from({ length: sim.steps }, (_, i) => <option key={i} value={i}>{stepLabel(sim, i)}</option>)}
+            {Array.from({ length: rangeLen }, (_, i) => <option key={i} value={i}>{rangeLabel(i)}</option>)}
           </select>
         </label>
         <label>
           {t("report.to")}
           <select value={to} onChange={(e) => setTo(Number(e.target.value))}>
-            {Array.from({ length: sim.steps }, (_, i) => <option key={i} value={i}>{stepLabel(sim, i)}</option>)}
+            {Array.from({ length: rangeLen }, (_, i) => <option key={i} value={i}>{rangeLabel(i)}</option>)}
           </select>
         </label>
         <button className="csv-btn" onClick={() => setApplied({ type, from: Math.min(from, to), to: Math.max(from, to) })}>
@@ -72,7 +87,11 @@ export default function Report() {
       {report && (
         <>
           <div className="report-summary">{report.summary}</div>
-          {report.chart && (
+          {applied?.type === "rainTide" ? (
+            <div className="report-chart">
+              <RainTideChart from={applied.from} to={applied.to} />
+            </div>
+          ) : report.chart && (
             <div className="report-chart">
               <ResponsiveContainer width="100%" height={240}>
                 {report.chart.kind === "line" ? (
@@ -120,9 +139,26 @@ function buildReport(
   a: { type: ReportType; from: number; to: number },
   mon: import("../monitoring/stations").Monitoring,
   sim: import("../types").Simulation,
+  data: AppData,
 ): BuiltReport {
   const range = <T,>(arr: T[]) => arr.slice(a.from, a.to + 1);
   const labels = (i: number) => stepLabel(sim, a.from + i);
+
+  if (a.type === "rainTide") {
+    const times = range(data.rainForecast.time);
+    const rain = range(data.rainForecast.precipitation);
+    const tideLevels = range(data.tide.levelM);
+    const totalmm = rain.reduce((s, v) => s + v * data.rainForecast.stepHours, 0);
+    const peak = Math.max(...rain);
+    const minTide = Math.min(...tideLevels);
+    const maxTide = Math.max(...tideLevels);
+    return {
+      summary: `Rain + tide forecast ${formatTick(times[0])}–${formatTick(times[times.length - 1])}: `
+        + `total rain ${totalmm.toFixed(1)} mm, peak ${peak.toFixed(1)} mm/h; tide ${minTide.toFixed(2)}–${maxTide.toFixed(2)} m.`,
+      headers: ["Time", "Rainfall (mm/h)", "Tide level (m)"],
+      rows: times.map((iso, i) => [formatTick(iso), rain[i].toFixed(1), tideLevels[i].toFixed(2)]),
+    };
+  }
 
   if (a.type === "rainfall") {
     const rainfall = range(sim.rainfall);

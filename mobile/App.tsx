@@ -1,101 +1,110 @@
-import React, { useEffect, useState } from "react";
-import {
-  Pressable, SafeAreaView, StyleSheet, Switch, Text, View,
-} from "react-native";
+import { useMemo, useState } from "react";
+import { Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import Slider from "@react-native-community/slider";
+import type { FeatureCollection } from "geojson";
+import type { MapStyleConfig, Simulation, LocationPoint } from "./src/domain/types";
+import { useCurrentLocation } from "./src/location/useCurrentLocation";
+import { nearestManhole } from "./src/domain/nearest";
+import { computeStatus, computeForecastMinutes } from "./src/domain/status";
+import { NOW_STEP } from "./src/domain/nowStep";
+import { strings } from "./src/domain/i18n";
+import StatusScreen, { type AreaStatus } from "./src/screens/StatusScreen";
+import MapScreen from "./src/screens/MapScreen";
 
 // Data bundled at build time by scripts/sync-data.mjs
-const simulation = require("./assets/data/simulation.json");
-
-function stepLabel(step: number): string {
-  const minutes = step * simulation.stepMinutes;
-  const h = String(Math.floor(minutes / 60) % 24).padStart(2, "0");
-  const m = String(minutes % 60).padStart(2, "0");
-  return `${h}:${m}`;
-}
+const config: MapStyleConfig = require("./assets/data/map-style.json");
+const manholes: FeatureCollection = require("./assets/data/manholes.json");
+const boundary: FeatureCollection = require("./assets/data/boundary.json");
+const provinceBoundary: FeatureCollection = require("./assets/data/province-boundary.json");
+const rivers: FeatureCollection = require("./assets/data/rivers.json");
+const floodZones: FeatureCollection = require("./assets/data/flood-zones.json");
+const simulation: Simulation = require("./assets/data/simulation.json");
 
 export default function App() {
-  const [simMode, setSimMode] = useState(false);
-  const [step, setStep] = useState(0);
-  const [playing, setPlaying] = useState(false);
+  const [tab, setTab] = useState<"status" | "map">("status");
+  const [pickMode, setPickMode] = useState(false);
+  const location = useCurrentLocation();
 
-  useEffect(() => {
-    if (!playing || !simMode) return;
-    const id = setInterval(
-      () => setStep((s) => (s + 1 >= simulation.steps ? (setPlaying(false), s) : s + 1)),
-      250,
-    );
-    return () => clearInterval(id);
-  }, [playing, simMode]);
+  const area: AreaStatus | null = useMemo(() => {
+    if (!location.point) return null;
+    const nearestId = nearestManhole(manholes, location.point);
+    const series = nearestId ? simulation.nodeFill[nearestId] : undefined;
+    if (!series) return null;
+    const fill = series[NOW_STEP] ?? 0;
+    const status = computeStatus(fill, config.simThresholds);
+    const forecastMinutes = computeForecastMinutes(series, NOW_STEP, config.simThresholds, simulation.stepMinutes);
+    return { status, forecastMinutes };
+  }, [location.point]);
+
+  function handleChangeLocation() {
+    setPickMode(true);
+    setTab("map");
+  }
+
+  function handlePick(lngLat: LocationPoint) {
+    location.setManual(lngLat);
+    setPickMode(false);
+    setTab("status");
+  }
+
+  function handleCancelPick() {
+    setPickMode(false);
+    setTab("status");
+  }
 
   return (
     <SafeAreaView style={styles.root}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <View style={styles.header}>
-        <Text style={styles.title}>EWATER - Vĩnh Long</Text>
-        <View style={styles.simSwitch}>
-          <Text style={styles.headerLabel}>Simulation</Text>
-          <Switch value={simMode} onValueChange={(v) => { setSimMode(v); setPlaying(false); }} />
-        </View>
+        <Text style={styles.title}>{strings.appTitle}</Text>
       </View>
 
-      <View style={styles.map}>
-        <Text style={styles.mapPlaceholderTitle}>Map view unavailable</Text>
-        <Text style={styles.mapPlaceholderText}>
-          The drainage map needs a custom dev client build (MapLibre's native
-          module doesn't run in Expo Go). Run `npm run android` or
-          `npm run ios` to build one.
-        </Text>
+      <View style={styles.content}>
+        {tab === "status" ? (
+          <StatusScreen
+            location={location}
+            area={area}
+            onViewMap={() => setTab("map")}
+            onChangeLocation={handleChangeLocation}
+          />
+        ) : (
+          <MapScreen
+            config={config}
+            boundary={boundary}
+            provinceBoundary={provinceBoundary}
+            rivers={rivers}
+            floodZones={floodZones}
+            statusPoint={location.point && area ? { lngLat: location.point, status: area.status } : null}
+            pickMode={pickMode}
+            onPick={handlePick}
+            onCancelPick={handleCancelPick}
+          />
+        )}
       </View>
 
-      {simMode && (
-        <View style={styles.simBar}>
-          <View style={styles.simRow}>
-            <Pressable style={styles.playBtn} onPress={() => setPlaying((p) => !p)}>
-              <Text style={styles.playTxt}>{playing ? "⏸" : "▶"}</Text>
-            </Pressable>
-            <Slider
-              style={{ flex: 1 }}
-              minimumValue={0}
-              maximumValue={simulation.steps - 1}
-              step={1}
-              value={step}
-              onValueChange={setStep}
-            />
-            <Text style={styles.clock}>{stepLabel(step)}</Text>
-          </View>
-          <Text style={styles.demoBadge}>
-            DEMO DATA · rain {simulation.rainfall[step]?.toFixed(1)} mm/h
-          </Text>
-        </View>
-      )}
+      <View style={styles.tabBar}>
+        <Pressable
+          style={[styles.tabBtn, tab === "status" && styles.tabBtnActive]}
+          onPress={() => { setPickMode(false); setTab("status"); }}
+        >
+          <Text style={[styles.tabLabel, tab === "status" && styles.tabLabelActive]}>{strings.tabStatus}</Text>
+        </Pressable>
+        <Pressable style={[styles.tabBtn, tab === "map" && styles.tabBtnActive]} onPress={() => setTab("map")}>
+          <Text style={[styles.tabLabel, tab === "map" && styles.tabLabelActive]}>{strings.tabMap}</Text>
+        </Pressable>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0f2a43" },
-  header: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    paddingHorizontal: 14, paddingVertical: 10,
-  },
+  root: { flex: 1, backgroundColor: "#f1f5f9" },
+  header: { paddingHorizontal: 16, paddingVertical: 12, backgroundColor: "#0f2a43" },
   title: { color: "#fff", fontSize: 17, fontWeight: "700" },
-  headerLabel: { color: "#9fb8cf", marginRight: 8, fontSize: 13 },
-  simSwitch: { flexDirection: "row", alignItems: "center" },
-  map: {
-    flex: 1, backgroundColor: "#0f2a43", alignItems: "center",
-    justifyContent: "center", paddingHorizontal: 32, gap: 8,
-  },
-  mapPlaceholderTitle: { color: "#fff", fontSize: 16, fontWeight: "700" },
-  mapPlaceholderText: { color: "#9fb8cf", fontSize: 13, textAlign: "center" },
-  simBar: { backgroundColor: "#fff", paddingHorizontal: 12, paddingVertical: 8 },
-  simRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  playBtn: {
-    backgroundColor: "#1d4ed8", borderRadius: 8, width: 40, height: 36,
-    alignItems: "center", justifyContent: "center",
-  },
-  playTxt: { color: "#fff", fontSize: 16 },
-  clock: { fontWeight: "700", width: 48, textAlign: "right" },
-  demoBadge: { color: "#92600a", fontSize: 11, fontWeight: "700", marginTop: 4 },
+  content: { flex: 1 },
+  tabBar: { flexDirection: "row", borderTopWidth: 1, borderTopColor: "#e2e8f0", backgroundColor: "#fff" },
+  tabBtn: { flex: 1, paddingVertical: 12, alignItems: "center" },
+  tabBtnActive: { borderTopWidth: 2, borderTopColor: "#1d4ed8" },
+  tabLabel: { color: "#94a3b8", fontSize: 13, fontWeight: "600" },
+  tabLabelActive: { color: "#1d4ed8" },
 });

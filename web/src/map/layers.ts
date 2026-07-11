@@ -25,7 +25,8 @@ export function buildBaseStyle(config: MapStyleConfig, active: string): StyleSpe
 /** Map our logical layer keys to concrete style layer ids. */
 export const LAYER_IDS: Record<LayerKey, string[]> = {
   catchment: ["catchment-fill"],
-  boundary: ["boundary-line"],
+  boundary: ["boundary-casing", "boundary-line"],
+  province: ["province-boundary-casing", "province-boundary-line"],
   rivers: ["rivers-casing", "rivers-line"],
   flood: ["flood-fill"],
   links: ["links-line"],
@@ -86,6 +87,7 @@ export function addDataLayers(map: MLMap, data: AppData): void {
 
   map.addSource("catchment", { type: "geojson", data: data.catchment });
   map.addSource("boundary", { type: "geojson", data: data.boundary });
+  map.addSource("province-boundary", { type: "geojson", data: data.provinceBoundary });
   map.addSource("rivers", { type: "geojson", data: data.rivers });
   map.addSource("flood", { type: "geojson", data: data.floodZones, promoteId: "zone" });
   map.addSource("links", { type: "geojson", data: data.links, promoteId: "muid" });
@@ -98,16 +100,28 @@ export function addDataLayers(map: MLMap, data: AppData): void {
     paint: { "fill-color": c.colors.catchmentFill, "fill-outline-color": c.colors.boundary },
   });
   map.addLayer({
+    id: "boundary-casing", type: "line", source: "boundary",
+    paint: { "line-color": "#ffffff", "line-width": 5, "line-opacity": 0.85 },
+  });
+  map.addLayer({
     id: "boundary-line", type: "line", source: "boundary",
-    paint: { "line-color": c.colors.boundary, "line-width": 2, "line-dasharray": [3, 2] },
+    paint: { "line-color": c.colors.boundary, "line-width": 2.5, "line-dasharray": [4, 2] },
+  });
+  map.addLayer({
+    id: "province-boundary-casing", type: "line", source: "province-boundary",
+    paint: { "line-color": "#ffffff", "line-width": 6, "line-opacity": 0.9 },
+  });
+  map.addLayer({
+    id: "province-boundary-line", type: "line", source: "province-boundary",
+    paint: { "line-color": c.colors.provinceBoundary, "line-width": 3, "line-dasharray": [3, 1.5, 0.5, 1.5] },
   });
   map.addLayer({
     id: "rivers-casing", type: "line", source: "rivers",
-    paint: { "line-color": c.colors.riverCasing, "line-width": 5, "line-opacity": 0.6 },
+    paint: { "line-color": c.colors.riverCasing, "line-width": 3.5, "line-opacity": 0.5 },
   });
   map.addLayer({
     id: "rivers-line", type: "line", source: "rivers",
-    paint: { "line-color": c.colors.river, "line-width": 3 },
+    paint: { "line-color": c.colors.river, "line-width": 2 },
   });
   map.addLayer({
     id: "flood-fill", type: "fill", source: "flood",

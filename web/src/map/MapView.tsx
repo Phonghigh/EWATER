@@ -35,10 +35,6 @@ export default function MapView({ data }: { data: AppData }) {
       style: buildBaseStyle(data.config, useStore.getState().basemap),
       center: data.config.center,
       zoom: data.config.zoom,
-      maxBounds: [
-        [data.config.bounds[0][0] - 0.2, data.config.bounds[0][1] - 0.2],
-        [data.config.bounds[1][0] + 0.2, data.config.bounds[1][1] + 0.2],
-      ],
     });
     map.addControl(new maplibregl.NavigationControl(), "top-right");
     map.addControl(new maplibregl.ScaleControl({ unit: "metric" }));

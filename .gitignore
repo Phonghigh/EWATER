@@ -10,3 +10,4 @@ mobile/assets/data
 __pycache__
 *.pyc
 *.sr.lock
+.env

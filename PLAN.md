@@ -49,7 +49,7 @@ D:\EWATER\
 │   └── config\
 │       └── map-style.json   ← layer colors, widths, thresholds (one place)
 ├── web\                     ← React 18 + TypeScript + Vite + MapLibre GL JS
-└── mobile\                  ← Expo + React Native + @maplibre/maplibre-react-native
+└── mobile\                  ← Expo + React Native, MapLibre GL JS via WebView
 ```
 
 **Data flow:** `SHP → (pipeline, offline, once) → shared/data/*.json → copied/symlinked into web/public/data and mobile/assets/data at build time.` No runtime server; the web app deploys as a static site (Netlify / Vercel / GitHub Pages), the mobile app bundles the data inside the binary.
@@ -126,15 +126,14 @@ src/
 
 ## 5. Mobile app (Phase 3)
 
-Expo (TypeScript) + `@maplibre/maplibre-react-native`. Requires dev build (`npx expo prebuild` or EAS) because of the native MapLibre module.
+Redesigned (2026-07) as a **citizen flood-warning app**, not a network-inspection tool: it answers "is my area flooding," "what does the flood map look like," and "how many minutes until it floods" — nothing else. Expo (TypeScript). Map is a `WebView` embedding MapLibre GL JS (loaded from CDN) instead of `@maplibre/maplibre-react-native`, so it runs directly in Expo Go with **no native dev build required**.
 
-- Same layers/styling constants imported from `shared/config`.
-- Data bundled via `assets/data/*.json` (copied by `npm run sync-data`).
-- Bottom-sheet feature info instead of popups; search bar overlay; layer toggle drawer.
-- Simulation slider docked at bottom; simplified chart.
-- **GPS locate-me** button - user position + nearest manholes (field-demo touch).
+- Status screen: GPS auto-detected location (persisted, refreshable, with manual pick-on-map override) → nearest manhole → current status (ok/warn/bad) + minutes-to-flood forecast, at one fixed "now" timestep (`src/domain/nowStep.ts`) — no simulation scrubber.
+- Map screen: same flood-zone GeoJSON as web, colored discrete red/amber/green by current severity; no pipe/manhole layers (kept legible for non-technical users).
+- Data bundled via `assets/data/*.json` (copied by `npm run sync-data`), same `shared/config/map-style.json` thresholds/colors as web.
+- Domain logic (`nearestManhole`, status/forecast calc) ported from `web/src/network/nearest.ts` and `web/src/pages/MyArea.tsx`.
 
-**Acceptance:** runs on Android dev build (primary demo target); map interactions at 60 fps; feature parity with web except trace (nice-to-have on mobile).
+**Acceptance:** runs via `npx expo start` in Expo Go (no `expo prebuild`/EAS build needed); status + map screens agree on flood status color for the same location.
 
 ## 6. Polish & delivery (Phase 4)
 

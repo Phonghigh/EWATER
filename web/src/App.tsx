@@ -4,13 +4,26 @@ import type { AppData } from "./types";
 import { loadAppData } from "./loadData";
 import { I18nProvider, useT } from "./i18n/I18nContext";
 import { AppDataProvider } from "./context/AppDataContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import RequireAuth from "./components/RequireAuth";
+import RequireRole from "./components/RequireRole";
 import TopNav from "./components/TopNav";
+import Login from "./pages/Login";
 import Portal from "./pages/Portal";
+import MyArea from "./pages/MyArea";
 import Dashboard from "./pages/Dashboard";
 import Monitor from "./pages/Monitor";
 import MapPage from "./pages/MapPage";
 import Report from "./pages/Report";
 import Database from "./pages/Database";
+
+const STAFF_ROLES = ["authority", "leadership"] as const;
+
+function RoleHome() {
+  const { profile } = useAuth();
+  if (profile?.role === "citizen") return <Navigate to="/my-area" replace />;
+  return <Portal />;
+}
 
 function Shell() {
   const t = useT();
@@ -27,22 +40,45 @@ function Shell() {
   return (
     <AppDataProvider data={data}>
       <BrowserRouter>
-        <div className="app">
-          <TopNav />
-          <main className="page-root">
-            <Routes>
-              <Route path="/" element={<Portal />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/monitor" element={<Navigate to="/monitor/water-level" replace />} />
-              <Route path="/monitor/:tab" element={<Monitor />} />
-              <Route path="/map" element={<MapPage />} />
-              <Route path="/report" element={<Report />} />
-              <Route path="/database" element={<Navigate to="/database/network" replace />} />
-              <Route path="/database/:tab" element={<Database />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </main>
-        </div>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route
+            element={
+              <div className="app">
+                <TopNav />
+                <main className="page-root">
+                  <RequireAuth />
+                </main>
+              </div>
+            }
+          >
+            <Route path="/" element={<RoleHome />} />
+            <Route path="/my-area" element={<MyArea />} />
+            <Route
+              path="/dashboard"
+              element={<RequireRole roles={[...STAFF_ROLES]}><Dashboard /></RequireRole>}
+            />
+            <Route path="/monitor" element={<Navigate to="/monitor/water-level" replace />} />
+            <Route
+              path="/monitor/:tab"
+              element={<RequireRole roles={[...STAFF_ROLES]}><Monitor /></RequireRole>}
+            />
+            <Route
+              path="/map"
+              element={<RequireRole roles={[...STAFF_ROLES]}><MapPage /></RequireRole>}
+            />
+            <Route
+              path="/report"
+              element={<RequireRole roles={[...STAFF_ROLES]}><Report /></RequireRole>}
+            />
+            <Route path="/database" element={<Navigate to="/database/network" replace />} />
+            <Route
+              path="/database/:tab"
+              element={<RequireRole roles={[...STAFF_ROLES]}><Database /></RequireRole>}
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
       </BrowserRouter>
     </AppDataProvider>
   );
@@ -51,7 +87,9 @@ function Shell() {
 export default function App() {
   return (
     <I18nProvider>
-      <Shell />
+      <AuthProvider>
+        <Shell />
+      </AuthProvider>
     </I18nProvider>
   );
 }

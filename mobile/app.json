@@ -13,14 +13,13 @@
     "ios": {
       "bundleIdentifier": "com.ewater.vinhlong",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Show your position relative to the drainage network."
+        "NSLocationWhenInUseUsageDescription": "Dùng vị trí của bạn để cảnh báo nguy cơ ngập lụt tại khu vực bạn đang ở."
       }
     },
     "plugins": [
-      "@maplibre/maplibre-react-native",
       [
         "expo-location",
-        { "locationWhenInUsePermission": "Show your position relative to the drainage network." }
+        { "locationWhenInUsePermission": "Dùng vị trí của bạn để cảnh báo nguy cơ ngập lụt tại khu vực bạn đang ở." }
       ]
     ]
   }
