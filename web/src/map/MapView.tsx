@@ -42,7 +42,12 @@ export default function MapView({ data }: { data: AppData }) {
       addDataLayers(map, data);
       applyVisibility(map, useStore.getState().layers, useStore.getState().simMode);
       readyRef.current = true;
+      map.resize();
     });
+    map.on("error", (e) => console.error("[MapView] maplibre error:", e.error));
+
+    const resizeObserver = new ResizeObserver(() => map.resize());
+    resizeObserver.observe(containerRef.current!);
 
     const onClick = (e: MapMouseEvent) => {
       const feats = map.queryRenderedFeatures(e.point, { layers: CLICKABLE });
@@ -70,6 +75,7 @@ export default function MapView({ data }: { data: AppData }) {
     return () => {
       readyRef.current = false;
       mapRegistry.current = null;
+      resizeObserver.disconnect();
       map.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

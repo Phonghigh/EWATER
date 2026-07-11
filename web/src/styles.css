@@ -51,7 +51,7 @@ body {
 
 /* ------------------------------------------------------------- layout */
 .main { position: relative; flex: 1; overflow: hidden; }
-.map-container { position: absolute; inset: 0; }
+.map-container { position: absolute !important; inset: 0; }
 
 .panel {
   position: absolute; background: rgba(255,255,255,.96); border-radius: 8px;
