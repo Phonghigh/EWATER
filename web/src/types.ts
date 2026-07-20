@@ -60,26 +60,3 @@ export interface AppData {
   rainForecast: RainForecast;
   tide: TideDemo;
 }
-
-export type LayerKey =
-  | "manholes"
-  | "links"
-  | "outlets"
-  | "rivers"
-  | "boundary"
-  | "province"
-  | "catchment"
-  | "flood";
-
-export interface Selection {
-  kind: "manhole" | "link" | "outlet" | "river";
-  muid: string;
-  properties: Record<string, unknown>;
-}
-
-export interface TraceResult {
-  direction: "upstream" | "downstream";
-  nodes: string[];
-  links: string[];
-  totalLength: number;
-}

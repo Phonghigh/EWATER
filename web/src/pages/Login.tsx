@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Navigate } from "react-router-dom";
 import { useT } from "../i18n/I18nContext";
 import { useAuth } from "../context/AuthContext";
+import Icon from "../components/Icon";
 
 export default function Login() {
   const t = useT();
@@ -11,9 +12,10 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Always land on "/" - RoleHome sends citizens on to /my-area, others see the Portal.
-  // (Deliberately not honoring a "from" deep-link here: it would be captured from whichever
-  // role was previously logged out, which can be wrong for the next role that signs in.)
+  // Always land on "/" — Dashboard is the same page for every role (guest
+  // included), it just renders more once signed in. No "from" deep-link
+  // handling: captured from whichever role was previously logged out, which
+  // can be wrong for the next role that signs in.
   if (session) {
     return <Navigate to="/" replace />;
   }
@@ -30,7 +32,10 @@ export default function Login() {
   return (
     <div className="login-page">
       <form className="login-card" onSubmit={handleSubmit}>
-        <h1>{t("app.title")}</h1>
+        <div className="login-brand">
+          <Icon name="home" size={40} />
+          <h1>{t("login.systemTitle")}</h1>
+        </div>
         <p className="login-subtitle">{t("login.subtitle")}</p>
         <label>
           {t("login.email")}
@@ -56,6 +61,7 @@ export default function Login() {
         <button type="submit" disabled={submitting}>
           {submitting ? t("login.submitting") : t("login.submit")}
         </button>
+        <p className="login-footer">{t("nav.brandTitle")} · {t("nav.brandSubtitle")}</p>
       </form>
     </div>
   );

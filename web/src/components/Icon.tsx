@@ -1,10 +1,12 @@
 // Minimal monoline icon set (single-color stroke SVGs) — replaces emoji glyphs
 // so the UI reads as one consistent, simple system instead of platform emoji.
+// Kept pruned to exactly what's used by the current live component tree.
 
 export type IconName =
-  | "home" | "dashboard" | "monitor" | "map" | "report" | "database"
-  | "gate" | "chevron-down" | "chart" | "up" | "down" | "print"
-  | "download" | "info" | "close" | "empty" | "search";
+  | "home" | "dashboard" | "monitor" | "map" | "report"
+  | "gate" | "empty"
+  | "cloud-rain" | "sliders" | "alert-triangle" | "settings"
+  | "bell" | "help-circle" | "user";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: <path d="M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5" />,
@@ -29,48 +31,62 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <path d="M15 3v4h4M9 12h6M9 16h6" />
     </>
   ),
-  database: (
-    <>
-      <ellipse cx="12" cy="5.5" rx="8" ry="3" />
-      <path d="M4 5.5V18c0 1.66 3.58 3 8 3s8-1.34 8-3V5.5" />
-      <path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3" />
-    </>
-  ),
   gate: (
     <>
       <path d="M3 5h18M3 19h18" />
       <path d="M6 5v14M12 5v14M18 5v14" />
     </>
   ),
-  "chevron-down": <path d="M6 9l6 6 6-6" />,
-  chart: <path d="M4 20V10M11 20V4M18 20v-7" />,
-  up: <path d="M12 19V5M5 12l7-7 7 7" />,
-  down: <path d="M12 5v14M5 12l7 7 7-7" />,
-  print: (
-    <>
-      <path d="M6 9V3h12v6" />
-      <rect x="4" y="9" width="16" height="8" rx="1" />
-      <path d="M6 14h12v7H6Z" />
-    </>
-  ),
-  download: <path d="M12 4v12M6 12l6 6 6-6M5 21h14" />,
-  info: (
-    <>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 11v6M12 7.5v.01" />
-    </>
-  ),
-  close: <path d="M6 6l12 12M18 6 6 18" />,
   empty: (
     <>
       <path d="M3 8 12 3l9 5-9 5-9-5Z" />
       <path d="M3 8v8l9 5 9-5V8M12 13v8" />
     </>
   ),
-  search: (
+  "cloud-rain": (
     <>
-      <circle cx="11" cy="11" r="7" />
-      <path d="m20 20-3.5-3.5" />
+      <path d="M6 14a4 4 0 0 1 .7-7.94 5 5 0 0 1 9.6 1.44A3.5 3.5 0 0 1 16 14H6Z" />
+      <path d="M8 18v2M12 18v2M16 18v2" />
+    </>
+  ),
+  sliders: (
+    <>
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <circle cx="9" cy="6" r="2" />
+      <line x1="4" y1="12" x2="20" y2="12" />
+      <circle cx="15" cy="12" r="2" />
+      <line x1="4" y1="18" x2="20" y2="18" />
+      <circle cx="7" cy="18" r="2" />
+    </>
+  ),
+  "alert-triangle": (
+    <>
+      <path d="M12 3 2 20h20L12 3Z" />
+      <path d="M12 10v4M12 17v.01" />
+    </>
+  ),
+  settings: (
+    <>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z" />
+    </>
+  ),
+  bell: (
+    <>
+      <path d="M6 9a6 6 0 1 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 13 6 9Z" />
+      <path d="M10 19a2 2 0 0 0 4 0" />
+    </>
+  ),
+  "help-circle": (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.9.4-1 1-1 1.7M12 17v.01" />
+    </>
+  ),
+  user: (
+    <>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" />
     </>
   ),
 };

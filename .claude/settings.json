@@ -1,4 +1,17 @@
 {
+  "permissions": {
+    "allow": [
+      "Read(//d/project/XmindClone/docs/**)",
+      "Read(//d/project/XmindClone/docs/learn-log/**)",
+      "Bash(node ../scripts/check-i18n.mjs)",
+      "Bash(pkill -f \"vite --port 5183\")",
+      "Bash(find / -iname \"chromium-cli*\" -maxdepth 6 2>/dev/null | head -20; echo \"---npm global---\"; npm ls -g --depth=0 2>&1 | head -20; echo \"---find playwright---\"; find / -iname \"playwright\" -maxdepth 6 -type d 2>/dev/null | head)",
+      "Read(//d//**)",
+      "Bash(rm -rf map monitoring network panels sim state data)",
+      "Bash(rm -f components/Cards.tsx components/ChartModal.tsx components/DataTable.tsx components/DemoBadge.tsx components/RainTideChart.tsx components/StepControl.tsx components/csv.ts)",
+      "Bash(grep -v \"^$\")"
+    ]
+  },
   "hooks": {
     "PostToolUse": [
       {

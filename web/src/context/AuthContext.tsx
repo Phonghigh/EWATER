@@ -4,7 +4,11 @@ import {
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabaseClient";
 
-export type Role = "citizen" | "authority" | "leadership";
+// No "citizen" role anymore (the redesign dropped the citizen /my-area flow —
+// see tasks/backlog/phase-0.md P0-04). A null `session`/`profile` now means
+// "guest": still a valid, supported state (guests can view the Dashboard),
+// not just a loading/unauthenticated placeholder.
+export type Role = "authority" | "admin";
 
 export interface Profile {
   id: string;
@@ -21,7 +25,6 @@ interface AuthValue {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<string | null>;
   signOut: () => Promise<void>;
-  updateHomeLocation: (lng: number, lat: number) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthValue | null>(null);
@@ -73,17 +76,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   }
 
-  async function updateHomeLocation(lng: number, lat: number): Promise<void> {
-    if (!session) return;
-    const { error } = await supabase
-      .from("profiles")
-      .update({ home_lng: lng, home_lat: lat })
-      .eq("id", session.user.id);
-    if (!error) setProfile((p) => (p ? { ...p, home_lng: lng, home_lat: lat } : p));
-  }
-
   return (
-    <AuthContext.Provider value={{ session, profile, loading, signIn, signOut, updateHomeLocation }}>
+    <AuthContext.Provider value={{ session, profile, loading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

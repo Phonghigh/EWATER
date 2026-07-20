@@ -157,3 +157,19 @@ Redesigned (2026-07) as a **citizen flood-warning app**, not a network-inspectio
 - 10 links reference `fromNode`/`toNode` values that may not exist in Manholes (e.g. outlets) - trace treats unknown nodes as terminals.
 - MapLibre RN needs a dev build - allow time for the first Android build (~15 min EAS or local Android SDK).
 - OSM tile usage policy is fine for a demo; for production swap in a commercial/vector tile provider.
+
+## 9. Web redesign in progress (2026-07-20 →)
+
+`web/src` is being rebuilt on top of the foundation above into a 9-page
+"Urban Flood Digital Twin Platform" sidebar UI (Dashboard, Bản đồ GIS, Quan
+trắc thời gian thực, Dự báo, What-if Analysis, Công trình & Vận hành, Thiệt
+hại & Tác động, Báo cáo, Quản trị hệ thống) with a 3-tier access model
+(Khách/Cơ quan/Admin replacing the old citizen/authority/leadership + `/my-area`
+setup) and a swappable mock/real `web/src/data/` service layer. Stack stays
+React + MapLibre + Supabase — no new framework introduced. Note this
+supersedes §4–5 above wherever they describe the old FRMIS-style page
+structure (Portal/MyArea/Dashboard/Monitor/MapPage/Report/Database) and the
+old citizen `/my-area` mobile-linked flow; §1–3 (data pipeline, shared data)
+are unaffected. Tracked as an atomic task backlog in [tasks/](tasks/) — see
+[tasks/README.md](tasks/README.md) and [tasks/INDEX.md](tasks/INDEX.md) for
+current status.

@@ -4,27 +4,21 @@ import type { AppData } from "./types";
 import { loadAppData } from "./loadData";
 import { I18nProvider, useT } from "./i18n/I18nContext";
 import { AppDataProvider } from "./context/AppDataContext";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
 import RequireAuth from "./components/RequireAuth";
 import RequireRole from "./components/RequireRole";
-import TopNav from "./components/TopNav";
+import RequireGuestOrRole from "./components/RequireGuestOrRole";
+import AppShell from "./components/layout/AppShell";
+import ComingSoon from "./pages/ComingSoon";
 
 const Login = lazy(() => import("./pages/Login"));
-const Portal = lazy(() => import("./pages/Portal"));
-const MyArea = lazy(() => import("./pages/MyArea"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Monitor = lazy(() => import("./pages/Monitor"));
-const MapPage = lazy(() => import("./pages/MapPage"));
-const Report = lazy(() => import("./pages/Report"));
-const Database = lazy(() => import("./pages/Database"));
 
-const STAFF_ROLES = ["authority", "leadership"] as const;
-
-function RoleHome() {
-  const { profile } = useAuth();
-  if (profile?.role === "citizen") return <Navigate to="/my-area" replace />;
-  return <Portal />;
-}
+// Access matrix (see tasks/backlog/phase-0.md P0-10 / docs in the redesign
+// plan): "/" is guest-visible; everything else needs authority or admin;
+// "/admin/*" needs admin. Each ComingSoon placeholder below is replaced by
+// its real page as that page's phase lands (Phase 1 = Dashboard, Phase 2 =
+// GIS map, ... Phase 9 = Admin) — see tasks/INDEX.md.
+const STAFF_ROLES = ["authority", "admin"] as const;
 
 function Shell() {
   const t = useT();
@@ -42,45 +36,102 @@ function Shell() {
     <AppDataProvider data={data}>
       <BrowserRouter>
         <Suspense fallback={<div className="loading">{t("app.loading")}</div>}>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route
-            element={
-              <div className="app">
-                <TopNav />
-                <main className="page-root">
-                  <RequireAuth />
-                </main>
-              </div>
-            }
-          >
-            <Route path="/" element={<RoleHome />} />
-            <Route path="/my-area" element={<MyArea />} />
-            <Route
-              path="/dashboard"
-              element={<RequireRole roles={[...STAFF_ROLES]}><Dashboard /></RequireRole>}
-            />
-            <Route path="/monitor" element={<Navigate to="/monitor/water-level" replace />} />
-            <Route
-              path="/monitor/:tab"
-              element={<RequireRole roles={[...STAFF_ROLES]}><Monitor /></RequireRole>}
-            />
-            <Route
-              path="/map"
-              element={<RequireRole roles={[...STAFF_ROLES]}><MapPage /></RequireRole>}
-            />
-            <Route
-              path="/report"
-              element={<RequireRole roles={[...STAFF_ROLES]}><Report /></RequireRole>}
-            />
-            <Route path="/database" element={<Navigate to="/database/network" replace />} />
-            <Route
-              path="/database/:tab"
-              element={<RequireRole roles={[...STAFF_ROLES]}><Database /></RequireRole>}
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
-        </Routes>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+
+            <Route element={<AppShell />}>
+              <Route
+                path="/"
+                element={
+                  <RequireGuestOrRole>
+                    <ComingSoon title={t("nav.dashboard")} />
+                  </RequireGuestOrRole>
+                }
+              />
+
+              <Route element={<RequireAuth />}>
+                <Route
+                  path="/gis-map"
+                  element={
+                    <RequireRole roles={[...STAFF_ROLES]}>
+                      <ComingSoon title={t("nav.gisMap")} />
+                    </RequireRole>
+                  }
+                />
+
+                <Route path="/monitoring" element={<Navigate to="/monitoring/overview" replace />} />
+                <Route
+                  path="/monitoring/:tab"
+                  element={
+                    <RequireRole roles={[...STAFF_ROLES]}>
+                      <ComingSoon title={t("nav.monitoring")} />
+                    </RequireRole>
+                  }
+                />
+
+                <Route path="/forecast" element={<Navigate to="/forecast/overview" replace />} />
+                <Route
+                  path="/forecast/:tab"
+                  element={
+                    <RequireRole roles={[...STAFF_ROLES]}>
+                      <ComingSoon title={t("nav.forecast")} />
+                    </RequireRole>
+                  }
+                />
+
+                <Route
+                  path="/whatif"
+                  element={
+                    <RequireRole roles={[...STAFF_ROLES]}>
+                      <ComingSoon title={t("nav.whatif")} />
+                    </RequireRole>
+                  }
+                />
+
+                <Route path="/works" element={<Navigate to="/works/overview" replace />} />
+                <Route
+                  path="/works/:tab"
+                  element={
+                    <RequireRole roles={[...STAFF_ROLES]}>
+                      <ComingSoon title={t("nav.works")} />
+                    </RequireRole>
+                  }
+                />
+
+                <Route path="/impact" element={<Navigate to="/impact/overview" replace />} />
+                <Route
+                  path="/impact/:tab"
+                  element={
+                    <RequireRole roles={[...STAFF_ROLES]}>
+                      <ComingSoon title={t("nav.impact")} />
+                    </RequireRole>
+                  }
+                />
+
+                <Route path="/reports" element={<Navigate to="/reports/overview" replace />} />
+                <Route
+                  path="/reports/:tab"
+                  element={
+                    <RequireRole roles={[...STAFF_ROLES]}>
+                      <ComingSoon title={t("nav.reports")} />
+                    </RequireRole>
+                  }
+                />
+
+                <Route path="/admin" element={<Navigate to="/admin/overview" replace />} />
+                <Route
+                  path="/admin/:tab"
+                  element={
+                    <RequireRole roles={["admin"]}>
+                      <ComingSoon title={t("nav.admin")} />
+                    </RequireRole>
+                  }
+                />
+              </Route>
+
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
         </Suspense>
       </BrowserRouter>
     </AppDataProvider>

@@ -17,3 +17,14 @@
 1. Chạy `node scripts/check-i18n.mjs` — script kiểm tra key `vi`/`en` trong `strings.ts` có khớp nhau không, in cảnh báo nếu lệch. Một `PostToolUse` hook trong [.claude/settings.json](.claude/settings.json) đã tự chạy script này sau mỗi lần Edit/Write, nhưng vẫn nên tự kiểm tra lại kết quả.
 2. Nếu cảnh báo có key thiếu, bổ sung ngay bản dịch còn thiếu trước khi coi task là xong.
 3. Bật thử `LangToggle` (🇻🇳/🇬🇧) trên trang vừa sửa để xác nhận bằng mắt không còn chữ "kẹt" ở một ngôn ngữ.
+
+## Task system & learn-log (đợt redesign web sang "Urban Flood Digital Twin Platform")
+
+`web/src` đang được xây lại theo thiết kế sidebar mới (xem `doc/template/`), chia thành backlog atomic theo mô hình `D:\project\XmindClone`:
+
+- [tasks/README.md](tasks/README.md) — cách hệ thống vận hành, trạng thái đánh dấu trong `INDEX.md`.
+- [tasks/INDEX.md](tasks/INDEX.md) — backlog đầy đủ, **nguồn sự thật duy nhất** cho tiến độ (checkbox `[ ]`/`[x]`/`[!]`).
+- [tasks/ROUTINE.md](tasks/ROUTINE.md) — playbook thực thi 1 task/lượt (orient → chọn task → implement → verify → learn-log → bookkeeping).
+- [tasks/PROGRESS.md](tasks/PROGRESS.md) — log tiến độ append-only. [tasks/BLOCKERS.md](tasks/BLOCKERS.md) — các quyết định cần người dùng.
+
+**Quy tắc learn-log:** mỗi task thay đổi code trong `web/src/**` phải kèm 1 báo cáo ngắn ở `docs/learn-log/<task-id>-<slug>.md` (copy từ `docs/learn-log/_TEMPLATE.md`) giải thích khái niệm mới mà task đó đưa vào, độ sâu tùy độ khó của task — không bỏ qua, nhưng task tầm thường có thể chỉ 1 dòng "Không có gì mới". Cập nhật `docs/LEARNING_LOG.md` và `docs/learn-log/README.md` theo `tasks/ROUTINE.md` bước 6.
