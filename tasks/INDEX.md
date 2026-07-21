@@ -35,7 +35,7 @@ sections mirror `tasks/backlog/phase-N.md` 1:1).
 - [x] **P0-16** — Xóa toàn bộ code cũ/không dùng trong `web/src` (map/monitoring/network/panels/sim/state, các component không dùng, khung `data/` service, phần type/i18n/CSS/icon không còn tham chiếu) + gỡ `manualChunks` maplibre/recharts khỏi `vite.config.ts` · *deps:* P0-13 · *done:* `tsc`/`build`/`check-i18n` sạch, không còn import/class/key nào trỏ tới file đã xóa. **Đảo ngược chính sách "port nguyên vẹn"/pre-scaffold của Phase 0 ban đầu** — từ nay không giữ code cũ hay dựng khung sẵn cho tương lai; mỗi phase tự viết mới hoàn toàn khi thật sự cần, kể cả phải viết lại logic đã có trước đó (map engine, monitoring station derivation, sim step helpers, v.v.) — xem PROGRESS.md.
 
 ## Phase 1 — Dashboard (Tab 1)
-- [ ] **P1-01** — `dashboardService`/aggregate (điểm ngập, tuyến ngập, mưa/mực nước max, cống/bơm) — viết mới hoàn toàn, không tái dùng service cũ · *deps:* none · *done:* hàm trả đúng type.
+- [x] **P1-01** — `dashboardService`/aggregate (điểm ngập, tuyến ngập, mưa/mực nước max, cống/bơm) — viết mới hoàn toàn, không tái dùng service cũ · *deps:* none · *done:* hàm trả đúng type.
 - [ ] **P1-02** — Header + 6 stat-card · *deps:* P1-01, P0-13 · *done:* `/` hiển thị đúng số liệu thật.
 - [ ] **P1-03** — Card bản đồ ngập hiện tại + link `/gis-map` · *deps:* P1-02 · *done:* bản đồ render, điều hướng đúng.
 - [ ] **P1-04** — Card "Cảnh báo đang hoạt động" · *deps:* P1-02 · *done:* render từ mock.
