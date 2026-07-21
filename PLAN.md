@@ -154,7 +154,7 @@ Redesigned (2026-07) as a **citizen flood-warning app**, not a network-inspectio
 ## 8. Risks / notes
 
 - **Mock ≠ real results** - UI badges everything as demo data; when real MIKE `.res1d` results arrive, only `generate_mock_sim.py` is replaced, apps unchanged.
-- 10 links reference `fromNode`/`toNode` values that may not exist in Manholes (e.g. outlets) - trace treats unknown nodes as terminals.
+- **49** links (not 10 as originally estimated — recounted 2026-07-20 while importing into Supabase, see `data-pipeline/import_static_data.py` output) reference `fromNode`/`toNode` values that don't exist in `manholes.geojson`/`outlets.geojson` (5 of the 49 have completely empty from/to fields — corrupted rows, not just dangling references) - trace treats unknown nodes as terminals; these 49 links were excluded from the `network_links` Supabase import (kept in the demo GeoJSON as-is).
 - MapLibre RN needs a dev build - allow time for the first Android build (~15 min EAS or local Android SDK).
 - OSM tile usage policy is fine for a demo; for production swap in a commercial/vector tile provider.
 

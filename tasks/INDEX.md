@@ -33,9 +33,12 @@ sections mirror `tasks/backlog/phase-N.md` 1:1).
 - [x] **P0-12** — Reskin `pages/Login.tsx` theo `page_login.png` · *deps:* P0-11 · *done:* đăng nhập/đăng xuất hoạt động.
 - [x] **P0-13** — Route guard đúng ma trận (guest/authority/admin) · *deps:* P0-10, P0-12 · *done:* test thủ công 3 cấp đúng (xác minh bằng code-trace tĩnh, xem note trong PROGRESS.md — không có trình duyệt headless trong môi trường này để test tương tác thật).
 - [x] **P0-16** — Xóa toàn bộ code cũ/không dùng trong `web/src` (map/monitoring/network/panels/sim/state, các component không dùng, khung `data/` service, phần type/i18n/CSS/icon không còn tham chiếu) + gỡ `manualChunks` maplibre/recharts khỏi `vite.config.ts` · *deps:* P0-13 · *done:* `tsc`/`build`/`check-i18n` sạch, không còn import/class/key nào trỏ tới file đã xóa. **Đảo ngược chính sách "port nguyên vẹn"/pre-scaffold của Phase 0 ban đầu** — từ nay không giữ code cũ hay dựng khung sẵn cho tương lai; mỗi phase tự viết mới hoàn toàn khi thật sự cần, kể cả phải viết lại logic đã có trước đó (map engine, monitoring station derivation, sim step helpers, v.v.) — xem PROGRESS.md.
+- [x] **P0-17** — Chuẩn bị Supabase để FE đọc trực tiếp: view `*_geojson` (ST_AsGeoJSON cho mọi bảng có cột `geom`), REVOKE insert/update/delete/truncate khỏi `anon`/`authenticated` (chỉ giữ SELECT — đã phát hiện quyền cũ quá rộng), sinh `web/src/lib/database.types.ts` · *deps:* none · *done:* query view bằng anon key trả đúng GeoJSON; INSERT bằng anon key bị từ chối quyền.
+- [x] **P0-18** — Import dữ liệu động mock (`simulation.json`, `rain-forecast.json`, `tide-demo.json`, `flood-zones.geojson`) vào Supabase (`data-pipeline/import_dynamic_data.py`) — nội dung vẫn là demo/giả lập, chỉ đổi nơi lưu trữ · *deps:* P0-17 · *done:* số dòng khớp nguồn (834 `simulation_node_fill`, 2 `flood_zones`...).
+- [x] **P0-19** — Viết lại `web/src/loadData.ts` để đọc Supabase (qua `supabase-js`) thay vì `fetch()` `shared/data/*.json` tĩnh — giữ nguyên shape `AppData`/`AppDataContext`, bỏ `predev`/`prebuild` sync data (chỉ còn sync `config/`), `topology` tính lại client-side từ `network_links` (không lưu riêng) · *deps:* P0-18 · *done:* `tsc`/`build`/`check-i18n` sạch, `npm run dev` load `/` OK, không còn `fetch` `/data/*.json`.
 
 ## Phase 1 — Dashboard (Tab 1)
-- [x] **P1-01** — `dashboardService`/aggregate (điểm ngập, tuyến ngập, mưa/mực nước max, cống/bơm) — viết mới hoàn toàn, không tái dùng service cũ · *deps:* none · *done:* hàm trả đúng type.
+- [x] **P1-01** — `dashboardService`/aggregate (điểm ngập, tuyến ngập, mưa/mực nước max, cống/bơm) — đọc dữ liệu qua `AppData` (nay bắt nguồn từ Supabase qua P0-19, không còn mock JSON tĩnh); hàm tính toán trong `dashboardService.ts` giữ nguyên, không cần sửa lại · *deps:* P0-19 · *done:* hàm trả đúng type, dữ liệu đến từ Supabase thật (đã verify qua P0-17/18/19).
 - [ ] **P1-02** — Header + 6 stat-card · *deps:* P1-01, P0-13 · *done:* `/` hiển thị đúng số liệu thật.
 - [ ] **P1-03** — Card bản đồ ngập hiện tại + link `/gis-map` · *deps:* P1-02 · *done:* bản đồ render, điều hướng đúng.
 - [ ] **P1-04** — Card "Cảnh báo đang hoạt động" · *deps:* P1-02 · *done:* render từ mock.
@@ -46,7 +49,7 @@ sections mirror `tasks/backlog/phase-N.md` 1:1).
 ## Phase 2 — Bản đồ GIS (Tab 2)
 - [ ] **P2-01** — Thanh trên: search + dải thời gian (dùng `store.currentStep`) + play/step/tốc độ · *deps:* P0-13 · *done:* playback đổi step đúng.
 - [ ] **P2-02** — Panel trái "Lớp dữ liệu" (checkbox nhóm + nền bản đồ + bookmark mock) · *deps:* P2-01 · *done:* toggle lớp hoạt động.
-- [ ] **P2-03** — Bản đồ chính (dựng mới bằng MapLibre GL, viết lại từ đầu — không tái dùng `MapView.tsx` cũ đã xóa) + toolbar đo/vẽ đơn giản + minimap · *deps:* P2-02 · *done:* marker đúng từ service mưa/mực nước tự viết ở phase này.
+- [ ] **P2-03** — Bản đồ chính (dựng mới bằng MapLibre GL, viết lại từ đầu — không tái dùng `MapView.tsx` cũ đã xóa) + toolbar đo/vẽ đơn giản + minimap · *deps:* P2-02, P0-19 · *done:* marker/lớp lấy từ Supabase (`network_nodes_geojson`/`network_links_geojson`/`rivers_geojson` — đã có dữ liệu thật, không cần tự suy diễn lại từ đầu như ghi chú cũ P0-16).
 - [ ] **P2-04** — Panel phải: thông tin lớp chọn + thống kê ngập + công cụ phân tích · *deps:* P2-03 · *done:* số liệu đúng theo step hiện tại.
 - [ ] **P2-05** — Panel dưới: biểu đồ/thông tin trạm/thông tin công trình + camera placeholder · *deps:* P2-04 · *done:* chọn trạm cập nhật đúng panel.
 - [ ] **P2-06** — Nối link Dashboard → `/gis-map` (đóng P1-03) · *deps:* P2-01 · *done:* điều hướng đúng vị trí.
@@ -54,7 +57,7 @@ sections mirror `tasks/backlog/phase-N.md` 1:1).
 
 ## Phase 3 — Quan trắc thời gian thực (Tab 3)
 - [ ] **P3-01** — Route `/monitoring/:tab` + `PageHeader` 9 sub-tab · *deps:* P0-13 · *done:* điều hướng ok.
-- [ ] **P3-02** — Sub-tab Mưa: bản đồ trạm + bảng số liệu — viết lại logic suy diễn trạm mưa từ manholes+simulation từ đầu (không tái dùng `monitoring/stations.ts` cũ đã xóa) · *deps:* P3-01 · *done:* dữ liệu thật.
+- [ ] **P3-02** — Sub-tab Mưa: bản đồ trạm + bảng số liệu — đọc từ Supabase (`network_nodes_geojson` + `simulation_node_fill`/`rain_forecast_points`), không tái dùng `monitoring/stations.ts` cũ đã xóa và không cần tự suy diễn từ mock JSON như ghi chú cũ P0-16 (dữ liệu node/rain giờ có thật) · *deps:* P3-01, P0-19 · *done:* dữ liệu thật.
 - [ ] **P3-03** — Sub-tab Mưa: thống kê + cảnh báo mưa · *deps:* P3-02 · *done:* toggle 24h/7ngày/30ngày đúng.
 - [ ] **P3-04** — Sub-tab Mưa: biểu đồ diễn biến + top 10 + phân bố khung giờ · *deps:* P3-02 · *done:* 3 chart đúng.
 - [ ] **P3-05** — Sub-tab Mưa: trạng thái/thông tin trạm/lịch sử/xu hướng/tải dữ liệu (CSV thật) · *deps:* P3-03, P3-04 · *done:* export CSV thật.
@@ -65,7 +68,7 @@ sections mirror `tasks/backlog/phase-N.md` 1:1).
 - [ ] **P3-10** — i18n `mon.*` đầy đủ + check-i18n sạch + LangToggle test · *deps:* P3-01…P3-09 · *done:* sạch.
 
 ## Phase 4 — Dự báo (Tab 4)
-- [ ] **P4-01** — `forecastService` (mưa/mực nước/ngập/triều) — viết mới hoàn toàn · *deps:* none · *done:* type đúng, giá trị hợp lý.
+- [ ] **P4-01** — `forecastService` (mưa/mực nước/ngập/triều) — đọc từ Supabase (`rain_forecasts`/`tide_scenarios`; nếu cần bảng riêng cho kịch bản dự báo thì tự thiết kế migration cùng kỷ luật đã dùng cho GIS/simulation — không mock JSON) · *deps:* P0-19 · *done:* type đúng, giá trị hợp lý, dữ liệu từ Supabase thật.
 - [ ] **P4-02** — Route `/forecast/:tab` + `PageHeader` 6 sub-tab · *deps:* P0-13 · *done:* điều hướng ok.
 - [ ] **P4-03** — Sub-tab Tổng quan: quy trình dự báo + thời gian/kịch bản + nút chạy mô phỏng (mock) · *deps:* P4-01, P4-02 · *done:* đổi kịch bản cập nhật panel.
 - [ ] **P4-04** — Sub-tab Tổng quan: dự báo mưa (4 heatmap) + mực nước tại trạm (BD1/2/3) · *deps:* P4-03 · *done:* đúng mock.
@@ -75,7 +78,7 @@ sections mirror `tasks/backlog/phase-N.md` 1:1).
 - [ ] **P4-08** — i18n `fc.*` đầy đủ + check-i18n sạch + LangToggle test · *deps:* P4-01…P4-07 · *done:* sạch.
 
 ## Phase 5 — What-if Analysis (Tab 5)
-- [ ] **P5-01** — `whatifService` (biến đổi tuyến tính trên `simulation.nodeFill`, ghi rõ giới hạn) — viết mới hoàn toàn · *deps:* none · *done:* kết quả hợp lý theo chiều tăng/giảm.
+- [ ] **P5-01** — `whatifService` (biến đổi tuyến tính trên `simulation_node_fill` đọc từ Supabase, ghi rõ giới hạn) — không mock JSON, tự thiết kế bảng lưu kịch bản nếu cần lưu server-side · *deps:* P0-19 · *done:* kết quả hợp lý theo chiều tăng/giảm.
 - [ ] **P5-02** — Route `/whatif` + 3 panel trên + sidebar kịch bản đã lưu (localStorage) · *deps:* P5-01, P0-13 · *done:* slider đổi state.
 - [ ] **P5-03** — Bản đồ ngập kịch bản hiện tại · *deps:* P5-02 · *done:* cập nhật theo slider.
 - [ ] **P5-04** — So sánh kết quả kịch bản (delta card + chart 3 series) · *deps:* P5-03 · *done:* đổi kịch bản so sánh đúng.
@@ -84,7 +87,7 @@ sections mirror `tasks/backlog/phase-N.md` 1:1).
 - [ ] **P5-07** — i18n `whatif.*` đầy đủ + check-i18n sạch + LangToggle test · *deps:* P5-01…P5-06 · *done:* sạch.
 
 ## Phase 6 — Công trình & Vận hành (Tab 6)
-- [ ] **P6-01** — `worksService` (danh mục công trình từ `outlets.geojson` + synthetic) — viết mới hoàn toàn · *deps:* none · *done:* đủ 7 loại.
+- [ ] **P6-01** — `worksService` (danh mục công trình từ `network_nodes`/`swmm_outfalls` trên Supabase + synthetic cho phần chưa rõ loại — xem `tasks/BLOCKERS.md` REAL-DATA-01 về 44 outlet chưa xác định) — không mock JSON · *deps:* P0-19 · *done:* đủ 7 loại.
 - [ ] **P6-02** — Route `/works/:tab` + `PageHeader` 7 sub-tab + 7 stat-card · *deps:* P6-01, P0-13 · *done:* số liệu đúng.
 - [ ] **P6-03** — Bản đồ công trình (icon theo loại + legend) · *deps:* P6-02 · *done:* marker đúng.
 - [ ] **P6-04** — Danh sách & trạng thái vận hành (DataTable + tab lọc) · *deps:* P6-02 · *done:* lọc/sort ok.
@@ -94,7 +97,7 @@ sections mirror `tasks/backlog/phase-N.md` 1:1).
 - [ ] **P6-08** — i18n `works.*` đầy đủ + check-i18n sạch + LangToggle test · *deps:* P6-01…P6-07 · *done:* sạch.
 
 ## Phase 7 — Thiệt hại & Tác động (Tab 7)
-- [ ] **P7-01** — `impactService` (theo phường tĩnh + theo ngành + lịch sử) — viết mới hoàn toàn · *deps:* none · *done:* dữ liệu hợp lý.
+- [ ] **P7-01** — `impactService` (theo phường tĩnh + theo ngành + lịch sử) — đọc/thiết kế bảng trên Supabase, không mock JSON · *deps:* P0-19 · *done:* dữ liệu hợp lý.
 - [ ] **P7-02** — Route `/impact/:tab` + `PageHeader` 6 sub-tab + chọn kịch bản (liên kết `whatifService`) + 6 stat-card · *deps:* P7-01, P5-01, P0-13 · *done:* đổi kịch bản cập nhật số liệu.
 - [ ] **P7-03** — Bản đồ tác động tổng hợp · *deps:* P7-02 · *done:* đổi chỉ số cập nhật màu.
 - [ ] **P7-04** — Phân bố phường/xã + thiệt hại theo ngành · *deps:* P7-02 · *done:* đúng.
@@ -105,7 +108,7 @@ sections mirror `tasks/backlog/phase-N.md` 1:1).
 - [ ] **P7-09** — i18n `impact.*` đầy đủ + check-i18n sạch + LangToggle test · *deps:* P7-01…P7-08 · *done:* sạch.
 
 ## Phase 8 — Báo cáo (Tab 9)
-- [ ] **P8-01** — `reportService` (danh mục mock + hàm "tạo báo cáo") — viết mới hoàn toàn · *deps:* none · *done:* hoạt động đúng.
+- [ ] **P8-01** — `reportService` (danh mục báo cáo lưu trên Supabase + hàm "tạo báo cáo") — không mock JSON · *deps:* P0-19 · *done:* hoạt động đúng.
 - [ ] **P8-02** — Route `/reports/:tab` + `PageHeader` 6 sub-tab + 5 stat-card · *deps:* P8-01, P0-13 · *done:* đúng.
 - [ ] **P8-03** — Thống kê theo tháng + phân loại (donut) · *deps:* P8-02 · *done:* đúng.
 - [ ] **P8-04** — Báo cáo gần đây + mẫu báo cáo (nút tạo mock) · *deps:* P8-02 · *done:* tạo mock thêm dòng.
@@ -114,7 +117,7 @@ sections mirror `tasks/backlog/phase-N.md` 1:1).
 - [ ] **P8-07** — i18n `report.*` đầy đủ + check-i18n sạch + LangToggle test · *deps:* P8-01…P8-06 · *done:* sạch.
 
 ## Phase 9 — Quản trị hệ thống (Tab 12, chỉ Admin)
-- [ ] **P9-01** — `adminService` (Supabase `profiles` thật cho Người dùng + mock phần còn lại) — viết mới hoàn toàn · *deps:* none · *done:* query thật trả đúng.
+- [ ] **P9-01** — `adminService` (Supabase `profiles` thật cho Người dùng + bảng tự thiết kế cho phần còn lại — không mock JSON) · *deps:* P0-19 · *done:* query thật trả đúng.
 - [ ] **P9-02** — Route `/admin/:tab` (admin-only) + `PageHeader` 7 sub-tab + 6 stat-card · *deps:* P9-01, P0-13 · *done:* authority bị chặn.
 - [ ] **P9-03** — Trạng thái hệ thống (mock) + phiên đăng nhập hiện tại (Supabase thật) · *deps:* P9-02 · *done:* đúng.
 - [ ] **P9-04** — Nhật ký hệ thống (mock) + cấu hình hệ thống (mock, đổi state) · *deps:* P9-02 · *done:* đúng.

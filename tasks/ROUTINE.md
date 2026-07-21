@@ -43,9 +43,17 @@ repo. Follow these steps exactly.
   framework), bilingual VI/EN via `useT()`/`t()` — every new string gets a key
   in **both** `vi` and `en` blocks of `web/src/i18n/strings.ts` in the same
   edit.
-- Reuse existing modules before writing new ones — see the "port" list in the
-  approved plan (`map/`, `monitoring/`, `sim/`, `network/trace.ts`,
-  `state/store.ts`, `DataTable.tsx`, `ChartModal.tsx`, `StepControl.tsx`, etc.).
+- **Dữ liệu qua Supabase, không qua mock JSON tĩnh** (chính sách từ 2026-07-20,
+  xem `tasks/PROGRESS.md` P0-17/18/19): mọi service của phase mới đọc trực
+  tiếp từ Supabase qua `supabase-js` (`web/src/lib/supabaseClient.ts`), dùng
+  view `*_geojson` cho bảng có cột `geom` (PostgREST không tự serialize
+  `geometry`). Nếu phase cần bảng DB chưa có (forecast/whatif/works/impact/
+  report/admin chưa có bảng riêng) — tự thiết kế migration cho phase đó,
+  theo đúng kỷ luật đã áp dụng cho GIS/simulation: chỉ tạo cột/bảng cho dữ
+  liệu có nguồn thật xác nhận được; phần chưa có nguồn để `NULL`/comment rõ,
+  không đoán. `anon`/`authenticated` chỉ được `SELECT` — không cấp quyền ghi
+  cho client, mọi import dữ liệu chạy qua Management API/service_role
+  (xem `data-pipeline/import_static_data.py`/`import_dynamic_data.py`).
 - Any "control" UI (gate/pump ops, backup, config save) must change local mock
   state only, with a `DemoBadge`/note — never imply real device control.
 - Keep the change focused and cohesive.
