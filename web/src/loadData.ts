@@ -1,11 +1,11 @@
 import type { Feature, FeatureCollection } from "geojson";
 import { supabase } from "./lib/supabaseClient";
-import type { AppData, Topology } from "./types";
+import type { AppData, MapStyleConfig, Topology } from "./types";
 
-async function json<T>(url: string): Promise<T> {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`Failed to load ${url}: ${r.status}`);
-  return r.json();
+async function loadConfig(): Promise<MapStyleConfig> {
+  const { data, error } = await supabase.from("app_config").select("value").eq("key", "map-style").single();
+  if (error) throw new Error(`Failed to load app_config map-style: ${error.message}`);
+  return data.value as MapStyleConfig;
 }
 
 /** Rows from a `*_geojson` view always carry a `geom` GeoJSON column alongside plain properties. */
@@ -116,7 +116,7 @@ export async function loadAppData(): Promise<AppData> {
     config, manholes, outlets, links, catchment, boundary, provinceBoundary,
     rivers, floodZones, simulation, rainForecast, tide,
   ] = await Promise.all([
-    json<AppData["config"]>("/config/map-style.json"), // static display config, not business data - stays a file
+    loadConfig(),
     fetchGeojson("network_nodes_geojson", { node_type: "manhole" }),
     fetchGeojson("network_nodes_geojson", { node_type: "outlet" }),
     fetchGeojson("network_links_geojson"),

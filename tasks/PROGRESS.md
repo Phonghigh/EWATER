@@ -145,3 +145,13 @@ Format:
 - files: `web/supabase/migrations/20260720173000_add_select_policies.sql`
 - verify: lặp lại đúng request đã lỗi (`simulation_runs` với `Accept: application/vnd.pgrst.object+json`) — nay trả 200 kèm dữ liệu đúng; kiểm tra thêm `simulation_node_fill`, `network_nodes`, `rain_forecasts`, `rain_forecast_points`, `tide_scenarios`, `tide_levels` bằng anon key — tất cả 200.
 - follow-up: bài học ghi vào learn-log riêng nếu có task UI nào sau này đụng lại vấn đề RLS — nhắc rằng test qua view không đủ để xác nhận quyền trên bảng gốc.
+
+## 2026-07-21 — Chuyển nốt `map-style.json` vào Supabase (đóng hoàn toàn "không hard-code file tĩnh")
+- changed: sau khi rà lại P0-17/18/19, người dùng chỉ ra `loadData.ts` vẫn còn 1 chỗ `fetch("/config/map-style.json")` — config hiển thị (màu, ngưỡng `simThresholds`, basemap) vẫn là file tĩnh dù toàn bộ business data đã qua Supabase. Người dùng chọn chuyển luôn vào DB thay vì giữ tách biệt config/data.
+  - Migration mới `20260721090000_app_config.sql`: bảng `app_config(key text primary key, value jsonb, updated_at)`, RLS bật, chỉ SELECT cho `anon`/`authenticated` (đồng nhất chính sách với các bảng khác).
+  - Seed 1 row `key='map-style'` từ `shared/config/map-style.json` qua Management API (không có Docker/psql cục bộ, dùng lại cách làm ở P0-17..19).
+  - `loadData.ts`: thay hàm `json()`/fetch bằng `loadConfig()` — query `app_config` theo `key='map-style'`, trả `value` ép kiểu `MapStyleConfig`.
+  - `web/scripts/sync-data.mjs` không còn gì để sync (chỉ từng sync `shared/config/`) — xóa hẳn file + bỏ `predev`/`prebuild`/`sync-data` khỏi `web/package.json`. Xóa `web/public/config/` (build artifact cũ, đã gitignore).
+- files: `web/supabase/migrations/20260721090000_app_config.sql` (mới), `web/src/loadData.ts`, `web/package.json`, `web/scripts/sync-data.mjs` (xóa)
+- verify: `cd web && npx tsc --noEmit` clean; `npm run build` clean; `node scripts/check-i18n.mjs` OK (26 keys); test trực tiếp bằng `@supabase/supabase-js` với đúng anon key từ `.env.local`, gọi đúng query `loadConfig()` dùng — trả đủ 7 field gốc của `MapStyleConfig`.
+- follow-up: `shared/config/map-style.json` vẫn còn trên đĩa làm nguồn seed ban đầu (giống vai trò `shared/data/*` với `import_static_data.py`) — không xóa, chỉ không còn được app fetch trực tiếp nữa.

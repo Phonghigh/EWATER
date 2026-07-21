@@ -4,9 +4,6 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "sync-data": "node scripts/sync-data.mjs",
-    "predev": "node scripts/sync-data.mjs",
-    "prebuild": "node scripts/sync-data.mjs",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview"
