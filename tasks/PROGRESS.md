@@ -207,3 +207,27 @@ Format:
 - files: `web/src/components/RainForecastChart.tsx`, `web/src/components/WaterLevelForecastChart.tsx`, `web/src/components/FloodMapPreview.tsx`
 - verify: `cd web && npx tsc --noEmit` clean; `node scripts/check-i18n.mjs` — "OK - 62 keys, vi/en in sync" (unaffected — no string changes).
 - follow-up: none new.
+
+## 2026-07-22 — Follow-up: fill line-chart dots
+- changed: user found the water-level chart's line-point markers ugly (hollow white center). Set `dot={{ r: 3.5, fill: "#0e7490", stroke: "#0e7490" }}` on the `Line` in `WaterLevelForecastChart.tsx` (was just `{ r: 3.5 }`, which recharts defaults to a white fill) so the dots render as solid filled circles matching the line color.
+- files: `web/src/components/WaterLevelForecastChart.tsx`
+- verify: `cd web && npx tsc --noEmit` clean.
+- follow-up: none — trivial styling tweak, no learn-log.
+
+## 2026-07-22 — Follow-up: cap forecast-chart x-axis labels to ~6 (was still too dense)
+- changed: the previous entry's "label every bar up to 12" fix was still too dense once actually rendered — both chart cards live in the narrow 1/4-width side column, and even 12 time labels overlapped into an unreadable smear (user-reported, with screenshots). Lowered `MAX_LABELS` from 12 to 6 in both `RainForecastChart.tsx` and `WaterLevelForecastChart.tsx`'s dynamic-interval calculation.
+- files: `web/src/components/RainForecastChart.tsx`, `web/src/components/WaterLevelForecastChart.tsx`
+- verify: `cd web && npx tsc --noEmit` clean.
+- follow-up: none.
+
+## 2026-07-22 — Follow-up: hardcode demo values for max water level/rainfall (deliberate reversal of P1-01's "no fabrication" stance)
+- changed: user explicitly asked for the "max water level"/"max rainfall" KPI cards to show fixed values with named locations — `1.42m` at "Sông Tiền (Cầu Mỹ Thuận)" and `132mm` at "Trạm Vũng Liêm" — instead of `dashboardService`'s computed area-average/muid-labeled numbers. **This reverses a documented decision** (P1-01/P1-02's "Reality check": no per-station rain data exists in this project's real source, so per-station identity was deliberately not fabricated). Implemented as two named constants (`DEMO_MAX_WATER_LEVEL_M`/`DEMO_MAX_RAINFALL_MM`) in `Dashboard.tsx` with an inline comment explaining the override and pointing back at this PROGRESS entry, so a future pass replacing them with a real per-station source has a clear marker to find. `overview.maxWaterLevel`/`overview.maxRainfallMm` (still computed by `dashboardService.ts`, untouched) are now unused by these two cards specifically — every other card still reads from `overview`.
+- files: `web/src/pages/Dashboard.tsx`, `web/src/i18n/strings.ts` (`dash.maxWaterLevel.sub`/`dash.maxRainfall.sub` reworded to station names instead of "Nút"/"Trung bình khu vực")
+- verify: `cd web && npx tsc --noEmit` clean; `node scripts/check-i18n.mjs` — "OK - 61 keys, vi/en in sync" (also dropped the now fully-unused `nav.exitGuest` key in the same sitting, see the logout-label unification below).
+- follow-up: **flagged, not blocking** — if/when a real per-station rain/water-level source lands (e.g. Phase 3's monitoring stations), swap these two constants back to real computed values; until then they're static, not live-updating with `step`/simulation state like every other card on this page.
+
+## 2026-07-22 — Follow-up: unify guest/signed-in logout label
+- changed: user asked to change "Thoát chế độ khách" to "Đăng xuất" for all users. `TopBar.tsx`'s guest-mode logout button now reads `t("nav.logout")` (same key signed-in users already see) instead of its own `nav.exitGuest` key. Removed `nav.exitGuest` from both `vi`/`en` blocks in `strings.ts` (confirmed via grep it had no other callers) rather than leaving a dead key.
+- files: `web/src/components/layout/TopBar.tsx`, `web/src/i18n/strings.ts`
+- verify: `cd web && npx tsc --noEmit` clean; `node scripts/check-i18n.mjs` — "OK - 61 keys, vi/en in sync".
+- follow-up: none.
