@@ -20,6 +20,8 @@ a task pushes them further than before.
 | Verify bundle contents by a library's own literal strings | not-started | 2026-07-20 | Chunk size numbers alone couldn't prove recharts was/wasn't bundled (Supabase's sub-clients are legitimately large too) — grepping the output for recharts' `recharts-` CSS class prefix (survives minification as a runtime string) gave an unambiguous answer. See [P0-16 report](learn-log/P0-16-delete-unused-reverse-scaffold-policy.md) §4/§6. |
 | Surcharge ratio (>1.0) as flood depth above ground | not-started | 2026-07-20 | `simulation.nodeFill` is a 0..1.2 pipe-fill ratio, not capped at 1.0 — values past the `surcharge` threshold mean water backing up above ground, so a derived water-level formula (`invert + fill*(ground-invert)`) legitimately exceeding `groundLevel` is correct physical behavior, not a bug to clamp. See [P1-01 report](learn-log/P1-01-dashboard-service.md) §4. |
 | Deterministic mock vs. random mock for untyped source fields | not-started | 2026-07-20 | When a field genuinely doesn't exist in the source data (`outlets.geojson` has no pump/gate type), mock it as a fixed function of a stable input (muid parity) instead of `Math.random()`, so the same record doesn't flip category every render/reload. See [P1-01 report](learn-log/P1-01-dashboard-service.md) §4. |
+| Deriving "current time" from a step index | not-started | 2026-07-22 | The simulation is a fixed array of steps (`start` + `stepMinutes`×index), not wall-clock time — a page needing "now" must compute it from step data, not read `new Date()`. See [P1-02 report](learn-log/P1-02-dashboard-header-stats.md) §4. |
+| Real placeholder over inventing a missing feature | not-started | 2026-07-22 | Dashboard needs a "current step" but the shared playback control doesn't exist until P2-01 — used the last real step instead of building a throwaway step-picker that would duplicate/preempt that later task. See [P1-02 report](learn-log/P1-02-dashboard-header-stats.md) §4. |
 
 Status values: `not-started`, `shaky`, `understood`.
 
@@ -40,4 +42,6 @@ mindmap
       Verify bundle by literal strings
       Surcharge ratio as flood depth
       Deterministic vs random mock
+      Current time from step index
+      Real placeholder vs throwaway feature
 ```

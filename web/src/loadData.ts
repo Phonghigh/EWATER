@@ -2,10 +2,12 @@ import type { Feature, FeatureCollection } from "geojson";
 import { supabase } from "./lib/supabaseClient";
 import type { AppData, MapStyleConfig, Topology } from "./types";
 
+const MAP_STYLE_CONFIG_KEY = "map-style";
+
 async function loadConfig(): Promise<MapStyleConfig> {
-  const { data, error } = await supabase.from("app_config").select("value").eq("key", "map-style").single();
-  if (error) throw new Error(`Failed to load app_config map-style: ${error.message}`);
-  return data.value as MapStyleConfig;
+  const { data, error } = await supabase.from("app_config").select("value").eq("key", MAP_STYLE_CONFIG_KEY).single();
+  if (error) throw new Error(`Failed to load app_config ${MAP_STYLE_CONFIG_KEY}: ${error.message}`);
+  return data.value as unknown as MapStyleConfig;
 }
 
 /** Rows from a `*_geojson` view always carry a `geom` GeoJSON column alongside plain properties. */
@@ -19,10 +21,7 @@ function toFeatureCollection(rows: Record<string, unknown>[]): FeatureCollection
 }
 
 /**
- * `topology.json` never became its own table - it's fully derivable from
- * `network_links.from_node_muid`/`to_node_muid` (see migration
- * 20260720111710_network_gis_schema.sql's comment), so it's computed here
- * client-side instead of fetched.
+ * `topology.json` never became its own table - it's fully derivable from `network_links.from_node_muid`/`to_node_muid` (see migration 20260720111710_network_gis_schema.sql's comment), so it's computed here client-side instead of fetched.
  */
 function buildTopology(links: FeatureCollection): Topology {
   const downstream: Topology["downstream"] = {};
@@ -39,11 +38,27 @@ function buildTopology(links: FeatureCollection): Topology {
   return { downstream, upstream, linkNodes };
 }
 
-async function fetchGeojson(view: string, filter?: Record<string, string>): Promise<FeatureCollection> {
+type GeojsonView =
+  | "network_nodes_geojson"
+  | "network_links_geojson"
+  | "catchments_geojson"
+  | "drainage_boundary_geojson"
+  | "province_boundaries_geojson"
+  | "rivers_geojson"
+  | "flood_zones_geojson";
+
+async function fetchGeojson(view: GeojsonView, filter?: Record<string, string>): Promise<FeatureCollection> {
+  //1. Get query builder for the view
   let query = supabase.from(view).select("*");
+
+  //2. Apply filters if provided
   for (const [col, val] of Object.entries(filter ?? {})) query = query.eq(col, val);
+  
+  //3. Execute query and handle errors
   const { data, error } = await query;
   if (error) throw new Error(`Failed to load ${view}: ${error.message}`);
+  
+  //4. Convert rows to GeoJSON FeatureCollection and return
   return toFeatureCollection(data ?? []);
 }
 
@@ -100,7 +115,6 @@ async function loadTide(): Promise<AppData["tide"]> {
   if (levelsError) throw new Error(`Failed to load tide_levels: ${levelsError.message}`);
 
   return {
-    note: scenario.note,
     periodHours: scenario.period_hours,
     baselineM: scenario.baseline_m,
     amplitudeM: scenario.amplitude_m,

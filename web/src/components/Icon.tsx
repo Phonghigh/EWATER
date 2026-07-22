@@ -6,7 +6,8 @@ export type IconName =
   | "home" | "dashboard" | "monitor" | "map" | "report"
   | "gate" | "empty"
   | "cloud-rain" | "sliders" | "alert-triangle" | "settings"
-  | "bell" | "help-circle" | "user";
+  | "bell" | "help-circle" | "user"
+  | "route" | "droplet" | "pump";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: <path d="M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5" />,
@@ -87,6 +88,22 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <circle cx="12" cy="8" r="4" />
       <path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" />
+    </>
+  ),
+  route: (
+    <>
+      <circle cx="6" cy="19" r="2.5" />
+      <circle cx="18" cy="5" r="2.5" />
+      <path d="M6 16.5V13a4 4 0 0 1 4-4h4a4 4 0 0 0 4-4" />
+    </>
+  ),
+  droplet: (
+    <path d="M12 2.5s6.5 7.2 6.5 12A6.5 6.5 0 0 1 5.5 14.5c0-4.8 6.5-12 6.5-12Z" />
+  ),
+  pump: (
+    <>
+      <circle cx="12" cy="8" r="5" />
+      <path d="M12 13v8M8 21h8" />
     </>
   ),
 };

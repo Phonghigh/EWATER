@@ -39,7 +39,7 @@ sections mirror `tasks/backlog/phase-N.md` 1:1).
 
 ## Phase 1 — Dashboard (Tab 1)
 - [x] **P1-01** — `dashboardService`/aggregate (điểm ngập, tuyến ngập, mưa/mực nước max, cống/bơm) — đọc dữ liệu qua `AppData` (nay bắt nguồn từ Supabase qua P0-19, không còn mock JSON tĩnh); hàm tính toán trong `dashboardService.ts` giữ nguyên, không cần sửa lại · *deps:* P0-19 · *done:* hàm trả đúng type, dữ liệu đến từ Supabase thật (đã verify qua P0-17/18/19).
-- [ ] **P1-02** — Header + 6 stat-card · *deps:* P1-01, P0-13 · *done:* `/` hiển thị đúng số liệu thật.
+- [x] **P1-02** — Header + 6 stat-card · *deps:* P1-01, P0-13 · *done:* `/` hiển thị đúng số liệu thật.
 - [ ] **P1-03** — Card bản đồ ngập hiện tại + link `/gis-map` · *deps:* P1-02 · *done:* bản đồ render, điều hướng đúng.
 - [ ] **P1-04** — Card "Cảnh báo đang hoạt động" · *deps:* P1-02 · *done:* render từ mock.
 - [ ] **P1-05** — Card "Dự báo thời tiết" · *deps:* P1-02 · *done:* render theo mock.

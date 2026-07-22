@@ -7,7 +7,7 @@ export interface MapStyleConfig {
   bounds: [[number, number], [number, number]];
   basemaps: Record<string, { name: string; tiles: string; attribution: string }>;
   colors: Record<string, string>;
-  pipeDiameterBreaks: [number, number];
+  pipeDiameterBreaks: number[];
   simThresholds: { warn: number; surcharge: number };
 }
 

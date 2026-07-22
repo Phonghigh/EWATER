@@ -10,6 +10,7 @@ import RequireRole from "./components/RequireRole";
 import RequireGuestOrRole from "./components/RequireGuestOrRole";
 import AppShell from "./components/layout/AppShell";
 import ComingSoon from "./pages/ComingSoon";
+import Dashboard from "./pages/Dashboard";
 
 const Login = lazy(() => import("./pages/Login"));
 
@@ -44,7 +45,7 @@ function Shell() {
                 path="/"
                 element={
                   <RequireGuestOrRole>
-                    <ComingSoon title={t("nav.dashboard")} />
+                    <Dashboard />
                   </RequireGuestOrRole>
                 }
               />

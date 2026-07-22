@@ -42,6 +42,21 @@ export const STRINGS: Record<Lang, Dict> = {
     "login.error": "Email hoặc mật khẩu không đúng",
 
     "common.comingSoon": "Trang đang được xây dựng, sẽ ra mắt trong các cập nhật tiếp theo.",
+
+    "dash.heading": "Tổng quan tình hình ngập lụt đô thị Vĩnh Long",
+    "dash.updatedAt": "Cập nhật lúc",
+    "dash.floodPoints": "Điểm ngập hiện tại",
+    "dash.floodedRoutes": "Tuyến đường ngập",
+    "dash.maxRainfall": "Mưa lớn nhất (24h)",
+    "dash.maxRainfall.sub": "Trung bình khu vực",
+    "dash.maxWaterLevel": "Mực nước cao nhất",
+    "dash.maxWaterLevel.sub": "Nút",
+    "dash.activePumps": "Trạm bơm hoạt động",
+    "dash.activePumps.sub": "Trạm",
+    "dash.closedGates": "Cổng đang đóng",
+    "dash.closedGates.sub": "Cổng",
+    "dash.deltaMore": "so với 06:00",
+    "dash.deltaNone": "Không đổi so với 06:00",
   },
   en: {
     "app.loading": "Loading Vĩnh Long data…",
@@ -74,5 +89,20 @@ export const STRINGS: Record<Lang, Dict> = {
     "login.error": "Incorrect email or password",
 
     "common.comingSoon": "This page is under construction and will ship in an upcoming update.",
+
+    "dash.heading": "Vĩnh Long urban flood overview",
+    "dash.updatedAt": "Updated at",
+    "dash.floodPoints": "Current flood points",
+    "dash.floodedRoutes": "Flooded routes",
+    "dash.maxRainfall": "Peak rainfall (24h)",
+    "dash.maxRainfall.sub": "Area average",
+    "dash.maxWaterLevel": "Peak water level",
+    "dash.maxWaterLevel.sub": "Node",
+    "dash.activePumps": "Active pump stations",
+    "dash.activePumps.sub": "Stations",
+    "dash.closedGates": "Closed gates",
+    "dash.closedGates.sub": "Gates",
+    "dash.deltaMore": "vs. 06:00",
+    "dash.deltaNone": "No change vs. 06:00",
   },
 };

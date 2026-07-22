@@ -90,3 +90,65 @@ the two charts need, so `P1-02`..`P1-06` only have to render, not compute.
 learn-log-worthy UI concept, but the "derive from raw shared/data, mock only
 what's structurally undeliverable, document the mock inline" pattern is worth
 recording since it recurs in every remaining phase's `-01` task.
+
+---
+
+### P1-02 — Header + 6 stat-card
+
+**Objective.** First real page: `web/src/pages/Dashboard.tsx` replaces the
+`ComingSoon` placeholder at `/`. Renders the existing `PageHeader` (unchanged
+pattern — title `nav.dashboard`), a summary bar (heading + "last updated"
+time), and the 6 headline stat-cards from the mockup (`doc/template/Demo.pdf
+- Page 1 of 17.png` top strip): Điểm ngập hiện tại, Tuyến đường ngập, Mưa lớn
+nhất (24h), Mực nước cao nhất, Trạm bơm hoạt động, Cổng đang đóng.
+
+**Depends on.** P1-01, P0-13.
+
+**Touches.** `web/src/pages/Dashboard.tsx` (new), `web/src/App.tsx` (swap `/`
+route), `web/src/components/Icon.tsx` (+3 icons: `route`, `droplet`, `pump`),
+`web/src/i18n/strings.ts` (+`dash.*`), `web/src/styles.css` (+`.dash-*`
+stat-card grid).
+
+**Steps.**
+1. `getDashboardOverview(data, step)` from P1-01 needs a `step`. There is no
+   shared playback/step control yet (that's P2-01's job, `store.currentStep`
+   doesn't exist). Until then, Dashboard uses `data.simulation.steps - 1` (the
+   last available simulation step) as "current" — the most recent real data
+   point, not a fabricated one. Comment this inline as a placeholder to be
+   replaced once P2-01 introduces a shared step source.
+2. Card 1 "Điểm ngập hiện tại" — `floodPointCount`, sub-label shows
+   `floodPointDelta` as "▲/▼ N điểm so với 06:00" (or a neutral "không đổi"
+   at 0) — real delta from `dashboardService`, not the mock's fixed "6 điểm".
+3. Card 2 "Tuyến đường ngập" — `floodedRouteCount` / `floodedRouteDelta`, same
+   pattern.
+4. Card 3 "Mưa lớn nhất (24h)" — `maxRainfallMm`, one decimal, unit "mm".
+   Mock shows a fake per-station attribution ("Trạm Vũng Liêm"); source data
+   has no per-station rainfall (see phase-1.md intro + P1-01 notes) so this
+   card's sub-label instead says "trung bình khu vực" (area average) — no
+   invented station name.
+5. Card 4 "Mực nước cao nhất" — `maxWaterLevel.levelM` (2 decimals, "m").
+   Mock shows a fake location name ("Sông Tiền (Cầu Mỹ Thuận)"); real data
+   only has a manhole `muid`, no display name yet, so sub-label shows the
+   `muid` directly (e.g. "Nút {muid}") instead of inventing a river/bridge
+   name.
+6. Card 5 "Trạm bơm hoạt động" — `activePumpCount / totalPumpCount`.
+7. Card 6 "Cổng đang đóng" — `closedGateCount / totalGateCount`.
+8. Icons: reuse `alert-triangle` (card 1), `cloud-rain` (card 3); add `route`
+   (card 2), `droplet` (card 4), `pump` (card 5); reuse `gate` (card 6).
+9. `App.tsx`: replace the `/` route's `<ComingSoon title={t("nav.dashboard")}
+   />` with `<Dashboard />`.
+10. All new copy through `dash.*` i18n keys in both `vi`/`en` blocks.
+
+**Done when.**
+- `cd web && npx tsc --noEmit` clean.
+- `node scripts/check-i18n.mjs` clean (no vi/en mismatch).
+- `cd web && npm run build` clean.
+- Manual check via `npm run dev`: `/` (guest and signed-in) shows the 6 cards
+  with non-negative real numbers pulled from Supabase (not zeros/placeholders
+  except where a count is legitimately 0), `LangToggle` flips every card's
+  labels with nothing left in the other language.
+
+**Notes.** No map/charts/side-panels here — those are P1-03..P1-06. The
+`step = steps - 1` choice is the one build decision worth a learn-log entry:
+why "last step" and not a fixed demo step, and what changes once P2-01 adds
+real playback.
