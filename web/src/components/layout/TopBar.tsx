@@ -1,26 +1,38 @@
+import { useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useT } from "../../i18n/I18nContext";
 import Icon from "../Icon";
 import LangToggle from "../LangToggle";
+import { NAV_ITEMS } from "../../nav/navItems";
 
-/** Static mock weather chip — no live weather API wired (out of scope for
- *  this redesign, see tasks/backlog/phase-0.md P0-08). Real per-page weather
- *  content (Dashboard's hourly strip) is a separate, later concern. */
-function todayLabel(): string {
-  return new Date().toLocaleDateString("vi-VN", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric" });
+/** Resolves the current path to its nav label key, matched by first path
+ *  segment so sub-tab routes (e.g. `/monitoring/rain`) still map back to
+ *  their parent nav item (`/monitoring/overview`)'s title. Returns null for
+ *  paths with no nav entry (shouldn't happen inside AppShell, but keeps
+ *  this honest rather than silently falling back to a wrong label). */
+function resolvePageTitleKey(pathname: string): string | null {
+  if (pathname === "/") return "nav.dashboard";
+  const segment = "/" + pathname.split("/")[1];
+  const item = NAV_ITEMS.find((i) => i.to !== "/" && "/" + i.to.split("/")[1] === segment);
+  return item?.labelKey ?? null;
 }
 
+/** Date + weather moved out of the global top bar and into Dashboard's own
+ *  summary row (matches the reference mockup's layout, where that content
+ *  sits under the page title, not in the persistent shell chrome) — see
+ *  `pages/Dashboard.tsx`. The current page's title now lives here instead,
+ *  persistent across scroll instead of living in each page's own
+ *  `PageHeader` row (which left a bare, near-empty strip on pages like
+ *  Dashboard once other content moved around it). */
 export default function TopBar() {
   const t = useT();
+  const location = useLocation();
   const { profile, guestMode, signOut } = useAuth();
+  const titleKey = resolvePageTitleKey(location.pathname);
 
   return (
     <header className="topbar2">
-      <div className="topbar2-date">{todayLabel()}</div>
-      <div className="topbar2-weather">
-        <Icon name="cloud-rain" size={16} />
-        <span>26°C</span>
-      </div>
+      {titleKey && <h1 className="topbar2-title">{t(titleKey)}</h1>}
       <div className="topbar2-right">
         <button className="icon-btn" type="button" title={t("nav.brandTitle")}>
           <Icon name="bell" size={18} />

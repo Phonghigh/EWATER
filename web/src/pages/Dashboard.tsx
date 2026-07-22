@@ -1,10 +1,10 @@
-import PageHeader from "../components/layout/PageHeader";
 import Icon, { type IconName } from "../components/Icon";
 import FloodMapPreview from "../components/FloodMapPreview";
 import WeatherForecastCard from "../components/WeatherForecastCard";
-import ForecastChartsRow from "../components/ForecastChartsRow";
+import RainForecastChart from "../components/RainForecastChart";
+import WaterLevelForecastChart from "../components/WaterLevelForecastChart";
 import { useAppData } from "../context/AppDataContext";
-import { useT } from "../i18n/I18nContext";
+import { useI18n } from "../i18n/I18nContext";
 import { getDashboardOverview } from "../data/dashboardService";
 
 /** Time-of-day label for a simulation step (start + step * stepMinutes). */
@@ -15,8 +15,22 @@ function stepTimeLabel(start: string, stepMinutes: number, step: number): string
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-function StatCard({ icon, label, value, unit, sub }: {
+/** Today's real calendar date, localized to the active UI language — moved
+ *  here from the global TopBar (see TopBar.tsx) to match the reference
+ *  mockup's layout, where date/weather sits under the page title, not in
+ *  the persistent shell chrome. Still a static mock 26°C — no live weather
+ *  API wired (out of scope for this redesign, see tasks/backlog/phase-0.md
+ *  P0-08). */
+function todayLabel(lang: string): string {
+  const locale = lang === "en" ? "en-US" : "vi-VN";
+  return new Date().toLocaleDateString(locale, { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+type Tone = "red" | "orange" | "blue" | "cyan" | "teal" | "green";
+
+function StatCard({ icon, tone, label, value, unit, sub }: {
   icon: IconName;
+  tone: Tone;
   label: string;
   value: string;
   unit?: string;
@@ -24,7 +38,7 @@ function StatCard({ icon, label, value, unit, sub }: {
 }) {
   return (
     <div className="dash-card">
-      <div className="dash-card-icon"><Icon name={icon} size={22} /></div>
+      <div className={`dash-card-icon dash-card-icon--${tone}`}><Icon name={icon} size={22} /></div>
       <div className="dash-card-body">
         <div className="dash-card-label">{label}</div>
         <div className="dash-card-value">{value}{unit && <span className="dash-card-unit">{unit}</span>}</div>
@@ -35,7 +49,7 @@ function StatCard({ icon, label, value, unit, sub }: {
 }
 
 export default function Dashboard() {
-  const t = useT();
+  const { t, lang } = useI18n();
   const data = useAppData();
 
   // No shared playback/step control exists yet (that's P2-01's job). Until
@@ -53,28 +67,38 @@ export default function Dashboard() {
 
   return (
     <div className="content-page2">
-      <PageHeader title={t("nav.dashboard")} />
-
       <div className="dash-summary-bar">
-        <h1 className="dash-summary-heading">{t("dash.heading")}</h1>
-        <span className="dash-summary-updated">{t("dash.updatedAt")} {updatedAt}</span>
+        <h2 className="dash-summary-heading">{t("dash.heading")}</h2>
+        <div className="dash-summary-right">
+          <div className="dash-summary-date-weather">
+            <span className="dash-summary-date">{todayLabel(lang)}</span>
+            <span className="dash-summary-weather">
+              <Icon name="cloud-rain" size={16} />
+              <span>26°C</span>
+            </span>
+          </div>
+          <span className="dash-summary-updated">{t("dash.updatedAt")} {updatedAt}</span>
+        </div>
       </div>
 
       <div className="dash-card-grid">
         <StatCard
           icon="alert-triangle"
+          tone="red"
           label={t("dash.floodPoints")}
           value={String(overview.floodPointCount)}
           sub={deltaLabel(overview.floodPointDelta)}
         />
         <StatCard
           icon="route"
+          tone="orange"
           label={t("dash.floodedRoutes")}
           value={String(overview.floodedRouteCount)}
           sub={deltaLabel(overview.floodedRouteDelta)}
         />
         <StatCard
           icon="cloud-rain"
+          tone="blue"
           label={t("dash.maxRainfall")}
           value={overview.maxRainfallMm.toFixed(1)}
           unit="mm"
@@ -82,6 +106,7 @@ export default function Dashboard() {
         />
         <StatCard
           icon="droplet"
+          tone="cyan"
           label={t("dash.maxWaterLevel")}
           value={overview.maxWaterLevel.levelM.toFixed(2)}
           unit="m"
@@ -89,29 +114,34 @@ export default function Dashboard() {
         />
         <StatCard
           icon="pump"
+          tone="teal"
           label={t("dash.activePumps")}
           value={`${overview.pumpsAndGates.activePumpCount} / ${overview.pumpsAndGates.totalPumpCount}`}
           sub={t("dash.activePumps.sub")}
         />
         <StatCard
           icon="gate"
+          tone="green"
           label={t("dash.closedGates")}
           value={`${overview.pumpsAndGates.closedGateCount} / ${overview.pumpsAndGates.totalGateCount}`}
           sub={t("dash.closedGates.sub")}
         />
       </div>
 
-      <div className="dash-row-2col">
-        <FloodMapPreview data={data} step={step} />
-        <WeatherForecastCard rainForecast={data.rainForecast} />
+      {/* Map-dominant layout: the flood map gets 3/4 of the width (as large
+          as the layout can give it), the remaining 1/4 stacks the 3 smaller
+          panels — weather summary + the 2 forecast charts — instead of the
+          old 2-col-row-then-full-width-row layout. */}
+      <div className="dash-main-row">
+        <div className="dash-map-col">
+          <FloodMapPreview data={data} step={step} />
+        </div>
+        <div className="dash-side-col">
+          <WeatherForecastCard rainForecast={data.rainForecast} />
+          <RainForecastChart time={data.rainForecast.time} mm={data.rainForecast.precipitation} />
+          <WaterLevelForecastChart time={data.tide.time} levelM={data.tide.levelM} />
+        </div>
       </div>
-
-      <ForecastChartsRow
-        rainTime={data.rainForecast.time}
-        rainMm={data.rainForecast.precipitation}
-        tideTime={data.tide.time}
-        tideM={data.tide.levelM}
-      />
     </div>
   );
 }

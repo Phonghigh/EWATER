@@ -1,26 +1,8 @@
 import { NavLink } from "react-router-dom";
 import { useT } from "../../i18n/I18nContext";
 import { useAuth } from "../../context/AuthContext";
-import Icon, { type IconName } from "../Icon";
-
-interface NavItem {
-  to: string;
-  labelKey: string;
-  icon: IconName;
-  adminOnly?: boolean;
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { to: "/", labelKey: "nav.dashboard", icon: "dashboard" },
-  { to: "/gis-map", labelKey: "nav.gisMap", icon: "map" },
-  { to: "/monitoring/overview", labelKey: "nav.monitoring", icon: "monitor" },
-  { to: "/forecast/overview", labelKey: "nav.forecast", icon: "cloud-rain" },
-  { to: "/whatif", labelKey: "nav.whatif", icon: "sliders" },
-  { to: "/works/overview", labelKey: "nav.works", icon: "gate" },
-  { to: "/impact/overview", labelKey: "nav.impact", icon: "alert-triangle" },
-  { to: "/reports/overview", labelKey: "nav.reports", icon: "report" },
-  { to: "/admin/overview", labelKey: "nav.admin", icon: "settings", adminOnly: true },
-];
+import Icon from "../Icon";
+import { NAV_ITEMS } from "../../nav/navItems";
 
 /** Left sidebar: brand header + role-aware nav list. Always mounted (guests
  *  included). "Quản trị hệ thống" is hidden outright for non-admins (showing
@@ -39,7 +21,7 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
-        <Icon name="home" size={26} />
+        <img src="/img/Logo_tỉnh_Vĩnh_Long.webp" alt={t("nav.brandTitle")} className="sidebar-brand-logo" />
         <div className="sidebar-brand-text">
           <strong>{t("nav.brandTitle")}</strong>
           <span>{t("nav.brandSubtitle")}</span>
