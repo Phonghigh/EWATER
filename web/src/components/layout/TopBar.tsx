@@ -52,7 +52,7 @@ export default function TopBar() {
           <div className="topbar2-user">
             <span className="role-badge">{t("role.guest")}</span>
             {guestMode && (
-              <button className="logout-btn" onClick={() => signOut()}>{t("nav.exitGuest")}</button>
+              <button className="logout-btn" onClick={() => signOut()}>{t("nav.logout")}</button>
             )}
           </div>
         )}

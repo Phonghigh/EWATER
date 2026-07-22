@@ -28,7 +28,6 @@ export const STRINGS: Record<Lang, Dict> = {
     "nav.reports": "Báo cáo",
     "nav.admin": "Quản trị hệ thống",
     "nav.logout": "Đăng xuất",
-    "nav.exitGuest": "Thoát chế độ khách",
     "nav.guestLocked": "Cần đăng nhập để truy cập mục này",
 
     "role.guest": "Khách",
@@ -97,7 +96,6 @@ export const STRINGS: Record<Lang, Dict> = {
     "nav.reports": "Reports",
     "nav.admin": "System Administration",
     "nav.logout": "Logout",
-    "nav.exitGuest": "Exit guest mode",
     "nav.guestLocked": "Sign in required to access this",
 
     "role.guest": "Guest",
