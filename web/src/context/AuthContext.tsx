@@ -23,16 +23,37 @@ interface AuthValue {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
+  guestMode: boolean;
+  enterGuestMode: () => void;
   signIn: (email: string, password: string) => Promise<string | null>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthValue | null>(null);
 
+const GUEST_MODE_KEY = "ewater-guest-mode";
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  // "Guest mode" is an explicit choice (the Login page's "continue as
+  // guest" button), not the default for an unauthenticated visitor — see
+  // RequireGuestOrRole, which sends anyone without a session AND without
+  // this flag to /login first. Persisted per-tab (sessionStorage) so a
+  // page refresh doesn't bounce a guest back to the login screen.
+  const [guestMode, setGuestMode] = useState<boolean>(
+    () => typeof sessionStorage !== "undefined" && sessionStorage.getItem(GUEST_MODE_KEY) === "1"
+  );
+
+  function enterGuestMode() {
+    try {
+      sessionStorage.setItem(GUEST_MODE_KEY, "1");
+    } catch {
+      /* ignore */
+    }
+    setGuestMode(true);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -73,11 +94,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signOut(): Promise<void> {
+    try {
+      sessionStorage.removeItem(GUEST_MODE_KEY);
+    } catch {
+      /* ignore */
+    }
+    setGuestMode(false);
     await supabase.auth.signOut();
   }
 
   return (
-    <AuthContext.Provider value={{ session, profile, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ session, profile, loading, guestMode, enterGuestMode, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

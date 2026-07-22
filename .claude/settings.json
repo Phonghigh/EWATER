@@ -12,7 +12,16 @@
       "Bash(grep -v \"^$\")",
       "Bash(python3 -c ' *)",
       "Bash(PYTHONIOENCODING=utf-8 python3 -c ' *)",
-      "Bash(iconv -f utf-8 -t utf-8 /tmp/out1.txt)"
+      "Bash(iconv -f utf-8 -t utf-8 /tmp/out1.txt)",
+      "Bash(pkill -f vite)",
+      "Bash(file *)",
+      "Bash(mkdir -p web/public/img)",
+      "Bash(mv public/img/logoEwater.jpg public/img/background_Vinh_Long.jpg web/public/img/)",
+      "Bash(rmdir public/img)",
+      "Bash(node -e ' *)",
+      "Bash(python3 scripts/search.py \"secondary button color glass card government dashboard\" --domain style -n 6)",
+      "Bash(python3 scripts/search.py \"secondary button neutral teal government utility water\" --domain color -n 5)",
+      "Bash(grep -n \"P1-02\\\\`\\\\.\\\\.\\\\|P1-03\\\\.\\\\.P1-06\\\\|the two charts need\" tasks/backlog/phase-1.md)"
     ]
   },
   "hooks": {

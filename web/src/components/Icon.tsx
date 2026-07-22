@@ -7,7 +7,7 @@ export type IconName =
   | "gate" | "empty"
   | "cloud-rain" | "sliders" | "alert-triangle" | "settings"
   | "bell" | "help-circle" | "user"
-  | "route" | "droplet" | "pump";
+  | "route" | "droplet" | "pump" | "lock";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: <path d="M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5" />,
@@ -104,6 +104,12 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <circle cx="12" cy="8" r="5" />
       <path d="M12 13v8M8 21h8" />
+    </>
+  ),
+  lock: (
+    <>
+      <rect x="4" y="11" width="16" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
     </>
   ),
 };

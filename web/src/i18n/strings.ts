@@ -28,6 +28,8 @@ export const STRINGS: Record<Lang, Dict> = {
     "nav.reports": "Báo cáo",
     "nav.admin": "Quản trị hệ thống",
     "nav.logout": "Đăng xuất",
+    "nav.exitGuest": "Thoát chế độ khách",
+    "nav.guestLocked": "Cần đăng nhập để truy cập mục này",
 
     "role.guest": "Khách",
     "role.authority": "Cơ quan",
@@ -40,6 +42,8 @@ export const STRINGS: Record<Lang, Dict> = {
     "login.submit": "Đăng nhập",
     "login.submitting": "Đang đăng nhập…",
     "login.error": "Email hoặc mật khẩu không đúng",
+    "login.guest": "Đăng nhập với vai trò khách",
+    "login.developedBy": "Phát triển bởi",
 
     "common.comingSoon": "Trang đang được xây dựng, sẽ ra mắt trong các cập nhật tiếp theo.",
 
@@ -57,6 +61,15 @@ export const STRINGS: Record<Lang, Dict> = {
     "dash.closedGates.sub": "Cổng",
     "dash.deltaMore": "so với 06:00",
     "dash.deltaNone": "Không đổi so với 06:00",
+    "dash.currentFloodMap": "Bản đồ ngập hiện tại",
+    "dash.viewFullMap": "Xem chi tiết bản đồ →",
+    "dash.weatherForecast": "Dự báo thời tiết",
+    "dash.viewFullForecast": "Xem dự báo chi tiết →",
+    "dash.rainNone": "Không mưa",
+    "dash.rainLight": "Mưa nhỏ",
+    "dash.rainModerate": "Mưa vừa",
+    "dash.rainHeavy": "Mưa to",
+    "dash.rainyHours": "Số giờ có mưa trong 24h tới:",
   },
   en: {
     "app.loading": "Loading Vĩnh Long data…",
@@ -75,6 +88,8 @@ export const STRINGS: Record<Lang, Dict> = {
     "nav.reports": "Reports",
     "nav.admin": "System Administration",
     "nav.logout": "Logout",
+    "nav.exitGuest": "Exit guest mode",
+    "nav.guestLocked": "Sign in required to access this",
 
     "role.guest": "Guest",
     "role.authority": "Authority",
@@ -87,6 +102,8 @@ export const STRINGS: Record<Lang, Dict> = {
     "login.submit": "Sign in",
     "login.submitting": "Signing in…",
     "login.error": "Incorrect email or password",
+    "login.guest": "Continue as guest",
+    "login.developedBy": "Developed by",
 
     "common.comingSoon": "This page is under construction and will ship in an upcoming update.",
 
@@ -104,5 +121,14 @@ export const STRINGS: Record<Lang, Dict> = {
     "dash.closedGates.sub": "Gates",
     "dash.deltaMore": "vs. 06:00",
     "dash.deltaNone": "No change vs. 06:00",
+    "dash.currentFloodMap": "Current flood map",
+    "dash.viewFullMap": "View full map →",
+    "dash.weatherForecast": "Weather forecast",
+    "dash.viewFullForecast": "View full forecast →",
+    "dash.rainNone": "No rain",
+    "dash.rainLight": "Light rain",
+    "dash.rainModerate": "Moderate rain",
+    "dash.rainHeavy": "Heavy rain",
+    "dash.rainyHours": "Rainy hours in the next 24h:",
   },
 };

@@ -1,5 +1,7 @@
 import PageHeader from "../components/layout/PageHeader";
 import Icon, { type IconName } from "../components/Icon";
+import FloodMapPreview from "../components/FloodMapPreview";
+import WeatherForecastCard from "../components/WeatherForecastCard";
 import { useAppData } from "../context/AppDataContext";
 import { useT } from "../i18n/I18nContext";
 import { getDashboardOverview } from "../data/dashboardService";
@@ -96,6 +98,11 @@ export default function Dashboard() {
           value={`${overview.pumpsAndGates.closedGateCount} / ${overview.pumpsAndGates.totalGateCount}`}
           sub={t("dash.closedGates.sub")}
         />
+      </div>
+
+      <div className="dash-row-2col">
+        <FloodMapPreview data={data} step={step} />
+        <WeatherForecastCard rainForecast={data.rainForecast} />
       </div>
     </div>
   );

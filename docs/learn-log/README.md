@@ -38,6 +38,8 @@ Newest at the top. One row per task report.
 
 | Task | Report | Notes |
 |---|---|---|
+| P1-05 | [Weather forecast card](P1-05-weather-forecast-card.md) | Treating a static demo series as self-referential (no wall-clock alignment); replacing a fabricated probability with a real derived count |
+| P1-03 | [Flood map preview card](P1-03-flood-map-preview.md) | `interactive: false` as a deliberate scope boundary vs. P2-03's full map; deriving map paint from already-loaded `AppData`, not a new query |
 | P1-02 | [Header + 6 stat-card](P1-02-dashboard-header-stats.md) | Deriving "current time" from a step index; placeholder step until P2-01's playback lands; `t()` has no string interpolation |
 | P1-01 | [dashboardService aggregate](P1-01-dashboard-service.md) | Surcharge ratio (>1.0) as flood depth above ground, not a bug to clamp; deterministic vs. random mock for untyped source fields |
 | P0-16 | [Delete unused code, reverse pre-scaffold policy](P0-16-delete-unused-reverse-scaffold-policy.md) | YAGNI applied to your own recent scaffolding; verify bundle content by a library's own literal strings |

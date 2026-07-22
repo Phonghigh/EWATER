@@ -12,7 +12,7 @@ function todayLabel(): string {
 
 export default function TopBar() {
   const t = useT();
-  const { profile, signOut } = useAuth();
+  const { profile, guestMode, signOut } = useAuth();
 
   return (
     <header className="topbar2">
@@ -39,6 +39,9 @@ export default function TopBar() {
         ) : (
           <div className="topbar2-user">
             <span className="role-badge">{t("role.guest")}</span>
+            {guestMode && (
+              <button className="logout-btn" onClick={() => signOut()}>{t("nav.exitGuest")}</button>
+            )}
           </div>
         )}
       </div>

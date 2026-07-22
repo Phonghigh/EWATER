@@ -23,14 +23,17 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 /** Left sidebar: brand header + role-aware nav list. Always mounted (guests
- *  included) — a guest sees every non-admin item; clicking one they can't
- *  actually use just bounces them to /login via RequireAuth, same as any
- *  normal app's nav. Only "Quản trị hệ thống" is hidden outright, since
- *  showing then bouncing a non-admin there would be a confusing dead end. */
+ *  included). "Quản trị hệ thống" is hidden outright for non-admins (showing
+ *  then bouncing would be a confusing dead end). Every other item is staff-
+ *  only (authority/admin) — a guest (no `profile`) sees them as disabled,
+ *  non-clickable entries instead of a live link that just redirects to
+ *  /login on click, so the access boundary is visible before the click, not
+ *  after. */
 export default function Sidebar() {
   const t = useT();
   const { profile } = useAuth();
   const isAdmin = profile?.role === "admin";
+  const isStaff = !!profile;
   const items = NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin);
 
   return (
@@ -43,12 +46,24 @@ export default function Sidebar() {
         </div>
       </div>
       <nav className="sidebar-nav">
-        {items.map((item) => (
-          <NavLink key={item.to} to={item.to} end={item.to === "/"} className="sidebar-link">
-            <Icon name={item.icon} size={19} />
-            <span>{t(item.labelKey)}</span>
-          </NavLink>
-        ))}
+        {items.map((item) => {
+          const locked = item.to !== "/" && !isStaff;
+          if (locked) {
+            return (
+              <div key={item.to} className="sidebar-link disabled" title={t("nav.guestLocked")}>
+                <Icon name={item.icon} size={19} />
+                <span>{t(item.labelKey)}</span>
+                <Icon name="lock" size={14} className="sidebar-link-lock" />
+              </div>
+            );
+          }
+          return (
+            <NavLink key={item.to} to={item.to} end={item.to === "/"} className="sidebar-link">
+              <Icon name={item.icon} size={19} />
+              <span>{t(item.labelKey)}</span>
+            </NavLink>
+          );
+        })}
       </nav>
     </aside>
   );

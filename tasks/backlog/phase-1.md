@@ -1,9 +1,15 @@
 # Phase 1 — Dashboard (Tab 1)
 
 Mockup reference: `doc/template/Demo.pdf - Page 1 of 17.png` ("TAB 1. DASHBOARD -
-TỔNG QUAN"). Layout top→bottom: 6 stat-cards → (map card + cảnh báo/dự báo
-thời tiết panel) → (mưa chart + mực nước chart + khuyến nghị AI + tóm tắt ảnh
-hưởng).
+TỔNG QUAN"). Layout top→bottom: 6 stat-cards → (map card + dự báo thời tiết
+panel) → (chart "Dự báo mưa" + chart "Dự báo mực nước").
+
+**Update 2026-07-22 (thu gọn scope Dashboard):** người dùng quyết định bỏ 3
+khối khỏi Dashboard so với mockup gốc: card "Cảnh báo đang hoạt động" (P1-04,
+đã hủy), khối "Khuyến nghị của AI", và khối "Tóm tắt ảnh hưởng" (cả hai vốn
+nằm trong P1-06). Hai chart còn lại trong P1-06 đổi tên theo mockup gốc:
+"Diễn biến mưa" → **"Dự báo mưa"**, "Diễn biến mực nước" → **"Dự báo mực
+nước"**. Xem `tasks/INDEX.md` Phase 1 cho backlog cập nhật.
 
 **Update 2026-07-20 (P0-17/18/19):** `shared/data/*.json` is no longer what
 the running app reads — it's now only the seed source for
@@ -33,7 +39,8 @@ per-asset registry if one gets added to `shared/data/`.
 **Objective.** A pure data function that turns `AppData` + a simulation step
 index into the 6 headline dashboard numbers (flood points, flooded routes,
 max rainfall, max water level, pump/gate activity) plus the small time series
-the two charts need, so `P1-02`..`P1-06` only have to render, not compute.
+the two charts need, so `P1-02`, `P1-03`, `P1-05`, `P1-06` only have to
+render, not compute (P1-04 cancelled — see 2026-07-22 update above).
 
 **Depends on.** none.
 
@@ -148,7 +155,142 @@ stat-card grid).
   except where a count is legitimately 0), `LangToggle` flips every card's
   labels with nothing left in the other language.
 
-**Notes.** No map/charts/side-panels here — those are P1-03..P1-06. The
+**Notes.** No map/charts/side-panels here — those are P1-03, P1-05, P1-06
+(P1-04 cancelled). The
 `step = steps - 1` choice is the one build decision worth a learn-log entry:
 why "last step" and not a fixed demo step, and what changes once P2-01 adds
 real playback.
+
+---
+
+### P1-03 — Card bản đồ ngập hiện tại + link `/gis-map`
+
+**Objective.** A compact, non-interactive MapLibre preview on the Dashboard
+showing the current flood picture (flood zones + manholes colored by fill
+severity), with a button that navigates to `/gis-map` (still `ComingSoon`
+until Phase 2 lands — the link itself is what this task must get right, not
+the destination page).
+
+**Depends on.** P1-02.
+
+**Touches.** `web/src/components/FloodMapPreview.tsx` (new),
+`web/src/pages/Dashboard.tsx`, `web/src/i18n/strings.ts`, `web/src/styles.css`.
+
+**Steps.**
+1. `maplibre-gl` is already a dependency (kept through the P0-16 cleanup) but
+   unused since then — this is its first real use in the redesign. Import
+   `maplibre-gl/dist/maplibre-gl.css` once, in this component.
+2. `FloodMapPreview` takes `data: AppData` and `step: number` as props (no
+   new Supabase query — `AppData` already carries `manholes`, `floodZones`,
+   `rivers`, `boundary`, `config` client-side, from P0-19). Build the map in a
+   `useEffect` keyed on a ref div: raster basemap from
+   `config.basemaps[Object.keys(config.basemaps)[0]]` (no explicit "default"
+   basemap key in `MapStyleConfig`, so first entry — same assumption P2-03
+   will need to resolve for real, flagged there), centered on `config.center`
+   at `config.zoom`.
+3. **Non-interactive by design**: construct with `interactive: false`. This
+   is a preview thumbnail, not the real map — P2-03 ("dựng mới bằng MapLibre
+   GL... toolbar đo/vẽ, minimap") owns the full interactive experience from
+   scratch; this component must not grow toward duplicating that scope.
+4. Layers: `floodZones` as a fill layer (`config.colors.flood`, low opacity)
+   on a GeoJSON source built once; `rivers` as a thin line layer
+   (`config.colors.river`); manholes as a circle layer whose paint color is a
+   `match` expression driven by a `fillState` property this component
+   computes per-feature at the given `step` (`"ok"`/`"warn"`/`"surcharge"`
+   from `config.simThresholds`, colors `config.colors.simOk/simWarn/
+   simSurcharge`) — computed once via a cloned `FeatureCollection`, not a
+   live Supabase query (fill data is already in `data.simulation.nodeFill`
+   client-side).
+5. Card chrome: title (`dash.currentFloodMap`), the map div (fixed height,
+   e.g. 320px), and a button/link (`dash.viewFullMap`, "Xem chi tiết bản đồ
+   →") using React Router's `Link` to `/gis-map`.
+6. Dashboard.tsx: render `<FloodMapPreview data={data} step={step} />` below
+   the stat-card grid, reusing the same `step` P1-02 already computes
+   (`simulation.steps - 1` placeholder).
+7. Clean up the MapLibre instance (`map.remove()`) in the `useEffect`'s
+   cleanup function — required to avoid leaking WebGL contexts across
+   re-renders/navigation.
+
+**Done when.**
+- `cd web && npx tsc --noEmit` clean.
+- `node scripts/check-i18n.mjs` clean.
+- `cd web && npm run build` clean.
+- Manual check via `npm run dev`: `/` shows a rendered map tile with visible
+  manhole dots and flood-zone shading; clicking "Xem chi tiết bản đồ →"
+  navigates to `/gis-map` (which shows `ComingSoon` until Phase 2 — expected,
+  not a bug in this task).
+
+**Notes.** This is the first MapLibre usage since the P0-16 full-codebase
+deletion — worth a learn-log entry on why the map is deliberately
+non-interactive here (scope boundary with P2-03) and how the per-step
+`fillState` coloring is computed client-side from data already in `AppData`
+rather than a new query.
+
+---
+
+### P1-05 — Card "Dự báo thời tiết"
+
+**Objective.** A weather-forecast card using the real `data.rainForecast`
+series already in `AppData` (`rain_forecasts`/`rain_forecast_points` via
+P0-19) — an hourly rain strip + real cumulative rainfall windows — instead of
+the mockup's fabricated temperature-per-hour strip and invented "85% xác
+suất mưa lớn" figure, neither of which has a real data source anywhere in
+this project.
+
+**Depends on.** P1-02.
+
+**Touches.** `web/src/components/WeatherForecastCard.tsx` (new),
+`web/src/pages/Dashboard.tsx`, `web/src/i18n/strings.ts`, `web/src/styles.css`.
+
+**Reality check.** `RainForecast` (`web/src/types.ts`) has `time: string[]`
+(absolute ISO timestamps) + `precipitation: number[]` (mm) + `stepHours`, and
+nothing else — no temperature, no textual condition, no probability. The
+seed data is a static 72-hour demo snapshot generated 2026-07-10 (see
+`shared/data/rain-forecast.json`), so its timestamps don't line up with any
+live "now" — same situation as `dashboardService`'s simulation step (P1-02
+notes): there is no shared "current time" concept yet. Treat index `0`
+(`generatedAt`) as the forecast's own reference point and slice forward from
+there, exactly like `step = simulation.steps - 1` is P1-02/P1-03's stand-in
+for "current" until a real live-time source exists — don't try to align this
+array to wall-clock `now`, it structurally can't.
+
+**Steps.**
+1. `WeatherForecastCard` takes `rainForecast: RainForecast` as a prop.
+2. Hourly strip: slice `time`/`precipitation` indices `0..5` (6 hours).
+   Format each timestamp to `HH:mm`. Classify each value into an intensity
+   label via fixed thresholds (deterministic function of the real value, not
+   invented per P1-01's "deterministic vs random mock" pattern):
+   `0` → `dash.rainNone`, `<1` → `dash.rainLight`, `<5` → `dash.rainModerate`,
+   `>=5` → `dash.rainHeavy`. Reuse the existing `cloud-rain` icon — no new
+   per-condition icon set needed for this card.
+3. Cumulative windows: real sums of `precipitation[0..N-1]` for `N = 3, 6,
+   12, 24` (clamped to array length), rendered as "3h / 6h / 12h / 24h: X mm"
+   — this directly replaces the mockup's real rain-window row, which already
+   matched this shape.
+4. Real derived summary line replacing the mockup's fabricated probability:
+   count of hours with `precipitation > 0` in the first 24 entries, shown as
+   "N/24 giờ có mưa" — an honest, computed number instead of an invented
+   percentage.
+5. No temperature anywhere on this card — not a gap, a deliberate omission
+   (no real source exists; inventing per-hour temperatures would violate the
+   pattern every prior Phase-1 task has held to).
+6. Card footer link (`dash.viewFullForecast`, "Xem dự báo chi tiết →") to
+   `/forecast` (Phase 4, still `ComingSoon`).
+7. Wire into `Dashboard.tsx` next to/below `FloodMapPreview`, passing
+   `data.rainForecast`.
+
+**Done when.**
+- `cd web && npx tsc --noEmit` clean.
+- `node scripts/check-i18n.mjs` clean.
+- `cd web && npm run build` clean.
+- Manual check via `npm run dev`: `/` shows the hourly strip + 4 rain-window
+  totals + the real "N/24 giờ có mưa" line, all matching a manual sum over
+  `shared/data/rain-forecast.json`'s first entries; `LangToggle` flips every
+  label.
+
+**Notes.** The "mock is fine" latitude in the `INDEX.md` line's *done*
+criterion ("render theo mock") is used here only for the parts with no real
+source (no icon-per-condition art, no temperature) — the numeric content
+itself comes from real Supabase-backed data like every other Phase 1 card,
+consistent with the phase's running "derive from real data, document what's
+structurally unavailable" discipline (see P1-01/P1-02/P1-03 notes).

@@ -111,6 +111,8 @@ alongside it:
   where the user is actively driving, working through several consecutive
   eligible tasks is fine — but still update `INDEX.md`/`PROGRESS.md`/learn-log
   per task, not batched at the end.
+- **Teach every code change.** Product-code tasks aren't done until their learn-log
+  report is written (step 6) and committed with the code — the Stop hook enforces it.
 - Don't fake green. If verification fails, the task isn't done — block it.
 - Don't delete or rewrite work from earlier tasks unless this task says to.
 - Keep `INDEX.md` ordering intact; only change checkboxes or split lines.

@@ -40,11 +40,11 @@ sections mirror `tasks/backlog/phase-N.md` 1:1).
 ## Phase 1 — Dashboard (Tab 1)
 - [x] **P1-01** — `dashboardService`/aggregate (điểm ngập, tuyến ngập, mưa/mực nước max, cống/bơm) — đọc dữ liệu qua `AppData` (nay bắt nguồn từ Supabase qua P0-19, không còn mock JSON tĩnh); hàm tính toán trong `dashboardService.ts` giữ nguyên, không cần sửa lại · *deps:* P0-19 · *done:* hàm trả đúng type, dữ liệu đến từ Supabase thật (đã verify qua P0-17/18/19).
 - [x] **P1-02** — Header + 6 stat-card · *deps:* P1-01, P0-13 · *done:* `/` hiển thị đúng số liệu thật.
-- [ ] **P1-03** — Card bản đồ ngập hiện tại + link `/gis-map` · *deps:* P1-02 · *done:* bản đồ render, điều hướng đúng.
-- [ ] **P1-04** — Card "Cảnh báo đang hoạt động" · *deps:* P1-02 · *done:* render từ mock.
-- [ ] **P1-05** — Card "Dự báo thời tiết" · *deps:* P1-02 · *done:* render theo mock.
-- [ ] **P1-06** — 4 card dưới (mưa/mực nước chart, khuyến nghị AI, tóm tắt ảnh hưởng) · *deps:* P1-02 · *done:* chart + toggle hoạt động.
-- [ ] **P1-07** — i18n `dash.*` đầy đủ + check-i18n sạch + LangToggle test · *deps:* P1-02…P1-06 · *done:* sạch.
+- [x] **P1-03** — Card bản đồ ngập hiện tại + link `/gis-map` · *deps:* P1-02 · *done:* bản đồ render, điều hướng đúng.
+- [x] ~~**P1-04** — Card "Cảnh báo đang hoạt động"~~ **BỎ** — người dùng quyết định cắt khỏi Dashboard (2026-07-22), xem note trong `tasks/backlog/phase-1.md`.
+- [x] **P1-05** — Card "Dự báo thời tiết" · *deps:* P1-02 · *done:* render theo mock.
+- [ ] **P1-06** — 2 card chart dưới: "Dự báo mưa" + "Dự báo mực nước" (đổi tên từ "Diễn biến mưa"/"Diễn biến mực nước"; đã bỏ khối "Khuyến nghị của AI" và "Tóm tắt ảnh hưởng" khỏi Dashboard theo quyết định 2026-07-22) · *deps:* P1-02 · *done:* 2 chart + toggle khung giờ hoạt động.
+- [ ] **P1-07** — i18n `dash.*` đầy đủ + check-i18n sạch + LangToggle test · *deps:* P1-02, P1-03, P1-05, P1-06 · *done:* sạch.
 
 ## Phase 2 — Bản đồ GIS (Tab 2)
 - [ ] **P2-01** — Thanh trên: search + dải thời gian (dùng `store.currentStep`) + play/step/tốc độ · *deps:* P0-13 · *done:* playback đổi step đúng.
