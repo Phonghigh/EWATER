@@ -43,7 +43,7 @@ sections mirror `tasks/backlog/phase-N.md` 1:1).
 - [x] **P1-03** — Card bản đồ ngập hiện tại + link `/gis-map` · *deps:* P1-02 · *done:* bản đồ render, điều hướng đúng.
 - [x] ~~**P1-04** — Card "Cảnh báo đang hoạt động"~~ **BỎ** — người dùng quyết định cắt khỏi Dashboard (2026-07-22), xem note trong `tasks/backlog/phase-1.md`.
 - [x] **P1-05** — Card "Dự báo thời tiết" · *deps:* P1-02 · *done:* render theo mock.
-- [ ] **P1-06** — 2 card chart dưới: "Dự báo mưa" + "Dự báo mực nước" (đổi tên từ "Diễn biến mưa"/"Diễn biến mực nước"; đã bỏ khối "Khuyến nghị của AI" và "Tóm tắt ảnh hưởng" khỏi Dashboard theo quyết định 2026-07-22) · *deps:* P1-02 · *done:* 2 chart + toggle khung giờ hoạt động.
+- [x] **P1-06** — 2 card chart dưới: "Dự báo mưa" + "Dự báo mực nước" (đổi tên từ "Diễn biến mưa"/"Diễn biến mực nước"; đã bỏ khối "Khuyến nghị của AI" và "Tóm tắt ảnh hưởng" khỏi Dashboard theo quyết định 2026-07-22) · *deps:* P1-02 · *done:* 2 chart + toggle khung giờ hoạt động.
 - [ ] **P1-07** — i18n `dash.*` đầy đủ + check-i18n sạch + LangToggle test · *deps:* P1-02, P1-03, P1-05, P1-06 · *done:* sạch.
 
 ## Phase 2 — Bản đồ GIS (Tab 2)

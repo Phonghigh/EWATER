@@ -21,7 +21,8 @@
       "Bash(node -e ' *)",
       "Bash(python3 scripts/search.py \"secondary button color glass card government dashboard\" --domain style -n 6)",
       "Bash(python3 scripts/search.py \"secondary button neutral teal government utility water\" --domain color -n 5)",
-      "Bash(grep -n \"P1-02\\\\`\\\\.\\\\.\\\\|P1-03\\\\.\\\\.P1-06\\\\|the two charts need\" tasks/backlog/phase-1.md)"
+      "Bash(grep -n \"P1-02\\\\`\\\\.\\\\.\\\\|P1-03\\\\.\\\\.P1-06\\\\|the two charts need\" tasks/backlog/phase-1.md)",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/recharts/package.json'\\).version\\)\")"
     ]
   },
   "hooks": {

@@ -26,6 +26,8 @@ a task pushes them further than before.
 | Deriving map paint from already-loaded client state | not-started | 2026-07-22 | Manhole marker color by flood severity isn't a Supabase column — it's computed per step from `AppData.simulation.nodeFill` (already loaded by P0-19) via a cloned GeoJSON `FeatureCollection` + a MapLibre `match` paint expression, avoiding a redundant second query for data the page already has in memory. See [P1-03 report](learn-log/P1-03-flood-map-preview.md) §4. |
 | Static demo series treated as self-referential, not wall-clock-aligned | not-started | 2026-07-22 | `rain-forecast.json` is a fixed 72h snapshot from a specific generation date — its timestamps don't line up with real "now". Index 0 (`generatedAt`) is used as the series' own reference point instead of trying to align it to live time, same placeholder pattern as the simulation step. See [P1-05 report](learn-log/P1-05-weather-forecast-card.md) §4. |
 | Replacing a fabricated metric with a real derived one | not-started | 2026-07-22 | Instead of inventing a "% xác suất mưa lớn" figure with no data source, count real hours with `precipitation > 0` in the next 24h and show that instead — smaller number, but every digit traces to real data. See [P1-05 report](learn-log/P1-05-weather-forecast-card.md) §4. |
+| Reusing a "dead" dependency instead of adding a new one | not-started | 2026-07-22 | `recharts` was already in `package.json`, unused since P0-16's cleanup — checked existing tooling before reaching for a new charting library, same move as reactivating `maplibre-gl` in P1-03. See [P1-06 report](learn-log/P1-06-forecast-charts.md) §4. |
+| Documented-synthetic data treated as real for UI purposes | not-started | 2026-07-22 | `tide-demo.json`'s own `note` field says it's synthetic (no real gauge), but the chart still treats `tide.levelM` as real Supabase-row data — the distinction that matters is "real query vs. invented number," not "synthetic origin vs. real-world origin." See [P1-06 report](learn-log/P1-06-forecast-charts.md) §4. |
 
 Status values: `not-started`, `shaky`, `understood`.
 
@@ -52,4 +54,6 @@ mindmap
       Map paint from loaded client state
       Static series as self-referential
       Real derived metric vs fabricated one
+      Reuse dead dependency vs new one
+      Synthetic-but-real data for UI
 ```

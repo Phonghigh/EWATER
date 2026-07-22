@@ -294,3 +294,74 @@ source (no icon-per-condition art, no temperature) — the numeric content
 itself comes from real Supabase-backed data like every other Phase 1 card,
 consistent with the phase's running "derive from real data, document what's
 structurally unavailable" discipline (see P1-01/P1-02/P1-03 notes).
+
+---
+
+### P1-06 — 2 card chart dưới: "Dự báo mưa" + "Dự báo mực nước"
+
+**Objective.** Two chart cards below the map/weather row, each with an
+independent time-window toggle, replacing the mockup's "Diễn biến mưa"
+(historical, per-station bar comparison — no real per-station data exists,
+see phase intro) and "Diễn biến mực nước" with **forward-looking real
+forecast series**: `data.rainForecast` (rain) and `data.tide` (water level)
+— both real Supabase-backed data from P0-19, matching the 2026-07-22 rename
+decision in `tasks/INDEX.md`.
+
+**Depends on.** P1-02.
+
+**Touches.** `web/src/components/ForecastChartsRow.tsx` (new),
+`web/src/pages/Dashboard.tsx`, `web/src/i18n/strings.ts`, `web/src/styles.css`,
+`web/package.json` (no new dep — `recharts` was already present, unused
+since the P0-16 cleanup, same situation `maplibre-gl` was in for P1-03).
+
+**Reality check.** `data.tide` (`TideForecast`) is **synthetic demo data** —
+`shared/data/tide-demo.json` carries a `note` field saying so explicitly
+("DEMO DATA — synthetic semi-diurnal tide, not a real gauge reading, no tide
+station exists this far up the Mekong tributary system"). A pending
+migration (`20260721100000_drop_tide_scenarios_note.sql`, already staged in
+the repo before this task, not authored by it) drops that column from the
+DB because the app never reads/displays it — that decision is about the
+*column*, not about whether the UI may call this real data; treat `tide`
+numbers as real values from a real table, just synthetic in origin (same
+category as the rest of this project's simulation/rain data — documented
+demo content, not fabricated-on-the-fly numbers).
+
+Both `rainForecast` and `tide` are 72-hourly-point static snapshots (see
+P1-05's "Reality check" for why — same generation-date snapshot, no live
+wall-clock alignment). Window toggles must therefore be sized to what the
+data actually spans (`24H`/`48H`/`72H`), not the mockup's `1H`/`3H`/`6H`/`24H`
+(each window slices from index 0 forward, not a rolling "current" window —
+see P1-05's index-0-as-reference-point note, same logic applies here).
+
+**Steps.**
+1. Build one shared, generic chart-card component (`ForecastChartsRow.tsx`
+   exporting the row of 2 cards) rather than duplicating chart plumbing:
+   window-toggle state per card, `recharts` `ResponsiveContainer` +
+   `BarChart` (rain) / `LineChart` (tide), `CartesianGrid`, `XAxis` (hour
+   labels), `YAxis`, `Tooltip`.
+2. Rain card: `BarChart` over `rainForecast.precipitation`, values in mm,
+   window options `24H`/`48H`/`72H` slicing `time`/`precipitation` from
+   index 0 (same reference-point convention as P1-05).
+3. Water-level card: `LineChart` over `tide.levelM`, values in m, same
+   window options, sliced from `tide.time`/`tide.levelM`.
+4. Card titles from `dash.rainForecastChart` ("Dự báo mưa") and
+   `dash.waterLevelForecastChart` ("Dự báo mực nước") — i18n, both vi/en.
+5. Toggle buttons reuse the existing small-button visual language (similar
+   to `.page-subtab2` styling) rather than inventing a new control style.
+6. Wire into `Dashboard.tsx` below the `dash-row-2col` (map + weather) row.
+
+**Done when.**
+- `cd web && npx tsc --noEmit` clean.
+- `node scripts/check-i18n.mjs` clean.
+- `cd web && npm run build` clean.
+- Manual check via `npm run dev`: `/` shows both charts rendering real data
+  points (bars/line visibly non-flat, matching the known rainfall/tide
+  ranges — max rainfall 5.0mm, tide range ~0.98–1.42m across the 72h
+  series), toggling `24H`/`48H`/`72H` changes the visible range on both
+  charts independently, `LangToggle` flips both titles.
+
+**Notes.** First `recharts` usage since the P0-16 cleanup (same situation as
+`maplibre-gl` in P1-03) — worth a learn-log entry on reusing a "dead"
+dependency deliberately vs. adding a new one, and on treating synthetic-but-
+real-Supabase-row tide data as real data for UI purposes despite its
+documented synthetic origin.

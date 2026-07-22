@@ -70,6 +70,8 @@ export const STRINGS: Record<Lang, Dict> = {
     "dash.rainModerate": "Mưa vừa",
     "dash.rainHeavy": "Mưa to",
     "dash.rainyHours": "Số giờ có mưa trong 24h tới:",
+    "dash.rainForecastChart": "Dự báo mưa",
+    "dash.waterLevelForecastChart": "Dự báo mực nước",
   },
   en: {
     "app.loading": "Loading Vĩnh Long data…",
@@ -130,5 +132,7 @@ export const STRINGS: Record<Lang, Dict> = {
     "dash.rainModerate": "Moderate rain",
     "dash.rainHeavy": "Heavy rain",
     "dash.rainyHours": "Rainy hours in the next 24h:",
+    "dash.rainForecastChart": "Rain forecast",
+    "dash.waterLevelForecastChart": "Water level forecast",
   },
 };

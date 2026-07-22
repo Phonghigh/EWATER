@@ -38,6 +38,7 @@ Newest at the top. One row per task report.
 
 | Task | Report | Notes |
 |---|---|---|
+| P1-06 | [Forecast charts (rain + water level)](P1-06-forecast-charts.md) | Reusing a "dead" dependency (`recharts`) instead of adding a new one; treating documented-synthetic tide data as real for UI purposes |
 | P1-05 | [Weather forecast card](P1-05-weather-forecast-card.md) | Treating a static demo series as self-referential (no wall-clock alignment); replacing a fabricated probability with a real derived count |
 | P1-03 | [Flood map preview card](P1-03-flood-map-preview.md) | `interactive: false` as a deliberate scope boundary vs. P2-03's full map; deriving map paint from already-loaded `AppData`, not a new query |
 | P1-02 | [Header + 6 stat-card](P1-02-dashboard-header-stats.md) | Deriving "current time" from a step index; placeholder step until P2-01's playback lands; `t()` has no string interpolation |

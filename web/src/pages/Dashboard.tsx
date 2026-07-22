@@ -2,6 +2,7 @@ import PageHeader from "../components/layout/PageHeader";
 import Icon, { type IconName } from "../components/Icon";
 import FloodMapPreview from "../components/FloodMapPreview";
 import WeatherForecastCard from "../components/WeatherForecastCard";
+import ForecastChartsRow from "../components/ForecastChartsRow";
 import { useAppData } from "../context/AppDataContext";
 import { useT } from "../i18n/I18nContext";
 import { getDashboardOverview } from "../data/dashboardService";
@@ -104,6 +105,13 @@ export default function Dashboard() {
         <FloodMapPreview data={data} step={step} />
         <WeatherForecastCard rainForecast={data.rainForecast} />
       </div>
+
+      <ForecastChartsRow
+        rainTime={data.rainForecast.time}
+        rainMm={data.rainForecast.precipitation}
+        tideTime={data.tide.time}
+        tideM={data.tide.levelM}
+      />
     </div>
   );
 }

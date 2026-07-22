@@ -238,6 +238,20 @@ body {
   padding: 10px 16px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #475569;
 }
 
+.dash-chart-card {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+  overflow: hidden; box-shadow: 0 2px 8px rgba(15,42,67,.06);
+}
+.dash-chart-canvas { height: 220px; width: 100%; padding: 8px 12px 4px; }
+
+.dash-chart-toggle { display: flex; gap: 4px; }
+.dash-chart-toggle-btn {
+  border: 1px solid #cbd5e1; background: #fff; color: #334155; border-radius: 6px;
+  padding: 4px 9px; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.dash-chart-toggle-btn:hover { background: #eef4fa; }
+.dash-chart-toggle-btn.active { background: var(--accent-light); color: #fff; border-color: var(--accent-light); }
+
 @media (max-width: 900px) {
   .dash-row-2col { grid-template-columns: 1fr; }
 }
