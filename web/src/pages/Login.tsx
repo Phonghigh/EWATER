@@ -71,7 +71,9 @@ export default function Login() {
     <div className="login-page">
       <form className="login-card" onSubmit={handleSubmit}>
         <div className="login-brand">
-          <img className="login-logo" src="/img/logo_Ewater.svg" alt="EWater" />
+          <div className="login-logo-plate">
+            <img className="login-logo" src="/img/logo_Ewater.svg" alt="EWater" />
+          </div>
           <h1>{t("login.systemTitle")}</h1>
           <p className="login-tagline">{t("login.tagline")}</p>
         </div>
