@@ -365,3 +365,48 @@ see P1-05's index-0-as-reference-point note, same logic applies here).
 dependency deliberately vs. adding a new one, and on treating synthetic-but-
 real-Supabase-row tide data as real data for UI purposes despite its
 documented synthetic origin.
+
+---
+
+### P1-07 — i18n `dash.*` đầy đủ + check-i18n sạch + LangToggle test
+
+**Objective.** Close out Phase 1 with an audit pass, not new features: every
+`dash.*` string used across P1-02/P1-03/P1-05/P1-06 must exist in both `vi`
+and `en`, `check-i18n.mjs` must be clean, and no Dashboard component may
+have a hardcoded VI/EN string bypassing `useT()`/`t()`.
+
+**Depends on.** P1-02, P1-03, P1-05, P1-06 (all closed).
+
+**Touches.** Audit only — every prior Phase 1 task already added its `vi`/`en`
+pair in the same edit as the code using it (per `tasks/ROUTINE.md` step 4's
+"same edit" rule), so this task is expected to find nothing missing, not to
+add new strings.
+
+**Steps.**
+1. Grep `web/src/pages/Dashboard.tsx` + every `web/src/components/{FloodMapPreview,
+   WeatherForecastCard,ForecastChartsRow}.tsx` for any quoted string literal
+   that isn't a `t("...")` call, a CSS class name, a MapLibre/recharts
+   internal identifier (layer ids, `type`, `unit="mm"` — units aren't
+   translated app-wide, established since P1-02's stat-card `unit` prop),
+   or a code comment — confirms no VI/EN text is silently bypassing i18n.
+2. Diff the `vi`/`en` key sets of `strings.ts` programmatically (not just
+   `check-i18n.mjs`'s pass/fail) and confirm the `dash.*` subset is
+   identical between both languages.
+3. Run `node scripts/check-i18n.mjs` from repo root.
+4. Manual `LangToggle` check via `npm run dev`: toggle 🇻🇳/🇬🇧 on `/` and
+   confirm every dash.* label switches — headline stat cards, map card
+   title/link, weather card + hourly-strip intensity labels, both chart
+   titles.
+
+**Done when.**
+- `cd web && npx tsc --noEmit` clean.
+- `node scripts/check-i18n.mjs` clean, `vi`/`en` key sets identical (not
+  just same count).
+- `cd web && npm run build` clean.
+- No hardcoded VI/EN string found in any Dashboard component.
+
+**Notes.** No product code change expected — if the audit finds a real gap,
+fix it in this same task (still one atomic task, since it's the direct
+subject of P1-07), but do not add unrelated polish. This is the first
+"pure audit" task in the phase; the learn-log report can be short, scaled
+to the actual finding (or lack of one).

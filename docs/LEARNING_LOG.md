@@ -1,6 +1,6 @@
 # Learning Log — web redesign
 
-Current phase: Phase 1 — Dashboard (Tab 1) (see [tasks/INDEX.md](../tasks/INDEX.md)); Phase 0 complete
+Current phase: Phase 2 — Bản đồ GIS (Tab 2) (see [tasks/INDEX.md](../tasks/INDEX.md)); Phase 0 and Phase 1 complete
 
 Scoped to the **web redesign** initiative (`web/src` → Urban Flood Digital Twin
 sidebar UI). Concepts already covered by the pre-existing EWATER build (MapLibre
