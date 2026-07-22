@@ -54,7 +54,7 @@ body {
 .shell-main { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100%; }
 
 .sidebar {
-  flex: 0 0 240px; display: flex; flex-direction: column;
+  flex: 0 0 258px; display: flex; flex-direction: column;
   background: var(--navy); color: #fff; overflow-y: auto;
 }
 .sidebar-brand {
@@ -70,10 +70,14 @@ body {
 .sidebar-brand-text strong { font-size: 15px; letter-spacing: .5px; }
 .sidebar-brand-text span { font-size: 11px; color: #9fb8cf; }
 
-.sidebar-nav { display: flex; flex-direction: column; padding: 10px 8px; gap: 2px; }
+.sidebar-nav { display: flex; flex-direction: column; padding: 10px 8px; gap: 3px; }
+.sidebar-footer {
+  margin-top: auto; padding: 12px 16px; font-size: 11px; color: #7c93a8;
+  border-top: 1px solid rgba(255,255,255,.1);
+}
 .sidebar-link {
-  display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px;
-  color: #cfe0ef; text-decoration: none; font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 8px;
+  color: #cfe0ef; text-decoration: none; font-size: 15px; font-weight: 500;
 }
 .sidebar-link:hover { background: rgba(255,255,255,.08); color: #fff; }
 .sidebar-link.active { background: var(--accent-light); color: #fff; }
@@ -213,25 +217,35 @@ body {
 /* dashboard */
 .dash-summary-bar {
   display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap;
-  gap: 8px; margin-bottom: 14px;
+  gap: 8px; margin-bottom: 20px;
 }
 .dash-summary-heading { margin: 0; font-size: 16px; font-weight: 700; color: #1e293b; }
 .dash-summary-right { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
 .dash-summary-date-weather { display: flex; align-items: center; gap: 10px; }
-.dash-summary-date { font-size: 13px; color: #334155; font-weight: 500; }
-.dash-summary-weather { display: flex; align-items: center; gap: 4px; font-size: 13px; color: #475569; }
+.dash-summary-date { font-size: 16px; color: #1e293b; font-weight: 700; }
+.dash-summary-weather { display: flex; align-items: center; gap: 4px; font-size: 14px; color: #475569; }
 .dash-summary-updated { font-size: 12px; color: #64748b; }
 
 .dash-card-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px;
 }
 .dash-card {
   display: flex; align-items: flex-start; gap: 12px; background: #fff; border: 1px solid #e2e8f0;
-  border-radius: 10px; padding: 14px 16px;
+  border-radius: 10px; padding: 16px 18px;
   box-shadow: 0 2px 8px rgba(15,42,67,.06);
   transition: box-shadow .15s ease, transform .15s ease;
 }
 .dash-card:hover { box-shadow: 0 10px 24px -6px rgba(15,42,67,.18); transform: translateY(-2px); }
+/* Secondary KPIs (rain/pumps/gates — supporting context, not what a user
+   scans for first) are visually quieter than the primary ones (flood
+   points/routes/water level), per the government-GIS review: fewer things
+   competing for attention on first glance. */
+.dash-card--secondary { background: #f8fafc; box-shadow: none; }
+/* Card not backed by trustworthy data yet — greyed out, no hover affordance,
+   icon swapped for a lock in Dashboard.tsx. */
+.dash-card--disabled { background: #f8fafc; box-shadow: none; filter: grayscale(.5); opacity: .7; }
+.dash-card--disabled:hover { box-shadow: none; transform: none; }
+.dash-card-comingsoon { font-size: 13px; font-weight: 600; color: #94a3b8; margin-top: 2px; }
 .dash-card-icon {
   flex: 0 0 auto; width: 38px; height: 38px; border-radius: 8px; background: #eef4fa;
   color: var(--accent); display: flex; align-items: center; justify-content: center;
@@ -246,7 +260,9 @@ body {
 .dash-card-icon--green { background: #dcfce7; color: #16a34a; }
 .dash-card-body { min-width: 0; }
 .dash-card-label { font-size: 12px; color: #64748b; margin-bottom: 2px; }
-.dash-card-value { font-size: 22px; font-weight: 700; color: var(--navy); line-height: 1.2; }
+.dash-card-value { font-size: 28px; font-weight: 700; color: var(--navy); line-height: 1.2; }
+.dash-card-value--safe { color: #16a34a; }
+.dash-card-value--danger { color: #dc2626; }
 .dash-card-unit { font-size: 13px; font-weight: 500; margin-left: 3px; color: #64748b; }
 .dash-card-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
 
@@ -257,31 +273,56 @@ body {
    content height, instead of a fixed map height that can fall short of
    (or overshoot) whatever the 3 stacked side cards add up to. */
 .dash-main-row {
-  margin-top: 14px; display: grid; grid-template-columns: 3fr 1fr; gap: 14px;
+  margin-top: 20px; display: grid; grid-template-columns: 3fr 1fr; gap: 18px;
 }
 .dash-map-col { display: flex; flex-direction: column; min-height: 0; }
-.dash-side-col { display: flex; flex-direction: column; gap: 10px; }
+.dash-side-col { display: flex; flex-direction: column; gap: 14px; }
 
 .dash-map-card, .dash-weather-card, .dash-chart-card {
   background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
   overflow: hidden; box-shadow: 0 2px 8px rgba(15,42,67,.06);
 }
-.dash-map-card { flex: 1; display: flex; flex-direction: column; min-height: 560px; }
-.dash-map-card-head, .dash-weather-card-head {
+/* Map-first: no bordered header bar — the map canvas fills the entire card
+   and the title/link float over it as small elevated chips, so the map
+   itself keeps every pixel of the card instead of losing a header row's
+   worth of height to chrome. */
+.dash-map-card { position: relative; flex: 1; min-height: 560px; }
+.dash-map-card-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.dash-map-card-title-chip {
+  position: absolute; top: 14px; left: 14px; z-index: 1;
+  display: flex; align-items: baseline; gap: 6px;
+  background: rgba(255,255,255,.92); backdrop-filter: blur(4px);
+  border-radius: 8px; padding: 8px 14px;
+  box-shadow: 0 2px 10px rgba(15,42,67,.15);
+}
+.dash-map-card-title-chip h3 {
+  margin: 0; font-size: 13px; font-weight: 700; color: var(--navy);
+  text-transform: uppercase; letter-spacing: .3px;
+}
+.dash-map-card-title-time { font-size: 12px; color: #64748b; font-weight: 500; }
+.dash-map-card-link {
+  position: absolute; bottom: 14px; right: 14px; z-index: 1;
+  background: #fff; border-radius: 999px; padding: 9px 16px;
+  font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none;
+  box-shadow: 0 4px 14px rgba(15,42,67,.18);
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+.dash-map-card-link:hover { box-shadow: 0 8px 20px -2px rgba(15,42,67,.28); transform: translateY(-1px); }
+
+.dash-weather-card-head {
   display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;
   padding: 10px 14px; border-bottom: 1px solid #e2e8f0;
 }
-.dash-map-card-head h3, .dash-weather-card-head h3 { margin: 0; font-size: 14px; color: var(--navy); }
-.dash-map-card-link { font-size: 13px; color: var(--accent); text-decoration: none; font-weight: 500; }
-.dash-map-card-link:hover { text-decoration: underline; }
-.dash-map-card-canvas { flex: 1; min-height: 0; width: 100%; }
+.dash-weather-card-head h3 { margin: 0; font-size: 14px; color: var(--navy); }
+.dash-card-link-inline { font-size: 13px; color: var(--accent); text-decoration: none; font-weight: 500; }
+.dash-card-link-inline:hover { text-decoration: underline; }
 
 .dash-weather-strip {
-  display: flex; gap: 2px; padding: 10px 8px; overflow-x: auto;
+  display: flex; gap: 2px; padding: 8px 6px; overflow-x: auto;
 }
 .dash-weather-slot {
-  flex: 1 0 50px; display: flex; flex-direction: column; align-items: center; gap: 4px;
-  padding: 6px 2px; border-radius: 8px; color: #334155;
+  flex: 1 0 46px; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 4px 2px; border-radius: 8px; color: #334155;
 }
 .dash-weather-slot-time { font-size: 10.5px; font-weight: 700; color: #475569; }
 .dash-weather-slot-icon { color: #2563eb; }
@@ -300,7 +341,7 @@ body {
 .dash-weather-badge-label { color: #475569; font-weight: 500; }
 .dash-weather-badge-value { color: #dc2626; font-weight: 700; font-size: 12px; }
 
-.dash-chart-canvas { height: 160px; width: 100%; padding: 6px 8px 2px; }
+.dash-chart-canvas { height: 190px; width: 100%; padding: 6px 8px 2px; }
 
 .dash-chart-toggle { display: flex; gap: 3px; }
 .dash-chart-toggle-btn {

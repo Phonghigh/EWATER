@@ -28,21 +28,43 @@ function todayLabel(lang: string): string {
 
 type Tone = "red" | "orange" | "blue" | "cyan" | "teal" | "green";
 
-function StatCard({ icon, tone, label, value, unit, sub }: {
+function StatCard({ icon, tone, label, value, unit, sub, secondary, valueTone, disabled }: {
   icon: IconName;
   tone: Tone;
   label: string;
   value: string;
   unit?: string;
   sub: string;
+  /** De-emphasized styling for supporting KPIs (rain/pumps/gates) so the
+   *  primary ones (flood points/routes/water level) win the first glance —
+   *  government-GIS review: fewer things competing for attention. */
+  secondary?: boolean;
+  /** Color the number itself for count-based safety indicators (0 = safe,
+   *  >0 = danger) so the reading doesn't require parsing the sub-label. */
+  valueTone?: "safe" | "danger";
+  /** Card isn't backed by trustworthy data yet — show a locked "coming
+   *  soon" placeholder instead of `value`/`sub` rather than a number that
+   *  looks real but isn't (same "don't fabricate" stance as elsewhere in
+   *  this dashboard, e.g. dashboardService's documented placeholders). */
+  disabled?: boolean;
 }) {
   return (
-    <div className="dash-card">
-      <div className={`dash-card-icon dash-card-icon--${tone}`}><Icon name={icon} size={22} /></div>
+    <div className={`dash-card${secondary ? " dash-card--secondary" : ""}${disabled ? " dash-card--disabled" : ""}`}>
+      <div className={`dash-card-icon dash-card-icon--${tone}`}>
+        <Icon name={disabled ? "lock" : icon} size={22} />
+      </div>
       <div className="dash-card-body">
         <div className="dash-card-label">{label}</div>
-        <div className="dash-card-value">{value}{unit && <span className="dash-card-unit">{unit}</span>}</div>
-        <div className="dash-card-sub">{sub}</div>
+        {disabled ? (
+          <div className="dash-card-comingsoon">{sub}</div>
+        ) : (
+          <>
+            <div className={`dash-card-value${valueTone ? ` dash-card-value--${valueTone}` : ""}`}>
+              {value}{unit && <span className="dash-card-unit">{unit}</span>}
+            </div>
+            <div className="dash-card-sub">{sub}</div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -88,21 +110,15 @@ export default function Dashboard() {
           label={t("dash.floodPoints")}
           value={String(overview.floodPointCount)}
           sub={deltaLabel(overview.floodPointDelta)}
+          valueTone={overview.floodPointCount > 0 ? "danger" : "safe"}
         />
         <StatCard
           icon="route"
           tone="orange"
           label={t("dash.floodedRoutes")}
           value={String(overview.floodedRouteCount)}
-          sub={deltaLabel(overview.floodedRouteDelta)}
-        />
-        <StatCard
-          icon="cloud-rain"
-          tone="blue"
-          label={t("dash.maxRainfall")}
-          value={overview.maxRainfallMm.toFixed(1)}
-          unit="mm"
-          sub={t("dash.maxRainfall.sub")}
+          sub={t("dash.comingSoonShort")}
+          disabled
         />
         <StatCard
           icon="droplet"
@@ -113,11 +129,21 @@ export default function Dashboard() {
           sub={`${t("dash.maxWaterLevel.sub")} ${overview.maxWaterLevel.muid}`}
         />
         <StatCard
+          icon="cloud-rain"
+          tone="blue"
+          label={t("dash.maxRainfall")}
+          value={overview.maxRainfallMm.toFixed(1)}
+          unit="mm"
+          sub={t("dash.maxRainfall.sub")}
+          secondary
+        />
+        <StatCard
           icon="pump"
           tone="teal"
           label={t("dash.activePumps")}
           value={`${overview.pumpsAndGates.activePumpCount} / ${overview.pumpsAndGates.totalPumpCount}`}
           sub={t("dash.activePumps.sub")}
+          secondary
         />
         <StatCard
           icon="gate"
@@ -125,6 +151,7 @@ export default function Dashboard() {
           label={t("dash.closedGates")}
           value={`${overview.pumpsAndGates.closedGateCount} / ${overview.pumpsAndGates.totalGateCount}`}
           sub={t("dash.closedGates.sub")}
+          secondary
         />
       </div>
 
@@ -134,7 +161,7 @@ export default function Dashboard() {
           old 2-col-row-then-full-width-row layout. */}
       <div className="dash-main-row">
         <div className="dash-map-col">
-          <FloodMapPreview data={data} step={step} />
+          <FloodMapPreview data={data} step={step} updatedAt={updatedAt} />
         </div>
         <div className="dash-side-col">
           <WeatherForecastCard rainForecast={data.rainForecast} />

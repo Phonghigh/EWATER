@@ -19,7 +19,7 @@ function fillState(fill: number, thresholds: MapStyleConfig["simThresholds"]): F
  *  thumbnail, not the real map — the full interactive GIS map (toolbar,
  *  layers panel, minimap) is P2-03's scope, built from scratch there; this
  *  component must not grow toward duplicating it. */
-export default function FloodMapPreview({ data, step }: { data: AppData; step: number }) {
+export default function FloodMapPreview({ data, step, updatedAt }: { data: AppData; step: number; updatedAt: string }) {
   const t = useT();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -45,6 +45,11 @@ export default function FloodMapPreview({ data, step }: { data: AppData; step: n
       interactive: false,
       center: config.center,
       zoom: config.zoom,
+      // Default attribution control sits bottom-right, the same corner as
+      // our floating "view full map" chip — collides with it. Required
+      // attribution (OSM's ODbL license) can't be dropped, so it's moved to
+      // the opposite corner and collapsed to a compact "i" icon instead.
+      attributionControl: false,
       style: {
         version: 8,
         sources: {
@@ -53,6 +58,7 @@ export default function FloodMapPreview({ data, step }: { data: AppData; step: n
         layers: [{ id: "basemap", type: "raster", source: "basemap" }],
       },
     });
+    map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-left");
 
     map.on("load", () => {
       map.addSource("flood-zones", { type: "geojson", data: data.floodZones });
@@ -93,13 +99,21 @@ export default function FloodMapPreview({ data, step }: { data: AppData; step: n
     return () => map.remove();
   }, [data, step]);
 
+  // Map-first layout: no bordered header bar eating into the map's height —
+  // the title and the "view full map" link float directly over the
+  // full-bleed canvas instead, so the map itself gets as much of the card
+  // as possible (per the government-GIS review's "map should dominate"
+  // feedback, applied here — unlike the zoom/legend/layer controls, which
+  // stay out of scope for this preview card, see P1-03's `interactive:
+  // false` boundary note above).
   return (
     <div className="dash-map-card">
-      <div className="dash-map-card-head">
-        <h3>{t("dash.currentFloodMap")}</h3>
-        <Link to="/gis-map" className="dash-map-card-link">{t("dash.viewFullMap")}</Link>
-      </div>
       <div ref={containerRef} className="dash-map-card-canvas" />
+      <div className="dash-map-card-title-chip">
+        <h3>{t("dash.currentFloodMap")}</h3>
+        <span className="dash-map-card-title-time">({updatedAt})</span>
+      </div>
+      <Link to="/gis-map" className="dash-map-card-link">{t("dash.viewFullMap")}</Link>
     </div>
   );
 }

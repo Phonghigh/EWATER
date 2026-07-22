@@ -20,6 +20,10 @@ export default function WaterLevelForecastChart({ time, levelM }: { time: string
   const [windowH, setWindowH] = useState(24);
   const n = Math.min(windowH, time.length);
   const series = time.slice(0, n).map((iso, i) => ({ label: hourLabel(iso), value: levelM[i] }));
+  // Narrow 1/4-width side column — cap to ~6 evenly-spaced labels so they
+  // don't overlap into an unreadable smear (see RainForecastChart's same fix).
+  const MAX_LABELS = 6;
+  const tickInterval = n <= MAX_LABELS ? 0 : Math.ceil(n / MAX_LABELS) - 1;
 
   return (
     <div className="dash-chart-card">
@@ -42,10 +46,10 @@ export default function WaterLevelForecastChart({ time, levelM }: { time: string
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={series} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-            <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
-            <YAxis tick={{ fontSize: 10 }} unit="m" width={34} domain={["auto", "auto"]} />
+            <XAxis dataKey="label" tick={{ fontSize: 12 }} interval={tickInterval} />
+            <YAxis tick={{ fontSize: 12 }} unit="m" width={38} domain={["auto", "auto"]} />
             <Tooltip formatter={(v: number) => [`${v.toFixed(2)} m`, t("dash.waterLevelForecastChart")]} />
-            <Line type="monotone" dataKey="value" stroke="#0e7490" strokeWidth={2} dot={{ r: 2.5 }} />
+            <Line type="monotone" dataKey="value" stroke="#0e7490" strokeWidth={2.5} dot={{ r: 3.5, fill: "#0e7490", stroke: "#0e7490" }} />
           </LineChart>
         </ResponsiveContainer>
       </div>

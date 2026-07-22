@@ -33,7 +33,7 @@ export default function Sidebar() {
           if (locked) {
             return (
               <div key={item.to} className="sidebar-link disabled" title={t("nav.guestLocked")}>
-                <Icon name={item.icon} size={19} />
+                <Icon name={item.icon} size={22} />
                 <span>{t(item.labelKey)}</span>
                 <Icon name="lock" size={14} className="sidebar-link-lock" />
               </div>
@@ -47,6 +47,7 @@ export default function Sidebar() {
           );
         })}
       </nav>
+      <div className="sidebar-footer">{t("nav.copyright")}</div>
     </aside>
   );
 }

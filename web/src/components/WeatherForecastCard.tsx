@@ -46,7 +46,7 @@ export default function WeatherForecastCard({ rainForecast }: { rainForecast: Ra
     <div className="dash-weather-card">
       <div className="dash-weather-card-head">
         <h3>{t("dash.weatherForecast")}</h3>
-        <Link to="/forecast" className="dash-map-card-link">{t("dash.viewFullForecast")}</Link>
+        <Link to="/forecast" className="dash-card-link-inline">{t("dash.viewFullForecast")}</Link>
       </div>
 
       <div className="dash-weather-strip">

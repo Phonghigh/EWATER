@@ -38,6 +38,7 @@ Newest at the top. One row per task report.
 
 | Task | Report | Notes |
 |---|---|---|
+| Follow-up | [Login glass-card + Dashboard readability polish](FOLLOWUP-2026-07-22-login-dashboard-polish.md) | Absolute-sibling `z-index` stacking gotcha; `mix-blend-mode` breaks over non-flat backdrops — use an opaque backing shape instead |
 | P1-07 | [i18n audit (closes Phase 1)](P1-07-i18n-audit.md) | Pure audit, no code change — programmatic vi/en key-set diff instead of trusting `check-i18n.mjs`'s count alone |
 | P1-06 | [Forecast charts (rain + water level)](P1-06-forecast-charts.md) | Reusing a "dead" dependency (`recharts`) instead of adding a new one; treating documented-synthetic tide data as real for UI purposes |
 | P1-05 | [Weather forecast card](P1-05-weather-forecast-card.md) | Treating a static demo series as self-referential (no wall-clock alignment); replacing a fabricated probability with a real derived count |

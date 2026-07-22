@@ -28,6 +28,8 @@ a task pushes them further than before.
 | Replacing a fabricated metric with a real derived one | not-started | 2026-07-22 | Instead of inventing a "% xác suất mưa lớn" figure with no data source, count real hours with `precipitation > 0` in the next 24h and show that instead — smaller number, but every digit traces to real data. See [P1-05 report](learn-log/P1-05-weather-forecast-card.md) §4. |
 | Reusing a "dead" dependency instead of adding a new one | not-started | 2026-07-22 | `recharts` was already in `package.json`, unused since P0-16's cleanup — checked existing tooling before reaching for a new charting library, same move as reactivating `maplibre-gl` in P1-03. See [P1-06 report](learn-log/P1-06-forecast-charts.md) §4. |
 | Documented-synthetic data treated as real for UI purposes | not-started | 2026-07-22 | `tide-demo.json`'s own `note` field says it's synthetic (no real gauge), but the chart still treats `tide.levelM` as real Supabase-row data — the distinction that matters is "real query vs. invented number," not "synthetic origin vs. real-world origin." See [P1-06 report](learn-log/P1-06-forecast-charts.md) §4. |
+| Absolute-positioned sibling stacking without explicit `z-index` | not-started | 2026-07-22 | An abspos element paints above its non-positioned in-flow siblings by default — but adding `z-index` to *either* sibling overrides that default, so a fix aimed at one element (input caret) can silently hide an unrelated one (its icon) if the ordering isn't re-checked. See [Follow-up report](learn-log/FOLLOWUP-2026-07-22-login-dashboard-polish.md) §4. |
+| `mix-blend-mode` breaks over non-flat backdrops | not-started | 2026-07-22 | `multiply` composites against whatever's underneath, so a logo that looked fine over a flat page background looked dim/muddy over a translucent, blurred-photo glass card — replacing it with an opaque backing shape makes brightness independent of the backdrop. See [Follow-up report](learn-log/FOLLOWUP-2026-07-22-login-dashboard-polish.md) §4. |
 
 Status values: `not-started`, `shaky`, `understood`.
 
@@ -56,4 +58,6 @@ mindmap
       Real derived metric vs fabricated one
       Reuse dead dependency vs new one
       Synthetic-but-real data for UI
+      Abspos sibling z-index stacking
+      mix-blend-mode over non-flat backdrops
 ```

@@ -131,3 +131,4 @@ sections mirror `tasks/backlog/phase-N.md` 1:1).
 - [ ] **P10-02** — Test thủ công 3 cấp truy cập đúng ma trận route · *deps:* P10-01 · *done:* checklist pass.
 - [ ] **P10-03** — Cập nhật memory dự án (`ewater-vinh-long-demo.md`) · *deps:* P10-02 · *done:* memory phản ánh đúng kiến trúc/role mới.
 - [ ] **P10-04** — Rà `README.md`/`PLAN.md` gốc, đồng bộ với thực tế · *deps:* P10-02 · *done:* docs nhất quán.
+- [ ] **P10-05** — Accessibility toggle toàn hệ thống: cỡ chữ (A-/A/A+), Dark mode, High-contrast · *deps:* none · *done:* 3 preference áp dụng ngay lên mọi trang (không chỉ Dashboard), lưu lại qua lần reload (localStorage — quyết định lưu theo thiết bị hay theo `profiles` để sau khi có yêu cầu thật). Đề xuất từ review UX cho cán bộ 40–60+ tuổi (2026-07-22), xem `tasks/PROGRESS.md` cùng ngày — người dùng chủ động chọn "ghi backlog, chưa làm ngay" thay vì làm chen trong lượt sửa Dashboard.
