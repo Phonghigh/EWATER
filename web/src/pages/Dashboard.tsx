@@ -28,6 +28,15 @@ function todayLabel(lang: string): string {
 
 type Tone = "red" | "orange" | "blue" | "cyan" | "teal" | "green";
 
+// Temporary fixed display values for "max water level"/"max rainfall",
+// overriding `dashboardService`'s computed area-average/no-station-identity
+// numbers (see docs/learn-log/P1-01-dashboard-service.md — no per-station
+// rain data exists in this project's real source). Explicit user request
+// (2026-07-22) to show a specific station reading instead, ahead of a real
+// per-station data source landing — revisit once one does.
+const DEMO_MAX_WATER_LEVEL_M = 1.42;
+const DEMO_MAX_RAINFALL_MM = 132;
+
 function StatCard({ icon, tone, label, value, unit, sub, secondary, valueTone, disabled }: {
   icon: IconName;
   tone: Tone;
@@ -124,15 +133,15 @@ export default function Dashboard() {
           icon="droplet"
           tone="cyan"
           label={t("dash.maxWaterLevel")}
-          value={overview.maxWaterLevel.levelM.toFixed(2)}
+          value={DEMO_MAX_WATER_LEVEL_M.toFixed(2)}
           unit="m"
-          sub={`${t("dash.maxWaterLevel.sub")} ${overview.maxWaterLevel.muid}`}
+          sub={t("dash.maxWaterLevel.sub")}
         />
         <StatCard
           icon="cloud-rain"
           tone="blue"
           label={t("dash.maxRainfall")}
-          value={overview.maxRainfallMm.toFixed(1)}
+          value={String(DEMO_MAX_RAINFALL_MM)}
           unit="mm"
           sub={t("dash.maxRainfall.sub")}
           secondary
