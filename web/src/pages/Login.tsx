@@ -2,38 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useT } from "../i18n/I18nContext";
 import { useAuth } from "../context/AuthContext";
-
-function MailIcon() {
-  return (
-    <svg className="login-field-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="2" y="4" width="20" height="16" rx="3" />
-      <path d="m3 7 9 6 9-6" />
-    </svg>
-  );
-}
-
-function LockIcon() {
-  return (
-    <svg className="login-field-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="4" y="11" width="16" height="10" rx="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
-  );
-}
-
-function EyeIcon({ open }: { open: boolean }) {
-  return open ? (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  ) : (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a20.3 20.3 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a20.3 20.3 0 0 1-4.22 5.19M14.12 14.12a3 3 0 1 1-4.24-4.24" />
-      <path d="M1 1l22 22" />
-    </svg>
-  );
-}
+import Icon from "../components/Icon";
 
 export default function Login() {
   const t = useT();
@@ -78,7 +47,7 @@ export default function Login() {
           <p className="login-tagline">{t("login.tagline")}</p>
         </div>
         <label className="login-field">
-          <MailIcon />
+          <Icon name="mail" size={18} className="login-field-icon" />
           <input
             type="email"
             value={email}
@@ -90,7 +59,7 @@ export default function Login() {
           />
         </label>
         <label className="login-field">
-          <LockIcon />
+          <Icon name="lock" size={18} className="login-field-icon" />
           <input
             type={showPassword ? "text" : "password"}
             value={password}
@@ -106,7 +75,7 @@ export default function Login() {
             onClick={() => setShowPassword((v) => !v)}
             aria-label={showPassword ? t("login.hidePassword") : t("login.showPassword")}
           >
-            <EyeIcon open={showPassword} />
+            <Icon name={showPassword ? "eye-off" : "eye"} size={18} />
           </button>
         </label>
         {error && <p className="login-error">{error}</p>}

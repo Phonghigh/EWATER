@@ -38,6 +38,7 @@ Newest at the top. One row per task report.
 
 | Task | Report | Notes |
 |---|---|---|
+| Follow-up | [Material Symbols icon system + Inter font](FOLLOWUP-2026-07-22-icon-font-system.md) | Variable icon-fonts bundle every glyph (~4MB) regardless of usage — per-glyph SVG imports (`?raw`) are dramatically smaller for a small icon set; a clean build doesn't mean a reasonably-sized one |
 | Follow-up | [Login glass-card + Dashboard readability polish](FOLLOWUP-2026-07-22-login-dashboard-polish.md) | Absolute-sibling `z-index` stacking gotcha; `mix-blend-mode` breaks over non-flat backdrops — use an opaque backing shape instead |
 | P1-07 | [i18n audit (closes Phase 1)](P1-07-i18n-audit.md) | Pure audit, no code change — programmatic vi/en key-set diff instead of trusting `check-i18n.mjs`'s count alone |
 | P1-06 | [Forecast charts (rain + water level)](P1-06-forecast-charts.md) | Reusing a "dead" dependency (`recharts`) instead of adding a new one; treating documented-synthetic tide data as real for UI purposes |

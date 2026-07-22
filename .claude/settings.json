@@ -34,7 +34,8 @@
       "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless --disable-gpu --screenshot=\"C:\\\\Users\\\\22521\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--EWATER\\\\ede06959-8f64-45a3-ba8d-e7112cef8f93\\\\scratchpad\\\\login.png\" --window-size=1280,900 --hide-scrollbars \"http://localhost:5175/login\")",
       "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless --disable-gpu --virtual-time-budget=8000 --screenshot=\"C:\\\\Users\\\\22521\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--EWATER\\\\ede06959-8f64-45a3-ba8d-e7112cef8f93\\\\scratchpad\\\\login2.png\" --window-size=1280,900 --hide-scrollbars \"http://localhost:5175/login\")",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5175/)",
-      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless --disable-gpu --virtual-time-budget=8000 --screenshot=\"C:\\\\Users\\\\22521\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--EWATER\\\\ede06959-8f64-45a3-ba8d-e7112cef8f93\\\\scratchpad\\\\dash.png\" --window-size=1440,960 --hide-scrollbars \"http://localhost:5174/\")"
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless --disable-gpu --virtual-time-budget=8000 --screenshot=\"C:\\\\Users\\\\22521\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--EWATER\\\\ede06959-8f64-45a3-ba8d-e7112cef8f93\\\\scratchpad\\\\dash.png\" --window-size=1440,960 --hide-scrollbars \"http://localhost:5174/\")",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   },
   "hooks": {

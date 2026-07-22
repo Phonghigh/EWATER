@@ -30,6 +30,7 @@ a task pushes them further than before.
 | Documented-synthetic data treated as real for UI purposes | not-started | 2026-07-22 | `tide-demo.json`'s own `note` field says it's synthetic (no real gauge), but the chart still treats `tide.levelM` as real Supabase-row data — the distinction that matters is "real query vs. invented number," not "synthetic origin vs. real-world origin." See [P1-06 report](learn-log/P1-06-forecast-charts.md) §4. |
 | Absolute-positioned sibling stacking without explicit `z-index` | not-started | 2026-07-22 | An abspos element paints above its non-positioned in-flow siblings by default — but adding `z-index` to *either* sibling overrides that default, so a fix aimed at one element (input caret) can silently hide an unrelated one (its icon) if the ordering isn't re-checked. See [Follow-up report](learn-log/FOLLOWUP-2026-07-22-login-dashboard-polish.md) §4. |
 | `mix-blend-mode` breaks over non-flat backdrops | not-started | 2026-07-22 | `multiply` composites against whatever's underneath, so a logo that looked fine over a flat page background looked dim/muddy over a translucent, blurred-photo glass card — replacing it with an opaque backing shape makes brightness independent of the backdrop. See [Follow-up report](learn-log/FOLLOWUP-2026-07-22-login-dashboard-polish.md) §4. |
+| Variable icon-font vs. per-glyph SVG bundle size | not-started | 2026-07-22 | A ligature-based icon font (`material-symbols`) bundles every glyph in the set (~4MB) regardless of usage; per-glyph SVG imports (`@material-symbols/svg-400`, via Vite's `?raw`) only bundle what's actually imported — caught by reading `npm run build`'s asset sizes, not by any build failure. See [Follow-up report](learn-log/FOLLOWUP-2026-07-22-icon-font-system.md) §4/§6. |
 
 Status values: `not-started`, `shaky`, `understood`.
 
@@ -60,4 +61,5 @@ mindmap
       Synthetic-but-real data for UI
       Abspos sibling z-index stacking
       mix-blend-mode over non-flat backdrops
+      Variable icon-font vs per-glyph SVG size
 ```
