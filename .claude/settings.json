@@ -26,7 +26,13 @@
       "Bash(python3 scripts/search.py \"weather forecast hourly strip card spacing icon\" --domain ux -n 6)",
       "Bash(where chromium-cli *)",
       "Bash(where playwright *)",
-      "Bash(node -e \"console.log\\(require\\('./node_modules/react-router-dom/package.json'\\).version\\)\")"
+      "Bash(node -e \"console.log\\(require\\('./node_modules/react-router-dom/package.json'\\).version\\)\")",
+      "Read(//c/Program Files/Google/Chrome/Application/**)",
+      "Read(//c/Program Files \\\\\\(x86\\\\\\)/Microsoft/Edge/Application/**)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5179/login)",
+      "Bash(mkdir -p \"/c/Users/22521/AppData/Local/Temp/claude/d--EWATER/ede06959-8f64-45a3-ba8d-e7112cef8f93/scratchpad\")",
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless --disable-gpu --screenshot=\"C:\\\\Users\\\\22521\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--EWATER\\\\ede06959-8f64-45a3-ba8d-e7112cef8f93\\\\scratchpad\\\\login.png\" --window-size=1280,900 --hide-scrollbars \"http://localhost:5175/login\")",
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless --disable-gpu --virtual-time-budget=8000 --screenshot=\"C:\\\\Users\\\\22521\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--EWATER\\\\ede06959-8f64-45a3-ba8d-e7112cef8f93\\\\scratchpad\\\\login2.png\" --window-size=1280,900 --hide-scrollbars \"http://localhost:5175/login\")"
     ]
   },
   "hooks": {

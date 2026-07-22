@@ -45,7 +45,7 @@ export const STRINGS: Record<Lang, Dict> = {
     "login.submit": "Đăng nhập",
     "login.submitting": "Đang đăng nhập…",
     "login.error": "Email hoặc mật khẩu không đúng",
-    "login.guest": "Tiếp tục với vai trò khách",
+    "login.guest": "Tiếp tục với vai trò khách →",
     "login.developedBy": "Phát triển bởi",
 
     "common.comingSoon": "Trang đang được xây dựng, sẽ ra mắt trong các cập nhật tiếp theo.",
@@ -112,7 +112,7 @@ export const STRINGS: Record<Lang, Dict> = {
     "login.submit": "Sign in",
     "login.submitting": "Signing in…",
     "login.error": "Incorrect email or password",
-    "login.guest": "Continue as guest",
+    "login.guest": "Continue as guest →",
     "login.developedBy": "Developed by",
 
     "common.comingSoon": "This page is under construction and will ship in an upcoming update.",

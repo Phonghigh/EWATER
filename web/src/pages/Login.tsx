@@ -112,7 +112,7 @@ export default function Login() {
           {submitting ? t("login.submitting") : t("login.submit")}
         </button>
         <button type="button" className="login-guest-btn" onClick={handleGuest}>
-          {t("login.guest")} →
+          {t("login.guest")}
         </button>
         <p className="login-footer">
           {t("login.developedBy")}  EWater

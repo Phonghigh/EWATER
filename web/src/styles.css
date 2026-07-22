@@ -159,11 +159,13 @@ body {
   position: relative; display: flex; align-items: center;
 }
 .login-field-icon {
-  position: absolute; left: 14px; color: #33465c; pointer-events: none;
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: #33465c; pointer-events: none; z-index: 1;
 }
 .login-field input {
+  position: relative; z-index: 0;
   width: 100%; padding: 14px 14px 14px 42px; border: 1px solid rgba(255,255,255,.5); border-radius: 12px; outline: none; font-size: 15px;
-  background: rgba(255,255,255,.65); color: #0f2a43;
+  background: rgba(255,255,255,.65); color: #0f2a43; caret-color: #0f2a43;
   box-shadow: 0 2px 6px rgba(15,42,67,.1);
   transition: box-shadow .15s ease, transform .15s ease, background .15s ease, border-color .15s ease;
 }
@@ -174,7 +176,8 @@ body {
   box-shadow: 0 0 0 3px rgba(29,78,216,.25), 0 4px 14px rgba(29,78,216,.2); transform: translateY(-1px);
 }
 .login-field-toggle {
-  position: absolute; right: 6px; display: flex; align-items: center; justify-content: center;
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  display: flex; align-items: center; justify-content: center;
   width: 34px; height: 34px; border: none; background: none; border-radius: 8px;
   color: #33465c; cursor: pointer;
 }
