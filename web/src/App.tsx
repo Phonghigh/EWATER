@@ -12,6 +12,7 @@ import AppShell from "./components/layout/AppShell";
 import ComingSoon from "./pages/ComingSoon";
 import Dashboard from "./pages/Dashboard";
 import GisMap from "./pages/GisMap";
+import Monitoring from "./pages/Monitoring";
 
 const Login = lazy(() => import("./pages/Login"));
 
@@ -61,15 +62,16 @@ function Shell() {
                   }
                 />
 
-                <Route path="/monitoring" element={<Navigate to="/monitoring/overview" replace />} />
                 <Route
-                  path="/monitoring/:tab"
+                  path="/monitoring"
                   element={
                     <RequireRole roles={[...STAFF_ROLES]}>
-                      <ComingSoon title={t("nav.monitoring")} />
+                      <Monitoring />
                     </RequireRole>
                   }
                 />
+                {/* Single-tab page now (Phase 3 redesign): old 9-sub-tab links redirect in. */}
+                <Route path="/monitoring/:tab" element={<Navigate to="/monitoring" replace />} />
 
                 <Route path="/forecast" element={<Navigate to="/forecast/overview" replace />} />
                 <Route

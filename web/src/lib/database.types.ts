@@ -47,6 +47,69 @@ export type Database = {
         }
         Relationships: []
       }
+      culverts: {
+        Row: {
+          gate_series: number[]
+          geom: unknown
+          id: number
+          inside_series: number[]
+          name: string
+          river_series: number[]
+        }
+        Insert: {
+          gate_series: number[]
+          geom: unknown
+          id?: never
+          inside_series: number[]
+          name: string
+          river_series: number[]
+        }
+        Update: {
+          gate_series?: number[]
+          geom?: unknown
+          id?: never
+          inside_series?: number[]
+          name?: string
+          river_series?: number[]
+        }
+        Relationships: []
+      }
+      rain_stations: {
+        Row: {
+          battery_pct: number | null
+          code: string
+          elevation_m: number | null
+          geom: unknown
+          id: number
+          name: string
+          rain_10min: number[]
+          signal: string | null
+          status: string
+        }
+        Insert: {
+          battery_pct?: number | null
+          code: string
+          elevation_m?: number | null
+          geom: unknown
+          id?: never
+          name: string
+          rain_10min: number[]
+          signal?: string | null
+          status?: string
+        }
+        Update: {
+          battery_pct?: number | null
+          code?: string
+          elevation_m?: number | null
+          geom?: unknown
+          id?: never
+          name?: string
+          rain_10min?: number[]
+          signal?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       drainage_boundary: {
         Row: {
           geom: unknown
@@ -781,6 +844,69 @@ export type Database = {
           geom?: never
           id?: number | null
           name?: string | null
+        }
+        Relationships: []
+      }
+      culverts_geojson: {
+        Row: {
+          gate_series: number[] | null
+          geom: Json | null
+          id: number | null
+          inside_series: number[] | null
+          name: string | null
+          river_series: number[] | null
+        }
+        Insert: {
+          gate_series?: number[] | null
+          geom?: never
+          id?: number | null
+          inside_series?: number[] | null
+          name?: string | null
+          river_series?: number[] | null
+        }
+        Update: {
+          gate_series?: number[] | null
+          geom?: never
+          id?: number | null
+          inside_series?: number[] | null
+          name?: string | null
+          river_series?: number[] | null
+        }
+        Relationships: []
+      }
+      rain_stations_geojson: {
+        Row: {
+          battery_pct: number | null
+          code: string | null
+          elevation_m: number | null
+          geom: Json | null
+          id: number | null
+          name: string | null
+          rain_10min: number[] | null
+          signal: string | null
+          status: string | null
+        }
+        Insert: {
+          battery_pct?: number | null
+          code?: string | null
+          elevation_m?: number | null
+          geom?: never
+          id?: number | null
+          name?: string | null
+          rain_10min?: number[] | null
+          signal?: string | null
+          status?: string | null
+        }
+        Update: {
+          battery_pct?: number | null
+          code?: string | null
+          elevation_m?: number | null
+          geom?: never
+          id?: number | null
+          name?: string | null
+          rain_10min?: number[] | null
+          signal?: string | null
+          status?: string | null
         }
         Relationships: []
       }

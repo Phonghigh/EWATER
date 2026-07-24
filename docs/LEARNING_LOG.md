@@ -284,3 +284,22 @@ mindmap
   `<datalist>` search groundwork.
 - **Phase 2 (Bản đồ GIS) now 20/20 tasks done** (P2-01..P2-20). See
   [P2-08..P2-20 report](learn-log/P2-08-P2-20-ux-redesign-cognitive-load.md).
+- Covered: **Phase 3 (Quan trắc thời gian thực)** — user revised the spec to
+  a single monitoring page (5 component groups) and confirmed, when told the
+  per-station data didn't exist in Supabase, to **seed synthetic data into the
+  DB** rather than derive it in the frontend. Entered plan mode, ran 3 Explore
+  agents (routing / data layer / charts+i18n+map), surfaced the data-gap as an
+  `AskUserQuestion` decision, then implemented end-to-end in one pass: a new
+  migration (`rain_stations`/`culverts` with `numeric[]` 10-min series mirroring
+  `simulation_node_fill`, `*_geojson` views, RLS SELECT + REVOKE), a seeded
+  generator + importer, hand-extended `database.types.ts`, a pure-derivation
+  `monitoringService.ts` (wall-clock→10-min-step anchoring, wrap-around window
+  sums, top-10, hourly distribution, culvert rows), and 6 new components
+  (MapLibre DOM-marker station map, sortable rain table, culvert table, a
+  multi-series rain-trend line chart with 10p/giờ/ngày toggle + ≤5-station
+  picker, top-10 horizontal bar, grouped hourly-distribution bar). Loaders
+  degrade to empty (not throw) when the seed isn't applied, so the rest of the
+  app keeps working. tsc/build/check-i18n all clean; live DB seed + visual QA
+  owed to the user (needs their Supabase creds, no headless browser here).
+  **Phase 3 code now 9/9 tasks done** (P3-D1/D2, P3-01..P3-07). See
+  [P3 report](learn-log/P3-monitoring-single-tab.md).

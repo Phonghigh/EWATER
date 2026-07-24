@@ -14,7 +14,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { to: "/", labelKey: "nav.dashboard", icon: "dashboard" },
   { to: "/gis-map", labelKey: "nav.gisMap", icon: "map" },
-  { to: "/monitoring/overview", labelKey: "nav.monitoring", icon: "monitor" },
+  { to: "/monitoring", labelKey: "nav.monitoring", icon: "monitor" },
   { to: "/forecast/overview", labelKey: "nav.forecast", icon: "cloud-rain" },
   // { to: "/whatif", labelKey: "nav.whatif", icon: "sliders" }, remove this tab
   { to: "/works/overview", labelKey: "nav.works", icon: "gate" },

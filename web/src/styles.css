@@ -705,3 +705,103 @@ body {
   .sidebar, .topbar2 { display: none !important; }
   .page-root2 { overflow: visible; background: #fff; }
 }
+
+/* ==================================================================
+   Phase 3 — Quan trắc thời gian thực (monitoring, single tab)
+   ================================================================== */
+.mon-updated { font-size: 12px; color: #64748b; }
+.mon-updated strong { color: var(--navy); font-variant-numeric: tabular-nums; }
+
+/* Top row: bản đồ trạm (rộng) + cột phải xếp bảng mưa & bảng cống. */
+.mon-row-top {
+  display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; align-items: start;
+}
+.mon-side-stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+/* Hàng 3 biểu đồ: diễn biến (rộng hơn) + top10 + phân bố. */
+.mon-row-charts {
+  margin-top: 16px; display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 16px;
+}
+.mon-panel { display: flex; flex-direction: column; }
+.mon-chart-card { display: flex; flex-direction: column; }
+.mon-chart-canvas { height: 210px; width: 100%; padding: 6px 8px 2px; }
+.mon-chart-canvas--tall { height: 260px; }
+
+/* --- Tables --- */
+.mon-table-wrap { overflow: auto; max-height: 340px; }
+.mon-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.mon-table thead th {
+  position: sticky; top: 0; z-index: 1; background: #f8fafc; color: #475569;
+  font-weight: 600; text-align: left; padding: 8px 10px; border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+.mon-table td { padding: 7px 10px; border-bottom: 1px solid #eef2f7; color: #334155; }
+.mon-table tbody tr:hover { background: #f8fafc; }
+.mon-num { text-align: right; font-variant-numeric: tabular-nums; }
+.mon-num--strong { font-weight: 700; color: var(--navy); }
+.mon-th-btn {
+  background: none; border: none; padding: 0; margin: 0; font: inherit; color: inherit;
+  font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;
+}
+.mon-th-btn:hover { color: var(--accent); }
+
+/* --- Badges (status trạm / cửa cống): icon+text, không chỉ dựa vào màu --- */
+.mon-badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.mon-badge--ok { background: #dcfce7; color: #15803d; }
+.mon-badge--off { background: #f1f5f9; color: #64748b; }
+.mon-badge--closed { background: #fee2e2; color: #b91c1c; }
+
+/* --- Trend chart station picker --- */
+.mon-trend-picker {
+  display: flex; flex-wrap: wrap; gap: 5px; align-items: center;
+  padding: 8px 12px; border-bottom: 1px solid #eef2f7;
+}
+.mon-trend-picker-hint { font-size: 11px; color: #94a3b8; margin-right: 4px; }
+.mon-chip {
+  border: 1px solid #cbd5e1; background: #fff; color: #475569; border-radius: 999px;
+  padding: 3px 9px; font-size: 11px; font-weight: 600; cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.mon-chip:hover:not(:disabled) { background: #eef4fa; }
+.mon-chip.active { background: var(--accent-light); color: #fff; border-color: var(--accent-light); }
+.mon-chip:disabled { opacity: .45; cursor: not-allowed; }
+
+/* --- Station map --- */
+.mon-map-card { position: relative; height: 480px; border-top: 1px solid #eef2f7; }
+.mon-map-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mon-map-toolbar { position: absolute; top: 12px; right: 12px; z-index: 2; }
+.mon-map-layer {
+  display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.94);
+  border-radius: 8px; padding: 5px 9px; font-size: 12px; color: #475569; font-weight: 600;
+  box-shadow: 0 2px 10px rgba(15,42,67,.15);
+}
+.mon-map-layer select {
+  border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 6px; font-size: 12px; color: #334155;
+  background: #fff; cursor: pointer;
+}
+.mon-map-legend {
+  position: absolute; bottom: 12px; left: 12px; z-index: 2;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; max-width: 320px;
+  background: rgba(255,255,255,.94); border-radius: 8px; padding: 8px 10px;
+  box-shadow: 0 2px 10px rgba(15,42,67,.15);
+}
+.mon-map-legend-title { width: 100%; font-size: 11px; font-weight: 700; color: var(--navy); }
+.mon-map-legend-item { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; color: #475569; }
+.mon-map-legend-swatch { width: 12px; height: 12px; border-radius: 3px; }
+.mon-marker {
+  width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;
+  box-shadow: 0 1px 6px rgba(15,42,67,.4); cursor: default;
+}
+
+@media (max-width: 1200px) {
+  .mon-row-charts { grid-template-columns: 1fr; }
+}
+@media (max-width: 980px) {
+  .mon-row-top { grid-template-columns: 1fr; }
+  .mon-map-card { height: 380px; }
+}

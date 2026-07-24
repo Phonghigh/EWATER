@@ -74,16 +74,25 @@ sections mirror `tasks/backlog/phase-N.md` 1:1).
 **Phase 2 (Bản đồ GIS) complete: 20/20 tasks done (7 khung ban đầu + 13 UX-redesign).**
 
 ## Phase 3 — Quan trắc thời gian thực (Tab 3)
-- [ ] **P3-01** — Route `/monitoring/:tab` + `PageHeader` 9 sub-tab · *deps:* P0-13 · *done:* điều hướng ok.
-- [ ] **P3-02** — Sub-tab Mưa: bản đồ trạm + bảng số liệu — đọc từ Supabase (`network_nodes_geojson` + `simulation_node_fill`/`rain_forecast_points`), không tái dùng `monitoring/stations.ts` cũ đã xóa và không cần tự suy diễn từ mock JSON như ghi chú cũ P0-16 (dữ liệu node/rain giờ có thật) · *deps:* P3-01, P0-19 · *done:* dữ liệu thật.
-- [ ] **P3-03** — Sub-tab Mưa: thống kê + cảnh báo mưa · *deps:* P3-02 · *done:* toggle 24h/7ngày/30ngày đúng.
-- [ ] **P3-04** — Sub-tab Mưa: biểu đồ diễn biến + top 10 + phân bố khung giờ · *deps:* P3-02 · *done:* 3 chart đúng.
-- [ ] **P3-05** — Sub-tab Mưa: trạng thái/thông tin trạm/lịch sử/xu hướng/tải dữ liệu (CSV thật) · *deps:* P3-03, P3-04 · *done:* export CSV thật.
-- [ ] **P3-06** — Sub-tab Mực nước · *deps:* P3-05 · *done:* tương tự Mưa (thu gọn).
-- [ ] **P3-07** — Sub-tab Trạm bơm + Cống · *deps:* P3-06 · *done:* 2 sub-tab đúng.
-- [ ] **P3-08** — Sub-tab Camera/Radar/Chất lượng nước/Cảm biến IoT (placeholder) · *deps:* P3-01 · *done:* 4 sub-tab nhất quán.
-- [ ] **P3-09** — Sub-tab Tổng quan (tóm tắt 4 domain) · *deps:* P3-05, P3-06, P3-07 · *done:* hiển thị đúng.
-- [ ] **P3-10** — i18n `mon.*` đầy đủ + check-i18n sạch + LangToggle test · *deps:* P3-01…P3-09 · *done:* sạch.
+> **REDESIGN (2026-07-24, người dùng chốt):** bỏ 9 sub-tab, còn **1 trang duy nhất**
+> gồm đúng **5 nhóm**: bản đồ trạm quan trắc · bảng mưa thực đo · bảng mực nước theo
+> cống (Tên cống/ngoài sông/trong cống/đóng-mở) · biểu đồ diễn biến mưa (toggle 10p/giờ/ngày,
+> chọn ≤5 trạm) · top-10 + phân bố theo khung giờ. Dữ liệu per-trạm KHÔNG có sẵn trong
+> Supabase → **seed synthetic** (migration + generator + importer), đúng kỷ luật "data-in-DB".
+> Các sub-tab cũ P3-06…P3-09 (mực nước riêng/bơm/camera/radar/CLN/IoT/tổng quan) **hoãn**.
+
+- [x] **P3-D1** — Migration `20260724120000_monitoring_stations.sql`: bảng `rain_stations`/`culverts` (chuỗi `numeric[]` 10 phút, khuôn như `simulation_node_fill`) + view `*_geojson` + RLS SELECT + REVOKE ghi · *deps:* none · *done:* schema + types khớp.
+- [x] **P3-D2** — `generate_monitoring_data.py` (seeded Random(42): 3 trạm mưa [Trạm Mỹ Thuận/Trạm 1/Trạm 2] + 8 cống [Ngã Cậy/Cà Dâm/Ông Thẩm/Tân Hữu/Kinh Cụt/Cầu Lầu/Cầu Kè/Long Thạnh]) + mở rộng `import_dynamic_data.py` · *deps:* P3-D1 · *done:* sinh `shared/data/rain-stations.json`/`culverts.json`, importer chạy được (nạp live cần creds của user).
+- [x] **P3-01** — Route swap `/monitoring` → trang `Monitoring` 1 tab (bỏ `:tab`); `types.ts`+`loadData.ts`+`monitoringService.ts` (dẫn xuất thuần, neo "hiện tại" theo đồng hồ, degrade rỗng khi chưa seed) · *deps:* P3-D1 · *done:* điều hướng ok, tsc sạch.
+- [x] **P3-02** — `MonitoringStationMap` (MapLibre, marker DOM tô màu theo mưa 24h + legend + dropdown lớp) · *deps:* P3-01 · *done:* bản đồ + legend đúng.
+- [x] **P3-03** — `RainTable` (trạm × 10p/1h/3h/6h/24h + badge Online, sort + aria-sort) · *deps:* P3-01 · *done:* bảng đúng.
+- [x] **P3-04** — `CulvertTable` (Tên cống/ngoài sông/trong cống/đóng-mở, badge icon+màu) · *deps:* P3-01 · *done:* bảng đúng.
+- [x] **P3-05** — `RainTrendChart` (line đa trạm, toggle 10p/giờ/ngày, chọn ≤5 trạm, ≤6 mốc từ hiện tại) · *deps:* P3-01 · *done:* chart đúng.
+- [x] **P3-06** — `TopRainChart` (thanh ngang top-10) + `HourlyDistributionChart` (cột gộp Tổng+3 trạm) · *deps:* P3-01 · *done:* 2 chart đúng.
+- [x] **P3-07** — i18n `mon.*` đầy đủ 2 khối vi/en + check-i18n sạch (163 keys) + CSS `mon-*` · *deps:* P3-01…P3-06 · *done:* sạch.
+
+**Phase 3 (Quan trắc) — code hoàn tất: 9/9 tasks. Còn lại (thủ công, cần creds user):**
+**áp migration + chạy `import_dynamic_data.py` lên project Supabase live, rồi QA mắt bằng `npm run dev` + LangToggle. Các sub-tab hoãn P3-06…P3-09 cũ để lại backlog sau.**
 
 ## Phase 4 — Dự báo (Tab 4)
 - [ ] **P4-01** — `forecastService` (mưa/mực nước/ngập/triều) — đọc từ Supabase (`rain_forecasts`/`tide_scenarios`; nếu cần bảng riêng cho kịch bản dự báo thì tự thiết kế migration cùng kỷ luật đã dùng cho GIS/simulation — không mock JSON) · *deps:* P0-19 · *done:* type đúng, giá trị hợp lý, dữ liệu từ Supabase thật.

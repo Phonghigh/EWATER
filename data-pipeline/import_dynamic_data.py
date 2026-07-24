@@ -104,16 +104,74 @@ def import_tide(project_ref, token):
     print(f"tide_scenarios: 1 row (id={scenario_id}), tide_levels: {len(rows)} rows")
 
 
+def reset_monitoring(project_ref, token):
+    """Xóa sạch rain_stations + culverts trước khi nạp lại — cần khi danh sách
+    trạm/cống đổi tên (on conflict do nothing sẽ giữ nguyên data cũ nếu không xóa
+    trước, vì tên mới không trùng khóa với tên cũ nên không "conflict")."""
+    run_sql(project_ref, token, "delete from rain_stations; delete from culverts;")
+    print("reset: cleared rain_stations + culverts")
+
+
+def import_rain_stations(project_ref, token):
+    with open(os.path.join(DATA_DIR, "rain-stations.json"), encoding="utf-8") as f:
+        stations = json.load(f)
+    rows = [
+        f"({sql_str(s['code'])}, {sql_str(s['name'])}, {sql_num(s.get('elevationM'))}, "
+        f"{sql_str(s['status'])}, {sql_num(s.get('batteryPct'))}, {sql_str(s.get('signal'))}, "
+        f"{pg_numeric_array(s['rain10min'])}, "
+        f"ST_SetSRID(ST_MakePoint({s['lng']}, {s['lat']}), 4326))"
+        for s in stations
+    ]
+    sql = (
+        "insert into rain_stations (code, name, elevation_m, status, battery_pct, signal, "
+        "rain_10min, geom) values " + ",".join(rows) + " on conflict (code) do nothing;"
+    )
+    run_sql(project_ref, token, sql)
+    print(f"rain_stations: {len(rows)} rows")
+
+
+def import_culverts(project_ref, token):
+    with open(os.path.join(DATA_DIR, "culverts.json"), encoding="utf-8") as f:
+        culverts = json.load(f)
+    rows = [
+        f"({sql_str(c['name'])}, {pg_numeric_array(c['riverSeries'])}, "
+        f"{pg_numeric_array(c['insideSeries'])}, {pg_numeric_array(c['gateSeries'])}, "
+        f"ST_SetSRID(ST_MakePoint({c['lng']}, {c['lat']}), 4326))"
+        for c in culverts
+    ]
+    sql = (
+        "insert into culverts (name, river_series, inside_series, gate_series, geom) values "
+        + ",".join(rows) + " on conflict (name) do nothing;"
+    )
+    run_sql(project_ref, token, sql)
+    print(f"culverts: {len(rows)} rows")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--project-ref", required=True)
+    # `--only monitoring` seeds ONLY the Phase-3 rain_stations + culverts, so you
+    # don't re-insert the simulation/flood/rain/tide already on a live project
+    # (import_simulation always creates a NEW run — not idempotent).
+    ap.add_argument("--only", choices=["monitoring"], default=None)
+    ap.add_argument("--reset", action="store_true",
+                     help="Xóa rain_stations/culverts trước khi nạp lại (dùng khi đổi danh sách trạm/cống)")
     args = ap.parse_args()
     token = os.environ["SUPABASE_ACCESS_TOKEN"]
+
+    if args.only == "monitoring":
+        if args.reset:
+            reset_monitoring(args.project_ref, token)
+        import_rain_stations(args.project_ref, token)
+        import_culverts(args.project_ref, token)
+        return
 
     run_id = import_simulation(args.project_ref, token)
     import_flood_zones(args.project_ref, token, run_id)
     import_rain_forecast(args.project_ref, token)
     import_tide(args.project_ref, token)
+    import_rain_stations(args.project_ref, token)
+    import_culverts(args.project_ref, token)
 
 
 if __name__ == "__main__":

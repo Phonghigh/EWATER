@@ -52,6 +52,32 @@ export interface TideForecast {
   levelM: number[]; // predicted water level (m) for each step
 }
 
+/** Trạm mưa quan trắc (Phase 3). `rain10min[i]` = lượng mưa (mm) trong bước 10 phút
+ *  thứ i, gốc 00:00 — cùng chỉ số thời gian với `Simulation` để neo "hiện tại". */
+export interface RainStation {
+  id: number;
+  code: string; // mã trạm, vd "VLM_01"
+  name: string; // tên trạm (địa danh) — danh từ riêng, giữ nguyên cả VI/EN
+  elevationM: number | null;
+  status: string; // 'online' | 'offline'
+  batteryPct: number | null;
+  signal: string | null; // 'good' | 'fair' | 'weak'
+  rain10min: number[]; // mm mỗi bước 10 phút, length = steps
+  lng: number;
+  lat: number;
+}
+
+/** Cống có cửa van (Phase 3). 3 chuỗi cùng bước 10 phút với `RainStation`. */
+export interface Culvert {
+  id: number;
+  name: string;
+  riverSeries: number[]; // mực nước ngoài sông (m)
+  insideSeries: number[]; // mực nước trong cống (m)
+  gateSeries: number[]; // 1 = mở, 0 = đóng
+  lng: number;
+  lat: number;
+}
+
 export interface AppData {
   config: MapStyleConfig;
   manholes: FeatureCollection;
@@ -66,4 +92,6 @@ export interface AppData {
   simulation: Simulation;
   rainForecast: RainForecast;
   tide: TideForecast;
+  rainStations: RainStation[];
+  culverts: Culvert[];
 }

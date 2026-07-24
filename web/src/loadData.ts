@@ -1,6 +1,6 @@
-import type { Feature, FeatureCollection } from "geojson";
+import type { Feature, FeatureCollection, Point } from "geojson";
 import { supabase } from "./lib/supabaseClient";
-import type { AppData, MapStyleConfig, Topology } from "./types";
+import type { AppData, Culvert, MapStyleConfig, RainStation, Topology } from "./types";
 
 const MAP_STYLE_CONFIG_KEY = "map-style";
 
@@ -125,10 +125,54 @@ async function loadTide(): Promise<AppData["tide"]> {
   };
 }
 
+/** A `*_geojson` view row's `geom` is a GeoJSON Point; pull [lng, lat] out. */
+function pointLngLat(geom: unknown): { lng: number; lat: number } {
+  const coords = (geom as Point | null)?.coordinates;
+  return { lng: coords?.[0] ?? 0, lat: coords?.[1] ?? 0 };
+}
+
+async function loadRainStations(): Promise<RainStation[]> {
+  const { data, error } = await supabase.from("rain_stations_geojson").select("*").order("code");
+  if (error) {
+    // Additive Phase-3 data: if the migration/seed hasn't been applied to this
+    // project yet, degrade to empty (Monitoring shows its empty state) instead
+    // of bricking every page. See migration 20260724120000_monitoring_stations.sql.
+    console.warn(`rain_stations_geojson unavailable (monitoring seed not applied?): ${error.message}`);
+    return [];
+  }
+  return (data ?? []).map((r) => ({
+    id: r.id ?? 0,
+    code: r.code ?? "",
+    name: r.name ?? "",
+    elevationM: r.elevation_m,
+    status: r.status ?? "online",
+    batteryPct: r.battery_pct,
+    signal: r.signal,
+    rain10min: (r.rain_10min ?? []) as number[],
+    ...pointLngLat(r.geom),
+  }));
+}
+
+async function loadCulverts(): Promise<Culvert[]> {
+  const { data, error } = await supabase.from("culverts_geojson").select("*").order("name");
+  if (error) {
+    console.warn(`culverts_geojson unavailable (monitoring seed not applied?): ${error.message}`);
+    return [];
+  }
+  return (data ?? []).map((r) => ({
+    id: r.id ?? 0,
+    name: r.name ?? "",
+    riverSeries: (r.river_series ?? []) as number[],
+    insideSeries: (r.inside_series ?? []) as number[],
+    gateSeries: (r.gate_series ?? []) as number[],
+    ...pointLngLat(r.geom),
+  }));
+}
+
 export async function loadAppData(): Promise<AppData> {
   const [
     config, manholes, outlets, links, catchment, boundary, provinceBoundary,
-    rivers, floodZones, simulation, rainForecast, tide,
+    rivers, floodZones, simulation, rainForecast, tide, rainStations, culverts,
   ] = await Promise.all([
     loadConfig(),
     fetchGeojson("network_nodes_geojson", { node_type: "manhole" }),
@@ -142,11 +186,13 @@ export async function loadAppData(): Promise<AppData> {
     loadSimulation(),
     loadRainForecast(),
     loadTide(),
+    loadRainStations(),
+    loadCulverts(),
   ]);
 
   return {
     config, manholes, links, outlets, catchment, boundary, provinceBoundary, rivers, floodZones,
     topology: buildTopology(links),
-    simulation, rainForecast, tide,
+    simulation, rainForecast, tide, rainStations, culverts,
   };
 }
