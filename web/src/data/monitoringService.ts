@@ -43,6 +43,21 @@ const STEPS_3H = 18;
 const STEPS_6H = 36;
 const STEPS_24H = 144;
 
+export type TrendDir = "up" | "down" | "flat";
+
+/** Ngưỡng coi 2 cửa sổ 1h là "không đổi" (mm). Dưới mức này → dấu "−" thay vì
+ *  mũi tên, tránh nhiễu khi mưa dao động li ti (đồng bộ quy ước GIS "Ổn định"). */
+const TREND_FLAT_MM = 0.3;
+
+/** So sánh cửa sổ 1h hiện tại với 1h ngay trước đó để suy ra xu hướng mưa. */
+function rain1hTrend(series: number[], step: number): TrendDir {
+  const now = rainWindowSum(series, step, STEPS_1H);
+  const prev = rainWindowSum(series, step - STEPS_1H, STEPS_1H);
+  const diff = now - prev;
+  if (Math.abs(diff) <= TREND_FLAT_MM) return "flat";
+  return diff > 0 ? "up" : "down";
+}
+
 export interface RainTableRow {
   code: string;
   name: string;
@@ -52,6 +67,7 @@ export interface RainTableRow {
   r3h: number;
   r6h: number;
   r24h: number;
+  trend: TrendDir;
 }
 
 /** Một dòng bảng "số liệu mưa thực đo" mỗi trạm tại bước hiện tại. */
@@ -65,7 +81,45 @@ export function rainTableRows(stations: RainStation[], step: number): RainTableR
     r3h: round1(rainWindowSum(s.rain10min, step, STEPS_3H)),
     r6h: round1(rainWindowSum(s.rain10min, step, STEPS_6H)),
     r24h: round1(rainWindowSum(s.rain10min, step, STEPS_24H)),
+    trend: rain1hTrend(s.rain10min, step),
   }));
+}
+
+/** Ngưỡng mưa 24h (mm) coi là "rất lớn" cho Situation Banner — trùng bucket
+ *  ">100" trong RAIN_BUCKETS (đỏ). */
+export const HEAVY_RAIN_24H_MM = 100;
+
+export interface MonSituation {
+  level: "ok" | "alert";
+  heavyRain: RainTableRow[]; // 24h >= HEAVY_RAIN_24H_MM
+  offline: RainTableRow[]; // status !== 'online'
+  onlineCount: number;
+  totalCount: number;
+  maxRain: { name: string; mm: number } | null; // trạm mưa 24h lớn nhất
+  worst: RainTableRow | null; // điểm "Xem ngay" nhảy tới (mưa nặng nhất, else offline đầu)
+}
+
+/** Tổng hợp "tình huống" của trang quan trắc cho banner (exception-driven UI):
+ *  có mưa rất lớn hoặc trạm mất kết nối thì cảnh báo, ngược lại là bình thường.
+ *  Thuần tính toán trên các dòng bảng đã dựng — không truy vấn thêm. */
+export function monSituation(rows: RainTableRow[]): MonSituation {
+  const heavyRain = rows.filter((r) => r.r24h >= HEAVY_RAIN_24H_MM).sort((a, b) => b.r24h - a.r24h);
+  const offline = rows.filter((r) => r.status !== "online");
+  const onlineCount = rows.length - offline.length;
+  const maxRain = rows.reduce<{ name: string; mm: number } | null>(
+    (best, r) => (best && best.mm >= r.r24h ? best : { name: r.name, mm: r.r24h }),
+    null,
+  );
+  const worst = heavyRain[0] ?? offline[0] ?? null;
+  return {
+    level: heavyRain.length > 0 || offline.length > 0 ? "alert" : "ok",
+    heavyRain,
+    offline,
+    onlineCount,
+    totalCount: rows.length,
+    maxRain,
+    worst,
+  };
 }
 
 /** Lượng mưa 24h hiện tại theo trạm (dùng tô màu marker bản đồ). */

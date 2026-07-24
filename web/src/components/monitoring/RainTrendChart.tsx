@@ -14,8 +14,16 @@ const GRANS: { key: RainGranularity; labelKey: string }[] = [
 ];
 
 /** Biểu đồ diễn biến mưa đa trạm. Toggle 10 phút/giờ/ngày, chọn tối đa 5 trạm
- *  (mặc định 5 trạm đầu). Trục dọc mm, trục ngang tối đa 6 mốc tính từ hiện tại. */
-export default function RainTrendChart({ stations, step }: { stations: RainStation[]; step: number }) {
+ *  (mặc định 5 trạm đầu). Trục dọc mm, trục ngang tối đa 6 mốc tính từ hiện tại.
+ *  `focusCode` (trạm đang chọn trên bảng/bản đồ) làm đậm đường của trạm đó và
+ *  mờ các trạm còn lại — biểu đồ "đi theo" lựa chọn (linked interaction). */
+export default function RainTrendChart({
+  stations, step, focusCode = null,
+}: {
+  stations: RainStation[];
+  step: number;
+  focusCode?: string | null;
+}) {
   const t = useT();
   const [gran, setGran] = useState<RainGranularity>("min10");
   const [selected, setSelected] = useState<string[]>(() => stations.slice(0, MAX_SELECTED).map((s) => s.code));
@@ -25,6 +33,7 @@ export default function RainTrendChart({ stations, step }: { stations: RainStati
     [stations, selected],
   );
   const { data } = useMemo(() => rainTrend(selectedStations, gran, step), [selectedStations, gran, step]);
+  const focusName = focusCode ? stations.find((s) => s.code === focusCode)?.name : undefined;
 
   function toggleStation(code: string) {
     setSelected((prev) => {
@@ -79,17 +88,28 @@ export default function RainTrendChart({ stations, step }: { stations: RainStati
             <XAxis dataKey="label" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} unit="mm" width={38} />
             <Tooltip formatter={(v: number) => `${v.toFixed(1)} mm`} />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
-            {selectedStations.map((s, i) => (
-              <Line
-                key={s.code}
-                type="monotone"
-                dataKey={s.name}
-                stroke={COLORS[i % COLORS.length]}
-                strokeWidth={2}
-                dot={{ r: 2.5 }}
-              />
-            ))}
+            <Legend
+              wrapperStyle={{ fontSize: 11, cursor: "pointer" }}
+              onClick={(p) => {
+                const st = stations.find((s) => s.name === p.value);
+                if (st) toggleStation(st.code);
+              }}
+            />
+            {selectedStations.map((s, i) => {
+              const dim = focusName != null && s.name !== focusName;
+              return (
+                <Line
+                  key={s.code}
+                  type="monotone"
+                  dataKey={s.name}
+                  stroke={COLORS[i % COLORS.length]}
+                  strokeWidth={s.name === focusName ? 3.5 : 2.75}
+                  strokeOpacity={dim ? 0.3 : 1}
+                  dot={{ r: 3.5 }}
+                  activeDot={{ r: 6 }}
+                />
+              );
+            })}
           </LineChart>
         </ResponsiveContainer>
       </div>

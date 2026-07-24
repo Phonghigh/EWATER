@@ -814,11 +814,14 @@ body {
    thẳng hàng); nowrap để không xuống hàng; max-width trên cell là trần chặn khi nội
    dung quá dài (ví dụ tên trạm dài) thay vì đẩy bảng tràn ra ngoài overlay. Bảng để
    width:auto (không ép 100%) để panel co theo đúng nội dung, tránh dư khoảng trắng. */
-.mon-overlay-panel .mon-table-wrap { max-height: 280px; overflow-x: hidden; }
-.mon-overlay-panel .mon-table { font-size: 12px; table-layout: auto; width: auto; }
+.mon-overlay-panel .mon-table-wrap { max-height: 300px; overflow-x: hidden; }
+/* Accessibility (feedback 2026-07-24): chữ + hàng to hơn cho màn hình đặt xa /
+   người lớn tuổi, header đậm hơn — vẫn giữ gọn vì bảng nổi trên bản đồ. */
+.mon-overlay-panel .mon-table { font-size: 13px; table-layout: auto; width: auto; }
 .mon-overlay-panel .mon-table td, .mon-overlay-panel .mon-table th {
-  padding: 5px 14px; white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis;
+  padding: 7px 14px; white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis;
 }
+.mon-overlay-panel .mon-table thead th { font-weight: 700; }
 .mon-overlay-panel .mon-th-btn { white-space: nowrap; }
 /* Cột số ở giữa (không phải trạm/trạng thái) căn giữa để thẳng hàng dễ nhìn với title. */
 .mon-overlay-panel .mon-num { text-align: center; }
@@ -893,11 +896,105 @@ body {
 .mon-map-legend-title { width: 100%; font-size: 11px; font-weight: 700; color: var(--navy); }
 .mon-map-legend-item { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; color: #475569; }
 .mon-map-legend-swatch { width: 12px; height: 12px; border-radius: 3px; }
+.mon-map-legend-line { width: 16px; height: 0; border-top: 2px dashed #7c3aed; }
 .mon-marker {
   width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff;
   display: flex; align-items: center; justify-content: center;
   color: #fff; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;
-  box-shadow: 0 1px 6px rgba(15,42,67,.4); cursor: default;
+  box-shadow: 0 1px 6px rgba(15,42,67,.4);
+  cursor: pointer; transition: transform .15s ease, box-shadow .15s ease, outline-color .15s ease;
+}
+/* Marker states — linked interaction (hover/chọn ↔ bảng) + cảnh báo offline. */
+.mon-marker--hover { transform: scale(1.12); box-shadow: 0 2px 12px rgba(15,42,67,.55); z-index: 2; }
+.mon-marker--active { outline: 3px solid var(--accent); outline-offset: 2px; transform: scale(1.16); z-index: 3; }
+.mon-marker--offline { border-color: #dc2626; filter: grayscale(.5); position: relative; }
+.mon-marker--offline::after {
+  content: ""; position: absolute; top: -2px; right: -2px; width: 9px; height: 9px;
+  border-radius: 50%; background: #dc2626; border: 1.5px solid #fff;
+  animation: mon-offline-blink 1.4s ease-in-out infinite;
+}
+@keyframes mon-offline-blink { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+
+/* Hover popup mini (raw HTML trong MapLibre popup) — name + 10′/1h/24h + xu hướng. */
+.mon-hover-popup { pointer-events: none; }
+.mon-hover-popup .maplibregl-popup-content { padding: 9px 11px; border-radius: 9px; box-shadow: 0 4px 16px rgba(15,42,67,.22); }
+.mon-hover-card { font-size: 12px; color: #334155; min-width: 130px; }
+.mon-hover-title { font-weight: 700; color: var(--navy); margin-bottom: 5px; }
+.mon-hover-grid { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; }
+.mon-hover-grid span { color: #64748b; }
+.mon-hover-grid b { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Table row selection / hover — 2 chiều với marker. */
+.mon-row { cursor: pointer; transition: background .12s ease; }
+.mon-row--hover { background: #eef4fa !important; }
+.mon-row--active { background: var(--accent-light) !important; }
+.mon-row--active td, .mon-row--active .mon-num--strong, .mon-row--active .mon-trend { color: #fff !important; }
+.mon-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+/* Trend glyphs (↑ tăng / ↓ giảm / − ổn định — dấu gạch đồng bộ quy ước GIS). */
+.mon-trend { font-weight: 800; font-size: 13px; }
+.mon-trend--up { color: #dc2626; }
+.mon-trend--down { color: #16a34a; }
+.mon-trend--flat { color: #94a3b8; }
+
+/* Value flash: span key theo giá trị → remount → chạy 1 lần khi số đổi lúc refresh. */
+.mon-cell-v { display: inline-block; border-radius: 3px; animation: mon-flash .6s ease; }
+@keyframes mon-flash { 0% { background: #fde68a; } 100% { background: transparent; } }
+
+/* Freshness chip — auto-refresh 60s thật (bước neo đồng hồ thực). */
+.mon-freshness {
+  position: absolute; bottom: 12px; right: 12px; z-index: 3;
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.94); border-radius: 999px; padding: 5px 12px;
+  font-size: 11.5px; font-weight: 600; color: var(--navy); font-variant-numeric: tabular-nums;
+  box-shadow: 0 2px 10px rgba(15,42,67,.15);
+}
+.mon-freshness-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #16a34a;
+  animation: mon-live-pulse 2s ease-in-out infinite;
+}
+@keyframes mon-live-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(22,163,74,.5); }
+  50% { box-shadow: 0 0 0 5px rgba(22,163,74,0); }
+}
+
+/* Situation banner — overlay pill nổi trên map (góc trên-trái, né zoom control +
+   bảng góc phải): xanh bình thường / đỏ cảnh báo (mưa lớn / offline). */
+.mon-situation-banner {
+  position: absolute; top: 12px; left: 56px; z-index: 4;
+  display: flex; align-items: center; gap: 9px; max-width: min(520px, calc(100% - 72px));
+  border-radius: 999px; padding: 8px 15px; font-size: 13px;
+  box-shadow: 0 2px 10px rgba(15,42,67,.18); backdrop-filter: blur(4px);
+  animation: mon-banner-in .2s ease;
+}
+.mon-situation-banner--ok { background: rgba(236,253,245,.95); border: 1px solid #a7f3d0; color: #065f46; }
+.mon-situation-banner--alert { background: rgba(254,242,242,.96); border: 1px solid #fecaca; color: #991b1b; }
+.mon-situation-banner--alert > .icon { color: #dc2626; flex: none; }
+.mon-situation-dot { flex: none; width: 11px; height: 11px; border-radius: 50%; background: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.18); }
+.mon-situation-text { flex: 1; font-weight: 600; }
+.mon-situation-action {
+  flex: none; border: none; cursor: pointer; background: #dc2626; color: #fff;
+  border-radius: 999px; padding: 5px 13px; font-size: 12px; font-weight: 700; transition: background .15s ease;
+}
+.mon-situation-action:hover { background: #b91c1c; }
+@keyframes mon-banner-in { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: none; } }
+
+/* Charts toggle — pill nổi ở đáy map (giống .gis-bottom-float-toggle); charts mở
+   ra bên dưới map khi bấm. */
+.mon-charts-toggle {
+  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 3;
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  border: none; background: rgba(255,255,255,.95); backdrop-filter: blur(4px);
+  padding: 6px 16px; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: var(--navy);
+  box-shadow: 0 2px 10px rgba(15,42,67,.18); transition: background .15s ease;
+}
+.mon-charts-toggle:hover { background: #eef4fa; }
+.mon-charts-toggle-caret { font-size: 12px; transition: transform .2s ease; }
+.mon-charts-toggle.open .mon-charts-toggle-caret { transform: rotate(180deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .mon-marker, .mon-marker--offline::after, .mon-freshness-dot, .mon-cell-v,
+  .mon-situation-banner, .mon-charts-toggle, .mon-charts-toggle-caret, .mon-row { animation: none; transition: none; }
 }
 
 @media (max-width: 1200px) {

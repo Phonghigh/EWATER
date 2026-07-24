@@ -11,6 +11,10 @@ a task pushes them further than before.
 
 | Concept | Status | Last touched | Notes |
 |---|---|---|---|
+| Linked interaction (brushing) via lift-state-up | not-started | 2026-07-24 | Monitoring's table, map, and trend chart all read one `selectedCode`/`hoveredCode` held in `Monitoring.tsx`; highlighting/selecting in any view drives the others (click row → marker + fly + chart emphasis; hover marker → row). The standard GIS/SCADA pattern for keeping the operator from stitching data together by hand. See [monitoring situation report](learn-log/FOLLOWUP-2026-07-24-monitoring-situation-linked.md) §4. |
+| A `nonce` counter to re-fire an effect on an unchanged value | not-started | 2026-07-24 | Re-selecting the same worst station (or "Xem ngay") must re-fly the map, but an effect keyed only on `selectedCode` is a no-op when the code is unchanged — bumping a `flyNonce` counter each select makes the fly effect run again. See [monitoring situation report](learn-log/FOLLOWUP-2026-07-24-monitoring-situation-linked.md) §4. |
+| Honest auto-refresh from a wall-clock-anchored step | not-started | 2026-07-24 | A 60s `setInterval(setNow)` genuinely advances Monitoring's data because `step = currentMonitoringStep(now)` derives from the real clock and every `useMemo` keys on `step` — not a fake ticking animation, so the freshness chip is truthful. See [monitoring situation report](learn-log/FOLLOWUP-2026-07-24-monitoring-situation-linked.md) §4. |
+| CSS-remount value flash via React `key={value}` | not-started | 2026-07-24 | `<span key={r.r10min} className="mon-cell-v">` remounts only when the number changes, replaying the flash keyframe once with no prev-value bookkeeping — unchanged cells keep their key and stay still. See [monitoring situation report](learn-log/FOLLOWUP-2026-07-24-monitoring-situation-linked.md) §4. |
 | Shared "delta stat" type reuse (`DeltaStat`/`ScenarioImpactResult`) | not-started | 2026-07-20 | One shared shape (`value`+`delta`) for every "+Δ" stat card across Dashboard/Forecast/What-if/Impact, and one shared 4-metric bundle (`ScenarioImpactResult`) reused by forecast/whatif/impact services since they're all views onto the same underlying flood-impact numbers. See [P0-01 report](learn-log/P0-01-extend-types.md) §4. |
 | Mock/real "service seam" (fixed signature, swappable body) | not-started | 2026-07-20 | `web/src/data/*.ts` fixes each page's data-access function signature now (typed args/return) while the body is a mock or a `throw` placeholder — a future real backend swap touches one file, not every caller. See [P0-02 report](learn-log/P0-02-data-service-skeleton.md) §4. |
 | "No session" as a real supported state (guest) | not-started | 2026-07-20 | `session == null` used to mean "loading/must log in"; the new access model treats it as a legitimate third tier (Guest, view-only Dashboard access) — no context shape change needed, only how routes interpret it. See [P0-04 report](learn-log/P0-04-auth-2-roles.md) §4. |
@@ -140,6 +144,22 @@ mindmap
 ## Session Journal
 
 ### 2026-07-24
+- Covered: reworked the **Monitoring tab from a data dashboard into a situation
+  dashboard**. Added an always-on green/red **situation banner**
+  (`monSituation(rows)` → alert iff any 24h rain ≥ 100mm or any station offline;
+  "Xem ngay" selects + flies to the worst station). Built **linked interaction**
+  (the review's centerpiece): `selectedCode`/`hoveredCode`/`flyNonce` lifted into
+  `Monitoring.tsx` and threaded to the table, map, and trend chart — click a row →
+  the marker highlights + map flies + the chart's line for that station thickens
+  while others dim; hover a marker → the row highlights (two-way). Made
+  auto-refresh **real** (60s `setInterval(setNow)`; the step is wall-clock-anchored
+  so data genuinely advances) with a live freshness chip, and a `key={value}`
+  CSS-remount **value flash** on changed cells. Added marker hover popups
+  (raw-HTML, refs to dodge stale closures so highlighting never rebuilds markers),
+  offline blink + red ring, table **trend arrows** (↑/↓/− per 1h-vs-prev-1h), and
+  collapsed the 3 charts under a "Phân tích chi tiết" toggle. Dropped Search/Filter
+  (only 3 stations). `check-i18n` OK, `tsc` clean, `vite build` ✓. See
+  [monitoring situation report](learn-log/FOLLOWUP-2026-07-24-monitoring-situation-linked.md).
 - Covered: drew the Vĩnh Long **province boundary** on the GIS map. No data
   sourcing needed — `loadData.ts` already loads `province_boundaries_geojson`
   into `data.provinceBoundary` (a real MultiPolygon seeded from
