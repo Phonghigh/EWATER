@@ -34,42 +34,21 @@ function formatArea(m2: number): string {
  *  pressure) but kept since separate cards still read better floating over
  *  map imagery than one large translucent block would. */
 export default function GisRightPanel({
-  data, step, floodOpacity, onFloodOpacityChange,
+  data, step,
 }: {
   data: AppData;
   step: number;
-  floodOpacity: number;
-  onFloodOpacityChange: (v: number) => void;
 }) {
   const { t } = useI18n();
   const stats = floodStatsAtStep(data, step);
-  const opacityPct = Math.round(floodOpacity * 100);
 
+  // The flood-layer opacity slider was removed (2026-07-24 feedback): it didn't
+  // match the panel's purpose and wasn't needed — the heatmap stays at its
+  // fixed default. This panel is now purely the live flood statistics.
   return (
     <div className="gis-right-panel">
-      <h3 className="gis-right-panel-title">{t("gis.right.panelTitle")}</h3>
-
       <div className="gis-right-section">
-        <h4 className="gis-right-section-title">{t("gis.right.selectedLayer")}</h4>
-        <div className="gis-right-layer-name">{t("gis.legend.floodZone")}</div>
-        <div className="gis-right-opacity-row">
-          <span>{t("gis.right.opacity")}</span>
-          <input
-            type="range" min={0} max={100} value={opacityPct} list="gis-opacity-ticks"
-            onChange={(e) => onFloodOpacityChange(Number(e.target.value) / 100)}
-          />
-          <datalist id="gis-opacity-ticks">
-            <option value="0" /><option value="25" /><option value="50" /><option value="75" /><option value="100" />
-          </datalist>
-          <span className="gis-right-opacity-value">{opacityPct}%</span>
-        </div>
-        <div className="gis-right-opacity-hint">{t("gis.right.opacityHint")}</div>
-      </div>
-
-      <hr className="gis-right-divider" />
-
-      <div className="gis-right-section">
-        <h4 className="gis-right-section-title">{t("gis.right.statsTitle")}</h4>
+        <h3 className="gis-right-panel-title">{t("gis.right.statsTitle")}</h3>
         <div className="gis-right-stat-row"><span>{t("gis.right.floodArea")}</span><strong>{formatArea(stats.areaM2)}</strong></div>
         <div className="gis-right-stat-row"><span>{t("gis.right.avgDepth")}</span><strong>{stats.avgDepthM.toFixed(2)} m</strong></div>
         <div className="gis-right-stat-row gis-right-stat-row--highlight"><span>{t("gis.right.maxDepth")}</span><strong>{stats.maxDepthM.toFixed(2)} m</strong></div>

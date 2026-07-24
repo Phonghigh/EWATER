@@ -6,8 +6,11 @@ import type { Simulation } from "../../types";
 
 // Forecast-horizon presets, each an *absolute* offset in hours from the
 // "hiện tại" baseline - not a cumulative jump from wherever `step`
-// currently is. 0 = "Hiện tại" itself.
-const HOUR_PRESETS = [0, 1, 3, 4, 5, 6, 12, 24] as const;
+// currently is. 0 = "Hiện tại" itself. Trimmed from 8 to 5 stops
+// (2026-07-24 feedback): the +4h/+5h/+24h steps added choice-overload
+// without adding decision value; Hiện tại / +1h / +3h / +6h / +12h covers
+// the operational horizons operators actually jump between.
+const HOUR_PRESETS = [0, 1, 3, 6, 12] as const;
 const SPEEDS = [1, 2, 4] as const;
 
 function clampStep(step: number, steps: number): number {
@@ -66,7 +69,12 @@ export default function GisTopBar({
             </button>
           ))}
         </div>
+        {/* "Đang xem" clock is deliberately split off from the preset track
+            (2026-07-24 feedback): the row read as one long ambiguous list of
+            times. A left border + its own "Đang xem" label make clear this is
+            the *current view state*, not another jump button. */}
         <div className="gis-topbar-clock-group">
+          <span className="gis-topbar-clock-label">{t("gis.time.viewing")}</span>
           <span className="gis-topbar-clock">{stepTimeLabel(simulation.start, simulation.stepMinutes, step)}</span>
           <span className="gis-topbar-clock-caption">
             {step === baselineStep ? t("gis.time.liveLabel") : t("gis.time.simulatedLabel")}

@@ -7,11 +7,13 @@ import pumpIconRaw from "@material-symbols/svg-400/outlined/water_pump.svg?raw";
 import gateIconRaw from "@material-symbols/svg-400/outlined/gate.svg?raw";
 import trendUpIconRaw from "@material-symbols/svg-400/outlined/arrow_upward.svg?raw";
 import trendDownIconRaw from "@material-symbols/svg-400/outlined/arrow_downward.svg?raw";
-import trendFlatIconRaw from "@material-symbols/svg-400/outlined/trending_flat.svg?raw";
+// "Ổn định" (stable) uses a dash (−), not a sideways arrow (→) — the arrow read
+// as "moving right/sideways" rather than "no change" (2026-07-24 feedback).
+import trendStableIconRaw from "@material-symbols/svg-400/outlined/remove.svg?raw";
 import Icon, { type IconName } from "../Icon";
 import { useI18n } from "../../i18n/I18nContext";
 import { classifyOutlet } from "../../data/dashboardService";
-import { topWaterLevelNodes, activeFloodZoneCentroids } from "../../data/gisService";
+import { topWaterLevelNodes, activeFloodZoneCentroids, manholeStateCounts } from "../../data/gisService";
 import { polylineLengthM, polygonAreaM2 } from "../../lib/geo";
 import { stepTimeLabel } from "../../lib/simTime";
 import { floodHeatmapPaint } from "../../lib/floodHeatmap";
@@ -52,6 +54,40 @@ function loadIconImage(map: maplibregl.Map, id: string, rawSvg: string) {
   img.src = `data:image/svg+xml;base64,${btoa(whiteSvg)}`;
 }
 
+// Fixed palette for the in-popup node chart (raw-HTML popups can't use the
+// React chart components, so this is drawn as an inline SVG string).
+const NODE_CHART = { line: "#2563eb", area: "rgba(37,99,235,.14)", surcharge: "#dc2626", marker: "#1e3a8a" };
+
+/** Compact inline SVG line chart of ONE manhole's water level across the whole
+ *  simulation, for the hover popup (2026-07-24 feedback: hovering a node
+ *  should show its detailed trend, not just a single number). `series` is the
+ *  node's per-step fill ratio; level(m) = invert + fill*(ground-invert). A red
+ *  dashed line marks the surcharge level (fill=1 → ground) and a dot marks the
+ *  step currently being viewed. Returns "" when there's nothing to plot. */
+function nodeLevelChartSVG(series: number[], invert: number, ground: number, currentStep: number): string {
+  const n = series.length;
+  if (n < 2 || ground <= invert) return "";
+  const W = 236, H = 74, padX = 6, padTop = 8, padBot = 10;
+  const levels = series.map((f) => invert + f * (ground - invert));
+  let min = Math.min(...levels, invert);
+  let max = Math.max(...levels, ground);
+  if (max - min < 0.01) max = min + 0.01;
+  const x = (i: number) => padX + (i / (n - 1)) * (W - 2 * padX);
+  const y = (v: number) => padTop + (1 - (v - min) / (max - min)) * (H - padTop - padBot);
+  const line = levels.map((v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  const area = `${line} L${x(n - 1).toFixed(1)},${(H - padBot).toFixed(1)} L${x(0).toFixed(1)},${(H - padBot).toFixed(1)} Z`;
+  const surY = y(ground);
+  const ci = Math.max(0, Math.min(n - 1, currentStep));
+  const cx = x(ci), cy = y(levels[ci]);
+  return `<svg class="gis-node-chart" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">`
+    + `<path d="${area}" fill="${NODE_CHART.area}" />`
+    + (surY >= padTop && surY <= H - padBot ? `<line x1="${padX}" x2="${W - padX}" y1="${surY.toFixed(1)}" y2="${surY.toFixed(1)}" stroke="${NODE_CHART.surcharge}" stroke-width="1" stroke-dasharray="3 2" />` : "")
+    + `<path d="${line}" fill="none" stroke="${NODE_CHART.line}" stroke-width="1.5" />`
+    + `<line x1="${cx.toFixed(1)}" x2="${cx.toFixed(1)}" y1="${padTop}" y2="${H - padBot}" stroke="${NODE_CHART.marker}" stroke-width="1" opacity=".5" />`
+    + `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="3" fill="${NODE_CHART.marker}" stroke="#fff" stroke-width="1.5" />`
+    + `</svg>`;
+}
+
 const TOOLS: { mode: ToolMode; icon: IconName }[] = [
   { mode: "select", icon: "select" },
   { mode: "pan", icon: "pan" },
@@ -69,7 +105,7 @@ const TOOLS: { mode: ToolMode; icon: IconName }[] = [
  *  table), so those checkboxes exist and can be toggled but don't change
  *  anything on the map yet. That gap is inherited from P2-02, not new here. */
 export default function GisMapCanvas({
-  data, step, layerState, floodOpacity = 0.35, children, focusMode = false, onToggleFocusMode, onFocusStation, flyTarget,
+  data, step, layerState, floodOpacity = 0.35, children, focusMode = false, onToggleFocusMode, flyTarget,
 }: {
   data: AppData;
   step: number;
@@ -92,10 +128,6 @@ export default function GisMapCanvas({
    *  component's own DOM, so the state itself has to live in `GisMap.tsx`). */
   focusMode?: boolean;
   onToggleFocusMode?: () => void;
-  /** "Theo dõi trạm này" popup button (P2-15/P2-19) - only manhole popups
-   *  offer it, since that's the only point layer with a water-level trend
-   *  worth focusing on. */
-  onFocusStation?: () => void;
 }) {
   const { t } = useI18n();
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -122,15 +154,16 @@ export default function GisMapCanvas({
   tRef.current = t;
   const modeRef = useRef(mode);
   modeRef.current = mode;
-  // Same stale-closure guard for the popup trend calc (needs the *current*
-  // step, not whatever it was at mount) and the "Theo dõi trạm này" button
-  // (needs the latest `onFocusStation` callback identity).
+  // Same stale-closure guard for the hover popup's trend + chart calc — it
+  // needs the *current* step and data, not whatever they were at mount.
   const stepRef = useRef(step);
   stepRef.current = step;
-  const onFocusStationRef = useRef(onFocusStation);
-  onFocusStationRef.current = onFocusStation;
   const dataRef = useRef(data);
   dataRef.current = data;
+  // One reusable hover popup instance (shown on manhole mouseenter, removed on
+  // mouseleave) — kept in a ref so the mount-once effect can wire it and the
+  // cleanup can remove it.
+  const hoverPopupRef = useRef<maplibregl.Popup | null>(null);
 
   // Init map once.
   useEffect(() => {
@@ -205,6 +238,26 @@ export default function GisMapCanvas({
         paint: { "line-color": config.colors.river, "line-width": 2 },
       });
 
+      // Ranh giới tỉnh Vĩnh Long — static admin boundary already loaded into
+      // `data.provinceBoundary` (province_boundaries_geojson) but never drawn
+      // until now. Rendered as a dashed purple outline: a colour distinct from
+      // the blue rivers/flood + green/orange/red node markers so it reads as an
+      // administrative reference, not another data layer. Drawn above the
+      // basemap/heatmap/rivers but below the point markers, so it never covers
+      // a clickable node. Static (doesn't change per step), so added once here
+      // with the mount-time data like `rivers`.
+      map.addSource("province-boundary", { type: "geojson", data: data.provinceBoundary });
+      map.addLayer({
+        id: "province-boundary-line", type: "line", source: "province-boundary",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": "#7c3aed",
+          "line-width": ["interpolate", ["linear"], ["zoom"], 8, 1.5, 12, 2.5, 16, 3.5],
+          "line-dasharray": [3, 2],
+          "line-opacity": 0.9,
+        },
+      });
+
       // Circle radius grows with zoom instead of a fixed 3px — at the
       // full-extent zoom the heatmap above already communicates "where is
       // it flooded"; individual node dots only need to stand out once the
@@ -260,15 +313,7 @@ export default function GisMapCanvas({
           : tRef.current("gis.legend.ok");
 
       function showPopup(e: maplibregl.MapLayerMouseEvent, html: string) {
-        const popup = new maplibregl.Popup().setLngLat(e.lngLat).setHTML(html).addTo(map);
-        // Popups render raw HTML (no React), so the "Theo dõi trạm này"
-        // button's click handler has to be wired up imperatively after the
-        // element exists in the DOM, same as any other MapLibre popup
-        // customization — `onFocusStationRef` avoids a stale callback if
-        // `onFocusStation` changes identity between renders.
-        popup.getElement()?.querySelector("#gis-popup-focus-btn")?.addEventListener("click", () => {
-          onFocusStationRef.current?.();
-        });
+        new maplibregl.Popup().setLngLat(e.lngLat).setHTML(html).addTo(map);
       }
 
       // Real trend, not a fabricated one: compares the same fill ratio the
@@ -285,12 +330,21 @@ export default function GisMapCanvas({
         if (delta < -0.01) return "down";
         return "stable";
       }
-      const trendIcon = { up: trendUpIconRaw, down: trendDownIconRaw, stable: trendFlatIconRaw };
+      const trendIcon = { up: trendUpIconRaw, down: trendDownIconRaw, stable: trendStableIconRaw };
       const trendLabelKey = { up: "gis.popup.trendUp", down: "gis.popup.trendDown", stable: "gis.popup.trendStable" } as const;
 
-      map.on("click", "manholes-circle", (e) => {
-        const f = e.features?.[0];
-        if (!f) return;
+      // Manhole (water-level node) details now show on HOVER, not click
+      // (2026-07-24 feedback), including an inline per-node water-level chart.
+      // One reusable popup, no close button, non-interactive (`gis-hover-popup`
+      // sets `pointer-events: none`) so the cursor never lands on the popup and
+      // re-triggers mouseleave -> flicker. The old "Theo dõi trạm này" focus
+      // button is gone.
+      const hoverPopup = new maplibregl.Popup({
+        closeButton: false, closeOnClick: false, className: "gis-hover-popup", maxWidth: "268px", offset: 12,
+      });
+      hoverPopupRef.current = hoverPopup;
+
+      function manholeHoverHTML(f: maplibregl.MapGeoJSONFeature): string {
         const props = f.properties ?? {};
         const muid = String(props.muid);
         const invert = Number(props.invertLevel ?? 0);
@@ -298,17 +352,34 @@ export default function GisMapCanvas({
         const fillWeight = Number(props.fillWeight ?? 0);
         const levelM = invert + fillWeight * (ground - invert);
         const trend = waterLevelTrend(muid);
-        showPopup(e, `
+        const series = dataRef.current.simulation.nodeFill[muid] ?? [];
+        const chart = nodeLevelChartSVG(series, invert, ground, stepRef.current);
+        return `
           <div class="gis-popup">
             <div class="gis-popup-title">${tRef.current("gis.layer.waterLevel")}: ${muid}</div>
             <div class="gis-popup-row"><span>${tRef.current("gis.popup.status")}</span><strong class="gis-popup-badge gis-popup-badge--${props.fillState}">${severityLabel(String(props.fillState))}</strong></div>
             <div class="gis-popup-row"><span>${tRef.current("gis.popup.value")}</span><strong>${levelM.toFixed(2)} m</strong></div>
             <div class="gis-popup-row"><span>${tRef.current("gis.popup.trend")}</span><span class="gis-popup-row-icon">${trendIcon[trend]} ${tRef.current(trendLabelKey[trend])}</span></div>
+            ${chart ? `<div class="gis-popup-chart-caption">${tRef.current("gis.popup.levelChart")}</div>${chart}` : ""}
             <div class="gis-popup-updated">${tRef.current("gis.popup.updatedAt")}: ${stepTimeLabel(dataRef.current.simulation.start, dataRef.current.simulation.stepMinutes, stepRef.current)}</div>
-            <button type="button" id="gis-popup-focus-btn" class="gis-popup-focus-btn">${tRef.current("gis.popup.focusStation")}</button>
           </div>
-        `);
+        `;
+      }
+
+      map.on("mouseenter", "manholes-circle", (e) => {
+        if (modeRef.current !== "select") return;
+        map.getCanvas().style.cursor = "pointer";
+        const f = e.features?.[0];
+        if (!f || f.geometry.type !== "Point") return;
+        hoverPopup.setLngLat(f.geometry.coordinates as [number, number]).setHTML(manholeHoverHTML(f)).addTo(map);
       });
+      map.on("mouseleave", "manholes-circle", () => {
+        if (modeRef.current === "select") map.getCanvas().style.cursor = "";
+        hoverPopup.remove();
+      });
+
+      // Pump/gate stay click-based — they're structures with no water-level
+      // series to chart, so a hover chart wouldn't apply.
       map.on("click", "outlets-pump", (e) => {
         const f = e.features?.[0];
         if (!f) return;
@@ -332,10 +403,9 @@ export default function GisMapCanvas({
         `);
       });
 
-      // Pointer cursor on hover over any clickable marker, only while the
-      // "Chọn" tool is active (in pan/measure modes the cursor already
-      // communicates that mode — see the tool-mode effect below).
-      for (const layerId of ["manholes-circle", "outlets-pump", "outlets-gate"]) {
+      // Pointer cursor on hover for the click-only structure layers; the
+      // manhole layer sets its own cursor alongside the hover popup above.
+      for (const layerId of ["outlets-pump", "outlets-gate"]) {
         map.on("mouseenter", layerId, () => {
           if (modeRef.current === "select") map.getCanvas().style.cursor = "pointer";
         });
@@ -348,6 +418,8 @@ export default function GisMapCanvas({
 
     return () => {
       resizeObserver.disconnect();
+      hoverPopupRef.current?.remove();
+      hoverPopupRef.current = null;
       for (const m of waterLevelMarkersRef.current) m.remove();
       for (const m of warningMarkersRef.current) m.remove();
       waterLevelMarkersRef.current = [];
@@ -443,8 +515,13 @@ export default function GisMapCanvas({
       for (const m of waterLevelMarkersRef.current) m.remove();
       waterLevelMarkersRef.current = topWaterLevelNodes(data, step, 5).map((node) => {
         const el = document.createElement("div");
-        el.className = "gis-water-level-label";
-        el.textContent = `${node.muid} · ${node.levelM.toFixed(2)} m`;
+        // Severity now drives a status dot + colored left border, and a
+        // subtle pulse only for `surcharge` (critical) — so an operator
+        // reads danger from the label itself, not just the separate red
+        // warning triangles (2026-07-24 alert-marker feedback). `--surcharge`
+        // etc. mirror the map's own fillState categories.
+        el.className = `gis-water-level-label gis-water-level-label--${node.state}`;
+        el.innerHTML = `<span class="gis-water-level-dot"></span>${node.muid} · ${node.levelM.toFixed(2)} m`;
         return new maplibregl.Marker({ element: el, anchor: "bottom" }).setLngLat([node.lng, node.lat]).addTo(map);
       });
 
@@ -531,6 +608,9 @@ export default function GisMapCanvas({
 
   const distanceM = mode === "distance" ? polylineLengthM(measurePoints) : 0;
   const areaM2 = mode === "area" ? polygonAreaM2(measurePoints) : 0;
+  // Per-band manhole counts for the legend — recomputed each render (cheap
+  // single pass over the node series), so playback steps keep the numbers live.
+  const legendCounts = manholeStateCounts(data, step);
 
   return (
     <div ref={wrapperRef} className="gis-canvas-wrapper">
@@ -596,20 +676,27 @@ export default function GisMapCanvas({
         {/* Percentages come straight from `config.simThresholds` — the
             exact same values `fillState()` uses to color the manhole
             markers, not a second hardcoded copy that could drift out of
-            sync with what's actually being colored. */}
+            sync with what's actually being colored. Live per-band counts
+            (2026-07-24 feedback) let an operator read the current situation
+            at a glance instead of scanning the whole map; recomputed each
+            step from the same `nodeFill` the colors use. */}
         <div className="gis-canvas-legend-row">
           <span className="gis-canvas-legend-swatch gis-canvas-legend-swatch--circle" style={{ background: data.config.colors.simOk }} />
           {t("gis.legend.ok")} <span className="gis-canvas-legend-range">(&lt; {Math.round(data.config.simThresholds.warn * 100)}%)</span>
+          <span className="gis-canvas-legend-count">{legendCounts.ok} {t("gis.legend.count")}</span>
         </div>
         <div className="gis-canvas-legend-row">
           <span className="gis-canvas-legend-swatch gis-canvas-legend-swatch--circle" style={{ background: data.config.colors.simWarn }} />
           {t("gis.legend.warn")} <span className="gis-canvas-legend-range">({Math.round(data.config.simThresholds.warn * 100)}–{Math.round(data.config.simThresholds.surcharge * 100)}%)</span>
+          <span className="gis-canvas-legend-count">{legendCounts.warn} {t("gis.legend.count")}</span>
         </div>
         <div className="gis-canvas-legend-row">
           <span className="gis-canvas-legend-swatch gis-canvas-legend-swatch--circle" style={{ background: data.config.colors.simSurcharge }} />
           {t("gis.legend.surcharge")} <span className="gis-canvas-legend-range">(&ge; {Math.round(data.config.simThresholds.surcharge * 100)}%)</span>
+          <span className="gis-canvas-legend-count">{legendCounts.surcharge} {t("gis.legend.count")}</span>
         </div>
         <div className="gis-canvas-legend-row"><span className="gis-canvas-legend-swatch gis-canvas-legend-swatch--diamond" style={{ background: data.config.colors.flood, opacity: floodOpacity }} />{t("gis.legend.floodZone")}</div>
+        <div className="gis-canvas-legend-row"><span className="gis-canvas-legend-swatch gis-canvas-legend-swatch--line" style={{ color: "#7c3aed" }} />{t("gis.legend.provinceBoundary")}</div>
       </div>
     </div>
   );

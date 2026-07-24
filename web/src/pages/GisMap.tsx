@@ -4,6 +4,7 @@ import GisTopBar from "../components/gis/GisTopBar";
 import GisLayerPanel, { DEFAULT_GIS_LAYER_STATE, type GisLayerState } from "../components/gis/GisLayerPanel";
 import GisMapCanvas from "../components/gis/GisMapCanvas";
 import GisRightPanel from "../components/gis/GisRightPanel";
+import GisSituationBanner from "../components/gis/GisSituationBanner";
 import GisCameraCard from "../components/gis/GisCameraCard";
 import type { StationHit } from "../components/gis/GisSearchBox";
 import RainForecastChart from "../components/RainForecastChart";
@@ -46,16 +47,22 @@ export default function GisMap() {
   const [step, setStep] = useState(liveNowStep);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
+  // Flood heatmap opacity is fixed now that the right-panel slider was removed
+  // (2026-07-24 feedback) — no longer user-adjustable, just a constant the map
+  // + legend read.
+  const floodOpacity = DEFAULT_FLOOD_OPACITY;
   const [layerState, setLayerState] = useState<GisLayerState>(DEFAULT_GIS_LAYER_STATE);
   // Left "Lớp dữ liệu" panel starts hidden and now floats *over* the map
   // instead of sharing the row with it (2026-07-23 follow-up, 2nd round) -
   // the map gets full width whether the panel is open or closed.
   const [showLayerPanel, setShowLayerPanel] = useState(false);
-  const [floodOpacity, setFloodOpacity] = useState(DEFAULT_FLOOD_OPACITY);
   // User-toggleable collapse for the bottom analytics row (P2-18, feedback
   // #12) - separate from the >1100px responsive breakpoint already in
-  // styles.css, which only kicks in for narrow viewports.
-  const [bottomCollapsed, setBottomCollapsed] = useState(false);
+  // styles.css, which only kicks in for narrow viewports. Defaults to
+  // collapsed (2026-07-24 feedback): on a GIS page the map is the priority,
+  // so the 3 forecast/camera cards start hidden behind the "▲ Phân tích"
+  // toggle and only open on demand.
+  const [bottomCollapsed, setBottomCollapsed] = useState(true);
   // Focus Mode (P2-19, feedback #15) - hides layer/right panels + bottom row
   // so the map gets ~90-95% of the viewport; doesn't touch `bottomCollapsed`
   // so exiting focus mode restores whatever the user's manual bottom-row
@@ -116,7 +123,6 @@ export default function GisMap() {
           floodOpacity={floodOpacity}
           focusMode={focusMode}
           onToggleFocusMode={() => setFocusMode((v) => !v)}
-          onFocusStation={() => setFocusMode(true)}
           flyTarget={flyTarget}
         >
           {!focusMode && !showLayerPanel && (
@@ -131,8 +137,13 @@ export default function GisMap() {
             </button>
           )}
           {!focusMode && (
-            <GisRightPanel data={data} step={step} floodOpacity={floodOpacity} onFloodOpacityChange={setFloodOpacity} />
+            <GisRightPanel data={data} step={step} />
           )}
+          {/* Exception-driven alert (2026-07-24): floats top-center, only
+              visible when the map has critical flood nodes right now. Kept in
+              focus mode too — an operator zoomed in on a flooded area still
+              wants the "N điểm ngập nặng · Xem ngay" jump. */}
+          <GisSituationBanner data={data} step={step} onViewNow={setFlyTarget} />
           {/* Analytics collapse toggle floats over the map's bottom edge
               (feedback 2026-07-24) instead of sitting in its own row below the
               map, so the map keeps that vertical space whether the panel is

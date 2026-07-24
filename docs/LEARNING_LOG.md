@@ -140,6 +140,52 @@ mindmap
 ## Session Journal
 
 ### 2026-07-24
+- Covered: drew the Vĩnh Long **province boundary** on the GIS map. No data
+  sourcing needed — `loadData.ts` already loads `province_boundaries_geojson`
+  into `data.provinceBoundary` (a real MultiPolygon seeded from
+  `shared/data/province-boundary.geojson`); it just had no map layer. Added a
+  `type:"line"` layer over that polygon source (renders its outline) styled as a
+  dashed purple admin line (zoom-scaled width), drawn above basemap/rivers but
+  below point markers so it never covers a clickable node, plus a legend row +
+  `gis.legend.provinceBoundary`. Boundary spans the whole province so it shows
+  when zoomed out from the city-level default. See
+  [province-boundary report](learn-log/FOLLOWUP-2026-07-24-province-boundary.md).
+- Covered (GIS round 2, 3 items): (1) removed the flood-opacity slider from the
+  right panel — it didn't match the panel's purpose — so `floodOpacity` is now a
+  fixed constant and the panel is just the flood stats. (2) Focus Mode (and the
+  default-collapsed view) sized the map with `vh`, which overshot because the
+  map sits under a 52px global topbar and over the ~70px control bar → the
+  search bar slid off-screen; switched to `min-height: calc(100vh - 200px)` so
+  the map fills the viewport *and* the controls stay visible. (3) Manhole detail
+  moved from a click popup to a **hover** popup (anchored to the node +
+  `pointer-events:none` to avoid flicker) now containing an inline **water-level
+  chart** — drawn as a hand-built SVG string via `nodeLevelChartSVG()` since
+  MapLibre popups are raw HTML, not React; the "Theo dõi trạm này" button + its
+  `onFocusStation` prop chain were deleted. Pruned `gis.popup.focusStation` /
+  `gis.right.panelTitle` / `gis.right.opacity`; added `gis.popup.levelChart`.
+  tsc + vite build + check-i18n clean. See
+  [hover-chart/focus-fit report](learn-log/FOLLOWUP-2026-07-24-gis-hover-chart-focus-fit.md).
+- Covered (design-review pass on `/gis-map`, 9 items in one round): map-first
+  defaults + a proactive alert. (1) Fixed a real CSS bug — "Chạy mô phỏng" went
+  white-on-white on hover because `.gis-topbar-icon-btn:hover:not(:disabled)`
+  (specificity 0,3,0) beat `.gis-topbar-icon-btn--primary:hover` (0,2,0);
+  matching the `:not(:disabled)` + re-asserting `color:#fff` wins the tie.
+  (2) New **Situation Banner** (exception-driven UI): floats top-center only
+  when `manholeStateCounts().surcharge > 0`, "Xem ngay" flies to the deepest
+  node by reusing the existing `flyTarget` path — no new map code. (3) Bottom
+  analytics row now defaults collapsed (map gets the height). (4) Time
+  controller trimmed to 5 presets (0/1/3/6/12h) with the "Đang xem" clock split
+  off behind a divider. (5) Right panel decluttered to 3 spaced sections
+  (dropped the redundant layer-name line + opacity helper text). (6) Water-level
+  marker pills bigger + a status dot/colored left border by severity, pulsing
+  **only** on critical. (7) Legend gained live per-band counts. (8) Motion
+  discipline: a shared `manholeState()` helper feeds labels/legend/banner, and
+  `@media (prefers-reduced-motion)` drops the pulse/banner/popup animations;
+  popup scale-in targets `.maplibregl-popup-content` (never the positioned
+  outer element). New keys `gis.time.viewing`, `gis.legend.count`,
+  `gis.banner.floodPoints/viewNow/dismiss`; pruned now-unused `h4/h5/h24` +
+  `gis.right.selectedLayer/opacityHint`; added a `close` icon. tsc + check-i18n
+  clean. See [GIS UX + situation banner report](learn-log/FOLLOWUP-2026-07-24-gis-ux-situation-banner.md).
 - Covered (later same day): re-docked the left "Lớp dữ liệu" panel. It had been
   a translucent overlay floating over the map (bottom-left) that covered the map
   and scrolled despite having few options — the user asked for a real left panel

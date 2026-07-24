@@ -60,8 +60,8 @@ body {
   background: var(--navy); color: #fff; overflow-y: auto;
 }
 .sidebar-brand {
-  display: flex; align-items: center; gap: 10px; padding: 0 16px;
-  height: 52px; flex: 0 0 auto; box-sizing: border-box;
+  display: flex; align-items: center; gap: 10px; padding: 8px 16px;
+  min-height: 52px; flex: 0 0 auto; box-sizing: border-box;
   border-bottom: 1px solid rgba(255,255,255,.1);
 }
 .sidebar-brand-logo {
@@ -70,7 +70,7 @@ body {
 }
 .sidebar-brand-text { display: flex; flex-direction: column; line-height: 1.3; }
 .sidebar-brand-text strong { font-size: 15px; letter-spacing: .5px; }
-.sidebar-brand-text span { font-size: 11px; color: #9fb8cf; }
+.sidebar-brand-text span { font-size: 9px; color: #9fb8cf; }
 
 .sidebar-nav { display: flex; flex-direction: column; padding: 10px 8px; gap: 3px; }
 .sidebar-footer {
@@ -188,9 +188,15 @@ body {
 }
 .gis-topbar-jump-btn:hover { background: #eef4fa; }
 .gis-topbar-jump-btn.active { background: var(--accent-light); color: #fff; border-color: var(--accent-light); box-shadow: 0 0 0 3px rgba(29,78,216,.15); }
-.gis-topbar-clock-group { display: flex; flex-direction: column; align-items: flex-start; gap: 0; margin-left: 4px; }
+/* Split off from the preset track with a divider + "Đang xem" label so the
+   clock reads as the current view state, not one more jump button (2026-07-24). */
+.gis-topbar-clock-group {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
+  margin-left: 8px; padding-left: 12px; border-left: 1px solid #e2e8f0;
+}
+.gis-topbar-clock-label { font-size: 10.5px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .3px; }
 .gis-topbar-clock {
-  font-size: 13px; font-weight: 700; color: var(--navy);
+  font-size: 15px; font-weight: 700; color: var(--navy);
   font-variant-numeric: tabular-nums;
 }
 .gis-topbar-clock-caption { font-size: 10.5px; color: #94a3b8; }
@@ -209,7 +215,11 @@ body {
   width: auto; gap: 6px; padding: 0 14px;
   background: var(--accent); border-color: var(--accent); color: #fff; font-size: 13px; font-weight: 600;
 }
-.gis-topbar-icon-btn--primary:hover { background: var(--accent-light); }
+/* `:not(:disabled)` needed so this ties/wins against the base
+   `.gis-topbar-icon-btn:hover:not(:disabled)` (same specificity, comes later)
+   — without it the base rule's `#eef4fa` background applied on hover while the
+   text stayed white, i.e. white-on-white "Chạy mô phỏng" (2026-07-24 bug). */
+.gis-topbar-icon-btn--primary:hover:not(:disabled) { background: var(--accent-light); color: #fff; }
 .gis-topbar-speed-label { font-size: 12px; font-weight: 600; color: #64748b; margin-left: 4px; }
 .gis-topbar-speed-group { display: flex; gap: 3px; }
 .gis-topbar-speed-btn {
@@ -338,11 +348,13 @@ body {
   position: absolute; bottom: 14px; right: 12px; z-index: 1;
   background: rgba(255,255,255,.95); backdrop-filter: blur(4px);
   border-radius: 8px; padding: 10px 12px; box-shadow: 0 2px 10px rgba(15,42,67,.18);
-  font-size: 12px; min-width: 150px;
+  font-size: 12px; min-width: 205px;
 }
 .gis-canvas-legend h4 { margin: 0 0 6px; font-size: 11.5px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: .3px; }
 .gis-canvas-legend-row { display: flex; align-items: center; gap: 7px; padding: 2px 0; color: #334155; }
 .gis-canvas-legend-range { color: #94a3b8; font-size: 11px; margin-left: -2px; }
+/* Live per-band count, pushed to the row's right edge (2026-07-24). */
+.gis-canvas-legend-count { margin-left: auto; font-size: 11.5px; font-weight: 700; color: var(--navy); font-variant-numeric: tabular-nums; padding-left: 8px; }
 .gis-canvas-legend-swatch { width: 12px; height: 12px; border-radius: 3px; flex: none; }
 /* Shape, not just color, per row (P2-14, feedback #8 - colorblind users
    need a second cue). ok/warn/surcharge match the actual round map marker
@@ -350,14 +362,35 @@ body {
    of a point shape to read as visually distinct from the 3 point rows. */
 .gis-canvas-legend-swatch--circle { border-radius: 50%; }
 .gis-canvas-legend-swatch--diamond { border-radius: 2px; transform: rotate(45deg); width: 10px; height: 10px; }
+/* Dashed line swatch for the province boundary — mirrors the map line's dash.
+   Colour comes from the row's inline `color`, drawn via `currentColor`. */
+.gis-canvas-legend-swatch--line { width: 16px; height: 0; align-self: center; border-radius: 0; background: transparent; border-top: 2px dashed currentColor; }
 
 /* Bigger/bolder station pill (P2-15, feedback #9 - "246 / 1.61m" was hard
-   to read at the original size). */
+   to read at the original size; bumped again 2026-07-24 for 24" screens at
+   ~70-90cm viewing distance). Severity now shows via a status dot + colored
+   left border (2026-07-24 alert-marker feedback) so danger reads from the
+   label itself, not color alone. */
 .gis-water-level-label {
-  background: #fff; border-radius: 8px; padding: 5px 10px;
-  font-size: 13px; font-weight: 700; color: var(--dark-blue);
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #fff; border-radius: 8px; padding: 7px 12px;
+  font-size: 15px; font-weight: 700; color: var(--dark-blue);
   box-shadow: 0 3px 10px rgba(15,42,67,.28); white-space: nowrap;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e2e8f0; border-left-width: 4px;
+}
+.gis-water-level-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; background: #94a3b8; }
+.gis-water-level-label--ok { border-left-color: var(--accent-light); }
+.gis-water-level-label--ok .gis-water-level-dot { background: var(--accent-light); }
+.gis-water-level-label--warn { border-left-color: #d97706; }
+.gis-water-level-label--warn .gis-water-level-dot { background: #d97706; }
+.gis-water-level-label--surcharge { border-left-color: #dc2626; }
+.gis-water-level-label--surcharge .gis-water-level-dot { background: #dc2626; }
+/* Pulse ONLY on critical (Government-GIS restraint: minimal, meaningful
+   motion). Disabled under prefers-reduced-motion further below. */
+.gis-water-level-label--surcharge { animation: gis-pulse 1.6s ease-in-out infinite; }
+@keyframes gis-pulse {
+  0%, 100% { box-shadow: 0 3px 10px rgba(220,38,38,.28); }
+  50% { box-shadow: 0 3px 16px rgba(220,38,38,.6); }
 }
 
 /* Structured popup content (P2-15) - MapLibre popups render raw HTML (no
@@ -372,18 +405,58 @@ body {
 .gis-popup-badge--ok { background: var(--accent-light); }
 .gis-popup-badge--warn { background: #d97706; }
 .gis-popup-badge--surcharge { background: #dc2626; }
-.gis-popup-focus-btn {
-  margin-top: 6px; width: 100%; border: 1px solid #cbd5e1; background: #fff; color: var(--navy);
-  border-radius: 6px; padding: 5px 8px; font-size: 11.5px; font-weight: 600; cursor: pointer;
-}
-.gis-popup-focus-btn:hover { background: #eef4fa; }
 .gis-popup-updated { margin-top: 4px; padding-top: 4px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 11px; }
+/* Manhole hover popup (2026-07-24): non-interactive so the cursor never lands
+   on it and re-fires the layer's mouseleave (flicker); it's a read-only
+   preview with an inline water-level chart. */
+.gis-hover-popup { pointer-events: none; }
+.gis-popup-chart-caption { margin-top: 6px; font-size: 10.5px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .3px; }
+.gis-node-chart { display: block; width: 100%; height: auto; margin-top: 3px; }
+/* Subtle popup entrance (2026-07-24): 95%->100% scale + fade, 150ms, no
+   bounce. Applied to `.maplibregl-popup-content` (the inner box) NOT the
+   outer `.maplibregl-popup`, whose `transform` MapLibre owns for positioning —
+   animating that would misplace the popup mid-animation. */
+.maplibregl-popup-content { transform-origin: center bottom; animation: gis-popup-in 150ms ease-out; }
+@keyframes gis-popup-in {
+  from { opacity: 0; transform: scale(.95); }
+  to { opacity: 1; transform: scale(1); }
+}
 .gis-warning-marker {
   width: 24px; height: 24px; border-radius: 50%;
   background: #dc2626; color: #fff; display: flex; align-items: center; justify-content: center;
   box-shadow: 0 2px 8px rgba(220,38,38,.45); border: 2px solid #fff;
 }
 .gis-warning-marker svg { width: 15px; height: 15px; fill: currentColor; }
+
+/* Situation banner (2026-07-24) - exception-driven alert floating top-center
+   over the map, only rendered when critical flood nodes exist. Red, calm,
+   government-appropriate: a 150ms fade-in, no bounce/slide theatrics. */
+.gis-situation-banner {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 3;
+  display: flex; align-items: center; gap: 10px; max-width: min(560px, calc(100% - 140px));
+  background: #dc2626; color: #fff; border-radius: 999px;
+  padding: 8px 10px 8px 16px; box-shadow: 0 4px 16px rgba(220,38,38,.4);
+  animation: gis-banner-in 150ms ease-out;
+}
+.gis-situation-banner > .icon { flex: none; }
+.gis-situation-banner-text { font-size: 13.5px; font-weight: 700; white-space: nowrap; }
+.gis-situation-banner-action {
+  flex: none; border: none; cursor: pointer;
+  background: #fff; color: #dc2626; border-radius: 999px;
+  padding: 5px 14px; font-size: 12.5px; font-weight: 700;
+  transition: background var(--gis-transition);
+}
+.gis-situation-banner-action:hover { background: #fee2e2; }
+.gis-situation-banner-close {
+  flex: none; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  border: none; background: transparent; color: #fff; border-radius: 50%; cursor: pointer;
+  transition: background var(--gis-transition);
+}
+.gis-situation-banner-close:hover { background: rgba(255,255,255,.2); }
+@keyframes gis-banner-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
 
 /* GIS map right panel - P2-04. Independent auto-height cards (2026-07-23
    follow-up) instead of 1 tall card - see GisRightPanel.tsx's comment for
@@ -392,27 +465,18 @@ body {
    below the export/fullscreen corner buttons (2026-07-23 follow-up, 3rd
    round). (The left layer panel was re-docked as a real flex sibling on
    2026-07-24; this read-only info panel stays floating.) */
-/* P2-12: the 2 previously-separate `.gis-right-card`s (layer info + stats)
-   merged into 1 card - `.gis-right-panel` now carries the card chrome
-   directly, sections inside are plain divs split by `.gis-right-divider`. */
+/* Reduced to a single "Thống kê ngập hiện tại" card (2026-07-24 feedback):
+   the flood-layer opacity slider was removed as not matching the panel's
+   purpose, so what remains is just the live flood stats. */
 .gis-right-panel {
   position: absolute; top: 58px; right: 12px; z-index: 2;
-  width: 220px; max-height: calc(100% - 170px); overflow-y: auto;
+  width: 230px; max-height: calc(100% - 170px); overflow-y: auto;
   background: rgba(255,255,255,.97); backdrop-filter: blur(4px);
   border-radius: 10px; box-shadow: 0 2px 10px rgba(15,42,67,.18);
-  padding: 12px; display: flex; flex-direction: column;
+  padding: 16px; display: flex; flex-direction: column;
 }
-.gis-right-panel-title { margin: 0 0 10px; font-size: 13px; font-weight: 700; color: var(--navy); }
-.gis-right-section { display: flex; flex-direction: column; gap: 8px; }
-.gis-right-divider { margin: 12px 0; border: none; border-top: 1px solid #e2e8f0; }
-.gis-right-section-title {
-  margin: 0; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .3px;
-}
-.gis-right-layer-name { font-size: 13px; font-weight: 600; color: var(--navy); }
-.gis-right-opacity-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #334155; }
-.gis-right-opacity-row input[type="range"] { flex: 1; accent-color: var(--accent); }
-.gis-right-opacity-value { font-weight: 700; color: var(--navy); width: 36px; text-align: right; }
-.gis-right-opacity-hint { font-size: 11px; color: #94a3b8; margin-top: -2px; }
+.gis-right-panel-title { margin: 0 0 12px; font-size: 13px; font-weight: 700; color: var(--navy); }
+.gis-right-section { display: flex; flex-direction: column; gap: 10px; }
 .gis-right-stat-row {
   display: flex; align-items: baseline; justify-content: space-between; font-size: 12.5px; color: #64748b;
   padding: 3px 0; border-bottom: 1px dashed #e2e8f0;
@@ -447,8 +511,13 @@ body {
   transition: background var(--gis-transition);
 }
 .gis-bottom-float-toggle:hover { background: #eef4fa; }
+/* Reserve the fixed chrome (global topbar 52px + this page's control bar +
+   content padding, ~200px total) instead of a raw `vh`, so the map grows to
+   fill the viewport WITHOUT pushing the search/time control bar below it off
+   the bottom edge (2026-07-24 feedback — the old 82vh/90vh overshot because
+   `vh` ignores the topbar the map sits under). */
 .content-page2.gis-bottom-collapsed .gis-body,
-.content-page2.gis-bottom-collapsed .gis-canvas-wrapper { min-height: 82vh; }
+.content-page2.gis-bottom-collapsed .gis-canvas-wrapper { min-height: calc(100vh - 200px); }
 
 /* Focus Mode (P2-19, feedback #15) - hides the layer/right panels + bottom
    row entirely (siblings, not just visually dimmed) so the map is close to
@@ -456,8 +525,17 @@ body {
    height reclaim, plus its own taller min-height since focus mode also
    drops the side panels that the plain bottom-collapse leaves in place. */
 .content-page2.gis-focus-mode .gis-body,
-.content-page2.gis-focus-mode .gis-canvas-wrapper { min-height: 90vh; }
+.content-page2.gis-focus-mode .gis-canvas-wrapper { min-height: calc(100vh - 200px); }
 .gis-focus-toggle-btn.active { background: var(--accent); color: #fff; }
+
+/* Government-GIS restraint: honor the OS "reduce motion" setting — the
+   critical-marker pulse, banner fade, and popup scale all drop to instant so
+   nothing animates for users who asked not to see motion. */
+@media (prefers-reduced-motion: reduce) {
+  .gis-water-level-label--surcharge { animation: none; }
+  .gis-situation-banner { animation: none; }
+  .maplibregl-popup-content { animation: none; }
+}
 
 /* login */
 @keyframes login-card-in {
