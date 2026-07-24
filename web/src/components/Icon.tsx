@@ -45,6 +45,8 @@ import fullscreenExit from "@material-symbols/svg-400/outlined/fullscreen_exit.s
 import layers from "@material-symbols/svg-400/outlined/layers.svg?raw";
 import chevronLeft from "@material-symbols/svg-400/outlined/chevron_left.svg?raw";
 import chevronRight from "@material-symbols/svg-400/outlined/chevron_right.svg?raw";
+import keyboardArrowUp from "@material-symbols/svg-400/outlined/keyboard_arrow_up.svg?raw";
+import keyboardArrowDown from "@material-symbols/svg-400/outlined/keyboard_arrow_down.svg?raw";
 import arrowUpward from "@material-symbols/svg-400/outlined/arrow_upward.svg?raw";
 import arrowDownward from "@material-symbols/svg-400/outlined/arrow_downward.svg?raw";
 import trendingFlat from "@material-symbols/svg-400/outlined/trending_flat.svg?raw";
@@ -60,7 +62,7 @@ export type IconName =
   | "search" | "play" | "pause" | "skip-next" | "skip-previous"
   | "select" | "pan" | "zoom-in" | "zoom-out" | "ruler" | "area"
   | "download" | "fullscreen" | "fullscreen-exit"
-  | "layers" | "chevron-left" | "chevron-right"
+  | "layers" | "chevron-left" | "chevron-right" | "chevron-up" | "chevron-down"
   | "trend-up" | "trend-down" | "trend-flat" | "focus";
 
 /** Maps this app's semantic icon names to the imported Material Symbols SVG
@@ -105,6 +107,8 @@ const RAW: Record<IconName, string> = {
   layers,
   "chevron-left": chevronLeft,
   "chevron-right": chevronRight,
+  "chevron-up": keyboardArrowUp,
+  "chevron-down": keyboardArrowDown,
   "trend-up": arrowUpward,
   "trend-down": arrowDownward,
   "trend-flat": trendingFlat,

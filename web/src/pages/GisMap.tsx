@@ -1,13 +1,15 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Icon from "../components/Icon";
 import GisTopBar from "../components/gis/GisTopBar";
 import GisLayerPanel, { DEFAULT_GIS_LAYER_STATE, type GisLayerState } from "../components/gis/GisLayerPanel";
 import GisMapCanvas from "../components/gis/GisMapCanvas";
 import GisRightPanel from "../components/gis/GisRightPanel";
 import GisCameraCard from "../components/gis/GisCameraCard";
+import type { StationHit } from "../components/gis/GisSearchBox";
 import RainForecastChart from "../components/RainForecastChart";
 import WaterLevelForecastChart from "../components/WaterLevelForecastChart";
 import { useAppData } from "../context/AppDataContext";
+import { classifyOutlet } from "../data/dashboardService";
 import { useT } from "../i18n/I18nContext";
 import { useCurrentSimStep } from "../lib/useCurrentSimStep";
 
@@ -59,6 +61,8 @@ export default function GisMap() {
   // so exiting focus mode restores whatever the user's manual bottom-row
   // preference was.
   const [focusMode, setFocusMode] = useState(false);
+  // Station picked in the search box (2026-07-24 follow-up) - a change flies the map there.
+  const [flyTarget, setFlyTarget] = useState<StationHit | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -77,11 +81,22 @@ export default function GisMap() {
     };
   }, [playing, speed, simulation.steps]);
 
-  // Search groundwork (P2-20, feedback #3) - real station/culvert muids
-  // only, no place-name autocomplete (no gazetteer data source exists).
-  const stationIds = [...data.manholes.features, ...data.outlets.features]
-    .map((f) => String(f.properties?.muid))
-    .filter(Boolean);
+  // Search index (2026-07-24 follow-up) - real station/culvert points only (no gazetteer
+  // data source exists). Manholes are water-level nodes; outlets split into
+  // pump/gate via the same `classifyOutlet` the map uses. Coordinates come
+  // straight off each feature's Point geometry so a pick can fly the map.
+  // Memoized on `data` so playback ticks (which re-render this page every
+  // second) don't rebuild the ~880-point index each time.
+  const stations = useMemo<StationHit[]>(() => [
+    ...data.manholes.features.map((f) => ({ f, type: "station" as const })),
+    ...data.outlets.features.map((f) => ({ f, type: classifyOutlet(f.properties?.muid) })),
+  ]
+    .map(({ f, type }) => {
+      const id = String(f.properties?.muid ?? "");
+      const coords = f.geometry?.type === "Point" ? f.geometry.coordinates : null;
+      return coords ? { id, type, lng: coords[0], lat: coords[1] } : null;
+    })
+    .filter((s): s is StationHit => s !== null && s.id !== ""), [data]);
 
   return (
     <div
@@ -96,9 +111,16 @@ export default function GisMap() {
         onTogglePlay={() => setPlaying((p) => !p)}
         speed={speed}
         onSpeedChange={setSpeed}
-        stationIds={stationIds}
+        stations={stations}
+        onSelectStation={setFlyTarget}
       />
       <div className="gis-body">
+        {/* Docked left panel (2026-07-24 follow-up): a flex sibling of the map,
+            so opening it pushes the map narrower instead of floating over it.
+            The map's own ResizeObserver (P2-03) picks up the width change. */}
+        {!focusMode && showLayerPanel && (
+          <GisLayerPanel state={layerState} onChange={setLayerState} onClose={() => setShowLayerPanel(false)} />
+        )}
         <GisMapCanvas
           data={data}
           step={step}
@@ -107,33 +129,38 @@ export default function GisMap() {
           focusMode={focusMode}
           onToggleFocusMode={() => setFocusMode((v) => !v)}
           onFocusStation={() => setFocusMode(true)}
+          flyTarget={flyTarget}
         >
-          {!focusMode && (
-            <div className="gis-layer-overlay">
-              {showLayerPanel && <GisLayerPanel state={layerState} onChange={setLayerState} />}
-              <button
-                type="button"
-                className="gis-layer-toggle-btn"
-                title={t(showLayerPanel ? "gis.layer.hidePanel" : "gis.layer.showPanel")}
-                onClick={() => setShowLayerPanel((v) => !v)}
-              >
-                <Icon name={showLayerPanel ? "chevron-left" : "layers"} size={18} />
-              </button>
-            </div>
+          {!focusMode && !showLayerPanel && (
+            <button
+              type="button"
+              className="gis-layer-open-btn"
+              title={t("gis.layer.showPanel")}
+              onClick={() => setShowLayerPanel(true)}
+            >
+              <Icon name="layers" size={18} />
+              <span>{t("gis.layer.panelTitle")}</span>
+            </button>
           )}
           {!focusMode && (
             <GisRightPanel data={data} step={step} floodOpacity={floodOpacity} onFloodOpacityChange={setFloodOpacity} />
           )}
+          {/* Analytics collapse toggle floats over the map's bottom edge
+              (feedback 2026-07-24) instead of sitting in its own row below the
+              map, so the map keeps that vertical space whether the panel is
+              open or collapsed. */}
+          {!focusMode && (
+            <button
+              type="button"
+              className="gis-bottom-float-toggle"
+              onClick={() => setBottomCollapsed((v) => !v)}
+            >
+              <Icon name={bottomCollapsed ? "chevron-up" : "chevron-down"} size={14} />
+              <span>{t(bottomCollapsed ? "gis.bottomPanel.expand" : "gis.bottomPanel.collapse")}</span>
+            </button>
+          )}
         </GisMapCanvas>
       </div>
-      {!focusMode && (
-        <div className="gis-bottom-toggle-row">
-          <button type="button" className="gis-bottom-toggle-btn" onClick={() => setBottomCollapsed((v) => !v)}>
-            <Icon name={bottomCollapsed ? "chevron-left" : "chevron-right"} size={14} />
-            <span>{t(bottomCollapsed ? "gis.bottomPanel.expand" : "gis.bottomPanel.collapse")}</span>
-          </button>
-        </div>
-      )}
       {!focusMode && !bottomCollapsed && (
         <div className="gis-bottom-row">
           <RainForecastChart time={data.rainForecast.time} mm={data.rainForecast.precipitation} />

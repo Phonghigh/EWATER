@@ -3,7 +3,7 @@ import { useI18n } from "../../i18n/I18nContext";
 
 export type RealtimeLayerKey = "rainStation" | "waterLevel" | "pumpStation" | "gate";
 export type ForecastLayerKey = "rainForecast" | "waterLevelForecast" | "floodForecast";
-export type BasemapKey = "light" | "satellite" | "googleSatellite" | "osm";
+export type BasemapKey = "satellite" | "osm";
 
 const REALTIME_LAYERS: RealtimeLayerKey[] = ["rainStation", "waterLevel", "pumpStation", "gate"];
 // Same glyphs already used elsewhere for these exact concepts (weather chip,
@@ -14,17 +14,12 @@ const REALTIME_ICONS: Record<RealtimeLayerKey, IconName> = {
 };
 const FORECAST_LAYERS: ForecastLayerKey[] = ["rainForecast", "waterLevelForecast", "floodForecast"];
 
-// Which basemap options actually have a configured tile source today (see
-// `shared/config/map-style.json` → `config.basemaps`, only `osm`/`satellite`
-// exist). "light" and "googleSatellite" are kept as real, selectable radio
-// options per the approved Phase-2 spec (2026-07-23 note in
-// tasks/backlog/phase-2.md) but have no tile source yet - P2-03 (the real
-// map) must resolve that gap before switching to them does anything
-// visible. Not fabricating a Google tile URL here (usage requires an API
-// key/ToS agreement this project doesn't have) or a placeholder "light"
-// style - selecting the state is honest, rendering it is P2-03's job.
-const BASEMAPS_WITHOUT_TILE_SOURCE: BasemapKey[] = ["light", "googleSatellite"];
-const BASEMAPS: BasemapKey[] = ["light", "satellite", "googleSatellite", "osm"];
+// Only the two basemaps with a real, configured tile source (see
+// `shared/config/map-style.json` → `config.basemaps`). The earlier "light"
+// and "googleSatellite" options had no tile source and were labeled "(sắp
+// có)"; they were dropped (2026-07-24 user decision) rather than kept as
+// non-functional clutter that confused older operators.
+const BASEMAPS: BasemapKey[] = ["osm", "satellite"];
 
 export interface GisLayerState {
   realtime: Record<RealtimeLayerKey, boolean>;
@@ -35,19 +30,25 @@ export interface GisLayerState {
 export const DEFAULT_GIS_LAYER_STATE: GisLayerState = {
   realtime: { rainStation: true, waterLevel: true, pumpStation: true, gate: true },
   forecast: { rainForecast: true, waterLevelForecast: true, floodForecast: true },
-  basemap: "light",
+  basemap: "osm",
 };
 
 /** Left "Lớp dữ liệu" panel - 3 flat groups (no sub-tabs, no bookmark, no
  *  "Quản lý lớp" button; cut from the original mockup per the 2026-07-23
- *  user decision recorded in tasks/backlog/phase-2.md). Purely UI + local
- *  state here - wiring checkbox/radio state into real map layers is
- *  P2-03's job, since the map itself doesn't exist yet. */
+ *  user decision recorded in tasks/backlog/phase-2.md).
+ *
+ *  Docked (2026-07-24 follow-up): rendered as a flex sibling of the map in
+ *  `.gis-body`, so opening it *pushes the map narrower* instead of floating
+ *  over it - the user found the old translucent overlay (which covered the
+ *  map and scrolled despite few options) inconvenient. Its own header carries
+ *  the title + a close button, since a docked panel needs an in-panel way to
+ *  dismiss it (the floating open-button on the map only exists while closed). */
 export default function GisLayerPanel({
-  state, onChange,
+  state, onChange, onClose,
 }: {
   state: GisLayerState;
   onChange: (next: GisLayerState) => void;
+  onClose: () => void;
 }) {
   const { t } = useI18n();
 
@@ -63,6 +64,16 @@ export default function GisLayerPanel({
 
   return (
     <div className="gis-layer-panel">
+      <div className="gis-layer-panel-head">
+        <span className="gis-layer-panel-title">
+          <Icon name="layers" size={16} />
+          {t("gis.layer.panelTitle")}
+        </span>
+        <button type="button" className="gis-layer-panel-close" title={t("gis.layer.hidePanel")} onClick={onClose}>
+          <Icon name="chevron-left" size={18} />
+        </button>
+      </div>
+
       <div className="gis-layer-group">
         <h4 className="gis-layer-group-title">
           <Icon name="monitor" size={14} className="gis-layer-group-title-icon" />
@@ -99,12 +110,7 @@ export default function GisLayerPanel({
           <label key={key} className="gis-layer-row">
             <input type="radio" name="gis-basemap" checked={state.basemap === key} onChange={() => selectBasemap(key)} />
             <span className={`gis-basemap-swatch gis-basemap-swatch--${key}`} />
-            <span>
-              {t(`gis.basemap.${key}`)}
-              {BASEMAPS_WITHOUT_TILE_SOURCE.includes(key) && (
-                <span className="gis-layer-row-note">{t("gis.comingSoonInline")}</span>
-              )}
-            </span>
+            <span>{t(`gis.basemap.${key}`)}</span>
           </label>
         ))}
       </div>

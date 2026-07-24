@@ -62,9 +62,14 @@ a task pushes them further than before.
 | Raw HTML popups can't use the app's React `Icon` component | not-started | 2026-07-23 | MapLibre `Popup.setHTML()` renders a literal string outside React's tree — enriching the manhole popup with a trend arrow reused the same `?raw`-imported-SVG-spliced-into-a-template-string trick already used for map markers, not a `<Icon/>` call (which would just print as inert text). See [P2-08..P2-20 report](learn-log/P2-08-P2-20-ux-redesign-cognitive-load.md) §4. |
 | The mount-once-effect ref guard is a reusable house style, not a one-off | not-started | 2026-07-23 | `stepRef`/`dataRef`/`onFocusStationRef` were added to `GisMapCanvas.tsx` following the exact same shape as the file's existing `tRef`/`modeRef` — confirms the "ref kept in sync every render, dereferenced inside a mount-once effect's handler" fix generalizes to any new stale-closure need in that file. See [P2-08..P2-20 report](learn-log/P2-08-P2-20-ux-redesign-cognitive-load.md) §4. |
 | Conditional non-rendering is safe to hide UI when its state lives one level up | not-started | 2026-07-23 | Focus Mode hides the layer/right/bottom panels via `{!focusMode && <X/>}` (full unmount) instead of CSS visibility, since none of those components hold state of their own that would be lost — it already lives in `GisMap.tsx` (`layerState`, `bottomCollapsed`), one level above where the conditional sits. See [P2-08..P2-20 report](learn-log/P2-08-P2-20-ux-redesign-cognitive-load.md) §4. |
-| Native `<datalist>` as honest, zero-dependency search groundwork | not-started | 2026-07-23 | Full place-name search needs a gazetteer this project doesn't have — `<input list=...>`+`<datalist>` gives free browser-native suggestions over real station muids today, without faking a search experience the data can't back up. See [P2-08..P2-20 report](learn-log/P2-08-P2-20-ux-redesign-cognitive-load.md) §4. |
+| Native `<datalist>` as honest, zero-dependency search groundwork | superseded | 2026-07-24 | Full place-name search needs a gazetteer this project doesn't have — `<input list=...>`+`<datalist>` gave free browser-native suggestions over real station muids, but its unstylable dropdown dumped all ~880 raw muids on the down-arrow; replaced 2026-07-24 by a custom autocomplete. See [P2-08..P2-20 report](learn-log/P2-08-P2-20-ux-redesign-cognitive-load.md) §4 and [search/toggle/basemap report](learn-log/FOLLOWUP-2026-07-24-gis-search-toggle-basemap.md) §4. |
+| Custom autocomplete vs. native `<datalist>` | not-started | 2026-07-24 | A rendered list of `<button>`s under the input (owning open/filter/highlight state) is the only way to style results, cap them to 8, show a per-row type label, and add keyboard + `combobox/listbox/option` ARIA — none of which `<datalist>` allows. See [search/toggle/basemap report](learn-log/FOLLOWUP-2026-07-24-gis-search-toggle-basemap.md) §4. |
+| Dropdown options commit on `pointerdown`, not `click` | not-started | 2026-07-24 | An outside-`pointerdown` close-handler removes the option from the DOM before a `click` could land — options fire on `onPointerDown` (+`preventDefault` to keep input focus) so the selection isn't lost. See [search/toggle/basemap report](learn-log/FOLLOWUP-2026-07-24-gis-search-toggle-basemap.md) §4. |
+| Prop-driven `map.flyTo` instead of an imperative ref | not-started | 2026-07-24 | Search-select flies the map by lifting a `flyTarget` state in `GisMap` and keying a `GisMapCanvas` effect on it — matches every other map mutation there (each a `useEffect` guarded by `isStyleLoaded()`), avoiding `forwardRef`/`useImperativeHandle` for one action. See [search/toggle/basemap report](learn-log/FOLLOWUP-2026-07-24-gis-search-toggle-basemap.md) §4. |
+| `?raw` SVG imports aren't existence-checked by `tsc` | not-started | 2026-07-24 | A wrong Material-Symbols glyph name (`expand_less`) passed `tsc` (loose `?raw` typing) but failed only at Vite resolve time — confirm the file exists in the package dir before importing a new glyph. See [search/toggle/basemap report](learn-log/FOLLOWUP-2026-07-24-gis-search-toggle-basemap.md) §6. |
+| Docked (map-pushing) panel vs. floating overlay | not-started | 2026-07-24 | The left layer panel was re-docked as the first flex child of `.gis-body` so opening it narrows the map (MapLibre's `ResizeObserver` handles resize) instead of covering it — reversing the 2026-07-23 float once the user found the overlay awkward; a docked panel needs an in-panel close since the floating open-button only exists while closed. See [search/toggle/basemap report](learn-log/FOLLOWUP-2026-07-24-gis-search-toggle-basemap.md) §4. |
 
-Status values: `not-started`, `shaky`, `understood`.
+Status values: `not-started`, `shaky`, `understood`, `superseded`.
 
 ## Mind Map
 
@@ -126,9 +131,43 @@ mindmap
       Mount-once ref guard as reusable house style
       Conditional non-render safe when state lives up
       Native datalist as honest search groundwork
+      Custom autocomplete over datalist
+      pointerdown-not-click for dropdown options
+      Prop-driven map.flyTo over imperative ref
+      raw SVG imports not existence-checked by tsc
 ```
 
 ## Session Journal
+
+### 2026-07-24
+- Covered (later same day): re-docked the left "Lớp dữ liệu" panel. It had been
+  a translucent overlay floating over the map (bottom-left) that covered the map
+  and scrolled despite having few options — the user asked for a real left panel
+  that pushes the map instead. Moved `<GisLayerPanel>` out of `GisMapCanvas`'s
+  `children` back to a direct flex child of `.gis-body` (reversing the 2026-07-23
+  3rd-round float), gave it a header (title + close ✕ / `onClose`), restyled it
+  from floating card to a solid full-height docked sidebar, and replaced the old
+  floating toggle with a single labeled `.gis-layer-open-btn` pill shown only
+  while closed. Opening it now narrows the map (handled by the map's existing
+  `ResizeObserver`); its ~9 rows fit the full height with no scroll. New key
+  `gis.layer.panelTitle`.
+- Covered: three user-flagged `/gis-map` UX fixes in one round. (1) Replaced the
+  native `<datalist>` search — unstylable, and its down-arrow dumped all ~880
+  raw muids — with a custom `GisSearchBox` autocomplete (filtered, capped to 8,
+  typed rows, keyboard + `combobox/listbox/option` ARIA); picking a result now
+  flies the map to that station via a lifted `flyTarget` state + a prop-keyed
+  `GisMapCanvas` effect. (2) Floated the "Thu gọn phân tích" toggle over the
+  map (as a `GisMapCanvas` child) instead of a dedicated row below it, so the
+  map keeps that height. (3) Dropped the two non-functional "(sắp có)" basemaps
+  (`light`/`googleSatellite`), default `light→osm`, trimmed the `BasemapKey`
+  union + unused i18n keys + swatch CSS.
+- Snag: `expand_less.svg?raw` doesn't exist in `@material-symbols/svg-400` and
+  `tsc` didn't catch it (loose `?raw` typing) — only Vite's resolver did; fixed
+  with the real `keyboard_arrow_up/down` glyphs after listing the package dir.
+- Note: live in-browser QA couldn't finish in the sandbox browser (it can't
+  reach the backend `loadAppData` fetches, so the app stays on its data loader);
+  verified via `tsc` (0 errors), `check-i18n` (in sync), and modules serving 200.
+- See [search/toggle/basemap report](learn-log/FOLLOWUP-2026-07-24-gis-search-toggle-basemap.md).
 
 ### 2026-07-23
 - Covered: audited the Dashboard → `/gis-map` link (P2-06) after Phase 2's

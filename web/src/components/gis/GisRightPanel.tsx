@@ -20,8 +20,10 @@ function formatArea(m2: number): string {
  *  over the map's top-right corner via its own `position: absolute` (2026-
  *  07-23 follow-up, 3rd round) - it used to be a flex sibling of the map in
  *  `.gis-body`, which meant it always ate width from the map even when it
- *  had little to show. The mirror of `.gis-layer-overlay` on the opposite
- *  corner.
+ *  had little to show. (The left "Lớp dữ liệu" panel took the opposite path
+ *  on 2026-07-24 - re-docked as a flex sibling that deliberately pushes the
+ *  map - because it carries enough content to justify the width, unlike this
+ *  read-only info panel.)
  *
  *  Each section is its own bordered card (2026-07-23 follow-up) rather than
  *  one tall card wrapping all sections - back when this was a flex sibling

@@ -1,4 +1,5 @@
 import Icon from "../Icon";
+import GisSearchBox, { type StationHit } from "./GisSearchBox";
 import { useI18n } from "../../i18n/I18nContext";
 import { stepTimeLabel } from "../../lib/simTime";
 import type { Simulation } from "../../types";
@@ -14,7 +15,7 @@ function clampStep(step: number, steps: number): number {
 }
 
 export default function GisTopBar({
-  simulation, step, onStepChange, baselineStep, playing, onTogglePlay, speed, onSpeedChange, stationIds,
+  simulation, step, onStepChange, baselineStep, playing, onTogglePlay, speed, onSpeedChange, stations, onSelectStation,
 }: {
   simulation: Simulation;
   step: number;
@@ -32,11 +33,11 @@ export default function GisTopBar({
   onTogglePlay: () => void;
   speed: number;
   onSpeedChange: (speed: number) => void;
-  /** Real station/culvert muids for a native `<datalist>` suggestion list
-   *  (P2-20, feedback #3) - groundwork only: no place-name/gazetteer search,
-   *  no click-through to "jump to station" yet, just typing a known muid
-   *  shows it in the browser's own suggestion dropdown. */
-  stationIds?: string[];
+  /** Real station/culvert points for the search autocomplete (2026-07-24 follow-up). Picking
+   *  one flies the map there via `onSelectStation`. No place-name/gazetteer
+   *  search yet (no such data source), so muid is still the only search key. */
+  stations: StationHit[];
+  onSelectStation: (hit: StationHit) => void;
 }) {
   const { t } = useI18n();
   const stepsPerHour = 60 / simulation.stepMinutes;
@@ -49,15 +50,7 @@ export default function GisTopBar({
 
   return (
     <div className="gis-topbar">
-      <div className="gis-topbar-search">
-        <Icon name="search" size={18} />
-        <input type="text" placeholder={t("gis.searchPlaceholder")} list={stationIds?.length ? "gis-station-suggest" : undefined} />
-        {stationIds && stationIds.length > 0 && (
-          <datalist id="gis-station-suggest">
-            {stationIds.map((id) => <option key={id} value={id} />)}
-          </datalist>
-        )}
-      </div>
+      <GisSearchBox stations={stations} onSelect={onSelectStation} />
 
       <div className="gis-topbar-time">
         <span className="gis-topbar-time-label">{t("gis.time")}</span>

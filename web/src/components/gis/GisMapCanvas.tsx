@@ -17,6 +17,7 @@ import { stepTimeLabel } from "../../lib/simTime";
 import { floodHeatmapPaint } from "../../lib/floodHeatmap";
 import type { AppData, MapStyleConfig } from "../../types";
 import type { GisLayerState, BasemapKey } from "./GisLayerPanel";
+import type { StationHit } from "./GisSearchBox";
 
 type FillState = "ok" | "warn" | "surcharge";
 type ToolMode = "select" | "pan" | "distance" | "area";
@@ -27,15 +28,12 @@ function fillState(fill: number, thresholds: MapStyleConfig["simThresholds"]): F
   return "ok";
 }
 
-// Only `osm`/`satellite` have a real tile source in `config.basemaps` (see
-// GisLayerPanel.tsx's comment) - "light" and "googleSatellite" fall back to
-// the closest real tile set that actually exists (osm for a light/vector
-// look, satellite imagery for anything satellite-labeled) rather than
-// fabricating a new tile source. Both raster layers are pre-added and this
-// just toggles which one is visible, so switching basemaps never needs a
-// full `map.setStyle()` (which would drop our custom sources/layers).
+// Both `osm`/`satellite` raster layers are pre-added and this just toggles
+// which one is visible, so switching basemaps never needs a full
+// `map.setStyle()` (which would drop our custom sources/layers). The earlier
+// non-functional "light"/"googleSatellite" options were removed (2026-07-24).
 function resolveBasemapKey(basemap: BasemapKey): "osm" | "satellite" {
-  return basemap === "satellite" || basemap === "googleSatellite" ? "satellite" : "osm";
+  return basemap === "satellite" ? "satellite" : "osm";
 }
 
 // Rasterizes a Material Symbols SVG (which has no `fill` attribute of its
@@ -71,12 +69,17 @@ const TOOLS: { mode: ToolMode; icon: IconName }[] = [
  *  table), so those checkboxes exist and can be toggled but don't change
  *  anything on the map yet. That gap is inherited from P2-02, not new here. */
 export default function GisMapCanvas({
-  data, step, layerState, floodOpacity = 0.35, children, focusMode = false, onToggleFocusMode, onFocusStation,
+  data, step, layerState, floodOpacity = 0.35, children, focusMode = false, onToggleFocusMode, onFocusStation, flyTarget,
 }: {
   data: AppData;
   step: number;
   layerState: GisLayerState;
   floodOpacity?: number;
+  /** Station picked in the top-bar search box (2026-07-24 follow-up) —
+   *  a change here flies the map to that point + opens a labeled popup. Kept
+   *  prop-driven (an effect keyed on it) rather than an imperative ref handle,
+   *  matching every other map mutation in this component. */
+  flyTarget?: StationHit | null;
   /** Rendered inside `.gis-canvas-wrapper` alongside the built-in floating
    *  controls (tools, corner buttons, legend) - lets a caller float extra
    *  UI (the "Lớp dữ liệu" panel + its toggle, as of the 2026-07-23
@@ -367,6 +370,25 @@ export default function GisMapCanvas({
     };
     if (map.isStyleLoaded()) apply(); else map.once("load", apply);
   }, [layerState.basemap]);
+
+  // Fly to the station picked in the search box + open a labeled popup. The
+  // type label reuses the layer/search strings so the popup stays bilingual
+  // (`tRef.current`, not a mount-time capture).
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !flyTarget) return;
+    const typeKey = flyTarget.type === "pump" ? "gis.layer.pumpStation"
+      : flyTarget.type === "gate" ? "gis.layer.gate"
+      : "gis.search.typeStation";
+    const apply = () => {
+      map.flyTo({ center: [flyTarget.lng, flyTarget.lat], zoom: 16 });
+      new maplibregl.Popup()
+        .setLngLat([flyTarget.lng, flyTarget.lat])
+        .setHTML(`<div class="gis-popup"><div class="gis-popup-title">${tRef.current(typeKey)}: ${flyTarget.id}</div></div>`)
+        .addTo(map);
+    };
+    if (map.isStyleLoaded()) apply(); else map.once("load", apply);
+  }, [flyTarget]);
 
   // Manhole/outlet data + visibility per step and per P2-02 checkbox state.
   useEffect(() => {
