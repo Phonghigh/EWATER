@@ -886,6 +886,10 @@ body {
 /* Cùng chiều cao cố định với .gis-canvas-wrapper (bản đồ GIS) để map không đổi
    kích thước/vị trí khi chuyển qua lại giữa 2 trang. */
 .mon-map-card { position: relative; height: 560px; border-radius: 10px; overflow: hidden; }
+/* Ẩn "Phân tích chi tiết" → map chiếm gần trọn viewport (reserve = topbar 52 +
+   content padding 16+40 + buffer). Hiện charts → map về 560px, charts đẩy xuống
+   dưới. MapLibre ResizeObserver tự resize canvas khi chiều cao card đổi. */
+.content-page2.mon-charts-collapsed .mon-map-card { height: calc(100vh - 120px); }
 .mon-map-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .mon-map-legend {
   position: absolute; bottom: 12px; left: 12px; z-index: 2;
@@ -1001,5 +1005,5 @@ body {
   .mon-row-charts { grid-template-columns: 1fr; }
 }
 @media (max-width: 980px) {
-  .mon-map-card { height: 320px; }
+  .mon-map-card, .content-page2.mon-charts-collapsed .mon-map-card { height: 320px; }
 }

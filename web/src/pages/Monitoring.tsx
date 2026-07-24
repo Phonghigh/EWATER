@@ -77,7 +77,7 @@ export default function Monitoring() {
   }
 
   return (
-    <div className="content-page2">
+    <div className={`content-page2${chartsOpen ? "" : " mon-charts-collapsed"}`}>
       <div className="mon-map-overlay-wrap">
         <MonitoringStationMap
           stations={rainStations}
