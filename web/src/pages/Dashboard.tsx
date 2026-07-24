@@ -31,6 +31,13 @@ type Tone = "red" | "orange" | "blue" | "cyan" | "teal" | "green";
 const DEMO_MAX_WATER_LEVEL_M = 1.42;
 const DEMO_MAX_RAINFALL_MM = 132;
 
+// Pump/gate "active" counts used to come from `classifyOutlet`'s odd/even muid
+// split (see dashboardService.ts) - a fake heuristic, not real telemetry. Per
+// user request (2026-07-24) that misleading computed ratio is replaced with an
+// honest static placeholder ("0/9") + a sub-label explaining it updates once a
+// real asset registry/telemetry lands (tasks/INDEX.md P6-01).
+const PUMPS_GATES_PLACEHOLDER = "0 / 9";
+
 function StatCard({ icon, tone, label, value, unit, sub, secondary, valueTone, disabled }: {
   icon: IconName;
   tone: Tone;
@@ -43,8 +50,9 @@ function StatCard({ icon, tone, label, value, unit, sub, secondary, valueTone, d
    *  government-GIS review: fewer things competing for attention. */
   secondary?: boolean;
   /** Color the number itself for count-based safety indicators (0 = safe,
-   *  >0 = danger) so the reading doesn't require parsing the sub-label. */
-  valueTone?: "safe" | "danger";
+   *  >0 = danger) so the reading doesn't require parsing the sub-label, or
+   *  "info" for a neutral highlighted reading (e.g. peak water level). */
+  valueTone?: "safe" | "danger" | "info";
   /** Card isn't backed by trustworthy data yet - show a locked "coming
    *  soon" placeholder instead of `value`/`sub` rather than a number that
    *  looks real but isn't (same "don't fabricate" stance as elsewhere in
@@ -131,6 +139,7 @@ export default function Dashboard() {
           value={DEMO_MAX_WATER_LEVEL_M.toFixed(2)}
           unit="m"
           sub={t("dash.maxWaterLevel.sub")}
+          valueTone="info"
         />
         <StatCard
           icon="cloud-rain"
@@ -145,16 +154,16 @@ export default function Dashboard() {
           icon="pump"
           tone="teal"
           label={t("dash.activePumps")}
-          value={`${overview.pumpsAndGates.activePumpCount} / ${overview.pumpsAndGates.totalPumpCount}`}
+          value={PUMPS_GATES_PLACEHOLDER}
           sub={t("dash.activePumps.sub")}
           secondary
         />
         <StatCard
           icon="gate"
           tone="green"
-          label={t("dash.closedGates")}
-          value={`${overview.pumpsAndGates.closedGateCount} / ${overview.pumpsAndGates.totalGateCount}`}
-          sub={t("dash.closedGates.sub")}
+          label={t("dash.activeGates")}
+          value={PUMPS_GATES_PLACEHOLDER}
+          sub={t("dash.activeGates.sub")}
           secondary
         />
       </div>

@@ -175,13 +175,9 @@ export function culvertRows(culverts: Culvert[], step: number): CulvertRow[] {
  *  bản đồ và legend. `min` là ngưỡng dưới (>=), duyệt từ nặng đến nhẹ. */
 export const RAIN_BUCKETS: { min: number; color: string; label: string }[] = [
   { min: 100, color: "#b91c1c", label: ">100" },
-  { min: 70, color: "#ef4444", label: "70–100" },
-  { min: 50, color: "#f97316", label: "50–70" },
-  { min: 30, color: "#f59e0b", label: "30–50" },
-  { min: 15, color: "#84cc16", label: "15–30" },
-  { min: 5, color: "#22c55e", label: "5–15" },
-  { min: 0.05, color: "#38bdf8", label: "0–5" },
-  { min: -1, color: "#2563eb", label: "0" },
+  { min: 50, color: "#f97316", label: "50–100" },
+  { min: 15, color: "#84cc16", label: "15–50" },
+  { min: -1, color: "#38bdf8", label: "<15" },
 ];
 
 export function rainColor(mm: number): string {

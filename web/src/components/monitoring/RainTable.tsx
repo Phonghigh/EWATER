@@ -2,9 +2,9 @@ import { useMemo, useState } from "react";
 import { useT } from "../../i18n/I18nContext";
 import type { RainTableRow } from "../../data/monitoringService";
 
-type SortKey = "name" | "r10min" | "r1h" | "r3h" | "r6h" | "r24h";
+type SortKey = "name" | "r10min" | "r1h" | "r24h";
 
-/** Bảng số liệu mưa thực đo: trạm × {10 phút, 1 giờ, 3 giờ, 6 giờ, 24 giờ} + trạng thái.
+/** Bảng số liệu mưa thực đo: trạm × {10 phút, 1 giờ, 24 giờ} + trạng thái.
  *  Sắp xếp được theo cột số (mặc định 24h giảm dần) — aria-sort cho screen reader. */
 export default function RainTable({ rows }: { rows: RainTableRow[] }) {
   const t = useT();
@@ -32,8 +32,6 @@ export default function RainTable({ rows }: { rows: RainTableRow[] }) {
   const numCols: { key: SortKey; label: string }[] = [
     { key: "r10min", label: t("mon.col.r10min") },
     { key: "r1h", label: t("mon.col.r1h") },
-    { key: "r3h", label: t("mon.col.r3h") },
-    { key: "r6h", label: t("mon.col.r6h") },
     { key: "r24h", label: t("mon.col.r24h") },
   ];
 
@@ -63,8 +61,6 @@ export default function RainTable({ rows }: { rows: RainTableRow[] }) {
               <td>{r.name}</td>
               <td className="mon-num">{r.r10min.toFixed(1)}</td>
               <td className="mon-num">{r.r1h.toFixed(1)}</td>
-              <td className="mon-num">{r.r3h.toFixed(1)}</td>
-              <td className="mon-num">{r.r6h.toFixed(1)}</td>
               <td className="mon-num mon-num--strong">{r.r24h.toFixed(1)}</td>
               <td>
                 <span className={`mon-badge mon-badge--${r.status === "online" ? "ok" : "off"}`}>

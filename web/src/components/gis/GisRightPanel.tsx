@@ -72,7 +72,7 @@ export default function GisRightPanel({
         <h4 className="gis-right-section-title">{t("gis.right.statsTitle")}</h4>
         <div className="gis-right-stat-row"><span>{t("gis.right.floodArea")}</span><strong>{formatArea(stats.areaM2)}</strong></div>
         <div className="gis-right-stat-row"><span>{t("gis.right.avgDepth")}</span><strong>{stats.avgDepthM.toFixed(2)} m</strong></div>
-        <div className="gis-right-stat-row"><span>{t("gis.right.maxDepth")}</span><strong>{stats.maxDepthM.toFixed(2)} m</strong></div>
+        <div className="gis-right-stat-row gis-right-stat-row--highlight"><span>{t("gis.right.maxDepth")}</span><strong>{stats.maxDepthM.toFixed(2)} m</strong></div>
       </div>
     </div>
   );

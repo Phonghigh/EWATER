@@ -3,6 +3,7 @@
   --navy-light: #12395c;
   --accent: #1d4ed8;
   --accent-light: #1d6fd8;
+  --dark-blue: #1e3a8a;
 }
 
 * { box-sizing: border-box; }
@@ -354,7 +355,7 @@ body {
    to read at the original size). */
 .gis-water-level-label {
   background: #fff; border-radius: 8px; padding: 5px 10px;
-  font-size: 13px; font-weight: 700; color: var(--navy);
+  font-size: 13px; font-weight: 700; color: var(--dark-blue);
   box-shadow: 0 3px 10px rgba(15,42,67,.28); white-space: nowrap;
   border: 1px solid #e2e8f0;
 }
@@ -417,6 +418,7 @@ body {
   padding: 3px 0; border-bottom: 1px dashed #e2e8f0;
 }
 .gis-right-stat-row strong { color: var(--navy); font-size: 14px; }
+.gis-right-stat-row--highlight strong { color: var(--dark-blue); }
 
 /* GIS map bottom panel - P2-05. Camera column narrower + shorter than the 2
    chart columns (P2-16, feedback #13 - an empty placeholder shouldn't take
@@ -601,6 +603,7 @@ body {
 .dash-card-value { font-size: 28px; font-weight: 700; color: var(--navy); line-height: 1.2; }
 .dash-card-value--safe { color: #16a34a; }
 .dash-card-value--danger { color: #dc2626; }
+.dash-card-value--info { color: var(--dark-blue); }
 .dash-card-unit { font-size: 13px; font-weight: 500; margin-left: 3px; color: #64748b; }
 .dash-card-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
 
@@ -712,11 +715,40 @@ body {
 .mon-updated { font-size: 12px; color: #64748b; }
 .mon-updated strong { color: var(--navy); font-variant-numeric: tabular-nums; }
 
-/* Top row: bản đồ trạm (rộng) + cột phải xếp bảng mưa & bảng cống. */
-.mon-row-top {
-  display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; align-items: start;
+/* Top row: bản đồ trạm full-width, bảng mưa & bảng cống nổi (overlay) trên map. */
+.mon-map-overlay-wrap { position: relative; }
+
+.mon-overlay-stack {
+  position: absolute; top: 12px; right: 12px; z-index: 3;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+  max-width: min(420px, 42%);
 }
-.mon-side-stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.mon-overlay-panel {
+  display: flex; flex-direction: column; overflow: hidden; width: fit-content; max-width: 100%;
+  background: rgba(255,255,255,.97); border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(15,42,67,.18);
+}
+.mon-overlay-panel-head {
+  font-size: 12.5px; font-weight: 700; color: var(--navy);
+  padding: 9px 12px 6px;
+}
+/* table-layout: auto — mỗi cột rộng vừa nội dung (header & data cùng track nên luôn
+   thẳng hàng); nowrap để không xuống hàng; max-width trên cell là trần chặn khi nội
+   dung quá dài (ví dụ tên trạm dài) thay vì đẩy bảng tràn ra ngoài overlay. Bảng để
+   width:auto (không ép 100%) để panel co theo đúng nội dung, tránh dư khoảng trắng. */
+.mon-overlay-panel .mon-table-wrap { max-height: 280px; overflow-x: hidden; }
+.mon-overlay-panel .mon-table { font-size: 12px; table-layout: auto; width: auto; }
+.mon-overlay-panel .mon-table td, .mon-overlay-panel .mon-table th {
+  padding: 5px 14px; white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis;
+}
+.mon-overlay-panel .mon-th-btn { white-space: nowrap; }
+/* Cột số ở giữa (không phải trạm/trạng thái) căn giữa để thẳng hàng dễ nhìn với title. */
+.mon-overlay-panel .mon-num { text-align: center; }
+.mon-overlay-panel .mon-num .mon-th-btn { justify-content: center; }
+
+@media (max-width: 980px) {
+  .mon-overlay-stack { position: static; width: 100%; margin-top: 12px; }
+}
 
 /* Hàng 3 biểu đồ: diễn biến (rộng hơn) + top10 + phân bố. */
 .mon-row-charts {
@@ -724,8 +756,8 @@ body {
 }
 .mon-panel { display: flex; flex-direction: column; }
 .mon-chart-card { display: flex; flex-direction: column; }
-.mon-chart-canvas { height: 210px; width: 100%; padding: 6px 8px 2px; }
-.mon-chart-canvas--tall { height: 260px; }
+.mon-chart-canvas { height: clamp(140px, 16vh, 190px); width: 100%; padding: 6px 8px 2px; }
+.mon-chart-canvas--tall { height: clamp(170px, 20vh, 230px); }
 
 /* --- Tables --- */
 .mon-table-wrap { overflow: auto; max-height: 340px; }
@@ -770,18 +802,10 @@ body {
 .mon-chip:disabled { opacity: .45; cursor: not-allowed; }
 
 /* --- Station map --- */
-.mon-map-card { position: relative; height: 480px; border-top: 1px solid #eef2f7; }
+/* Cùng chiều cao cố định với .gis-canvas-wrapper (bản đồ GIS) để map không đổi
+   kích thước/vị trí khi chuyển qua lại giữa 2 trang. */
+.mon-map-card { position: relative; height: 560px; border-radius: 10px; overflow: hidden; }
 .mon-map-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-.mon-map-toolbar { position: absolute; top: 12px; right: 12px; z-index: 2; }
-.mon-map-layer {
-  display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.94);
-  border-radius: 8px; padding: 5px 9px; font-size: 12px; color: #475569; font-weight: 600;
-  box-shadow: 0 2px 10px rgba(15,42,67,.15);
-}
-.mon-map-layer select {
-  border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 6px; font-size: 12px; color: #334155;
-  background: #fff; cursor: pointer;
-}
 .mon-map-legend {
   position: absolute; bottom: 12px; left: 12px; z-index: 2;
   display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; max-width: 320px;
@@ -802,6 +826,5 @@ body {
   .mon-row-charts { grid-template-columns: 1fr; }
 }
 @media (max-width: 980px) {
-  .mon-row-top { grid-template-columns: 1fr; }
-  .mon-map-card { height: 380px; }
+  .mon-map-card { height: 320px; }
 }

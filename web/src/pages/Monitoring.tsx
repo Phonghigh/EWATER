@@ -49,27 +49,18 @@ export default function Monitoring() {
 
   return (
     <div className="content-page2">
-      <PageHeader title={t("nav.monitoring")} right={updated} />
+      {/* <PageHeader title={t("nav.monitoring")} right={updated} /> */}
 
-      <div className="mon-row-top">
-        <div className="dash-chart-card mon-panel">
-          <div className="dash-weather-card-head">
-            <h3>{t("mon.map.title")}</h3>
-          </div>
-          <MonitoringStationMap stations={rainStations} rain24h={rain24h} config={config} />
-        </div>
+      <div className="mon-map-overlay-wrap">
+        <MonitoringStationMap stations={rainStations} rain24h={rain24h} config={config} />
 
-        <div className="mon-side-stack">
-          <div className="dash-chart-card mon-panel">
-            <div className="dash-weather-card-head">
-              <h3>{t("mon.rainTable.title")}</h3>
-            </div>
+        <div className="mon-overlay-stack">
+          <div className="mon-overlay-panel">
+            <div className="mon-overlay-panel-head">{t("mon.rainTable.title")}</div>
             <RainTable rows={rows} />
           </div>
-          <div className="dash-chart-card mon-panel">
-            <div className="dash-weather-card-head">
-              <h3>{t("mon.culvertTable.title")}</h3>
-            </div>
+          <div className="mon-overlay-panel">
+            <div className="mon-overlay-panel-head">{t("mon.culvertTable.title")}</div>
             <CulvertTable rows={culvRows} />
           </div>
         </div>

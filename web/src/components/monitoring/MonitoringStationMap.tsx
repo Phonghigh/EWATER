@@ -1,15 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useT } from "../../i18n/I18nContext";
 import { RAIN_BUCKETS, rainColor } from "../../data/monitoringService";
 import type { MapStyleConfig, RainStation } from "../../types";
 
-type BasemapKey = "osm" | "satellite";
-
 /** Bản đồ trạm quan trắc — MapLibre gọn, tái dùng khuôn khởi tạo + ResizeObserver
  *  của GisMapCanvas nhưng KHÔNG phụ thuộc layerState/sim của GIS. Marker DOM tô
- *  màu theo lượng mưa 24h (thang RAIN_BUCKETS) + nhãn mm, tránh phải nạp glyph. */
+ *  màu theo lượng mưa 24h (thang RAIN_BUCKETS) + nhãn mm, tránh phải nạp glyph.
+ *  Chỉ dùng nền Streets (OSM) — không có toggle lớp dữ liệu. */
 export default function MonitoringStationMap({
   stations,
   rain24h,
@@ -23,8 +22,6 @@ export default function MonitoringStationMap({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
-  const [basemap, setBasemap] = useState<BasemapKey>("osm");
-  const [loaded, setLoaded] = useState(false);
 
   // Init map once.
   useEffect(() => {
@@ -51,11 +48,6 @@ export default function MonitoringStationMap({
         type: "raster", tiles: [config.basemaps.osm.tiles], tileSize: 256, attribution: config.basemaps.osm.attribution,
       });
       map.addLayer({ id: "basemap-osm", type: "raster", source: "basemap-osm" });
-      map.addSource("basemap-satellite", {
-        type: "raster", tiles: [config.basemaps.satellite.tiles], tileSize: 256, attribution: config.basemaps.satellite.attribution,
-      });
-      map.addLayer({ id: "basemap-satellite", type: "raster", source: "basemap-satellite", layout: { visibility: "none" } });
-      setLoaded(true);
     });
 
     return () => {
@@ -64,14 +56,6 @@ export default function MonitoringStationMap({
       mapRef.current = null;
     };
   }, [config]);
-
-  // Toggle basemap visibility (never setStyle — that would drop our sources).
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !loaded) return;
-    map.setLayoutProperty("basemap-osm", "visibility", basemap === "osm" ? "visible" : "none");
-    map.setLayoutProperty("basemap-satellite", "visibility", basemap === "satellite" ? "visible" : "none");
-  }, [basemap, loaded]);
 
   // (Re)build station markers when rainfall (step) changes.
   useEffect(() => {
@@ -91,15 +75,6 @@ export default function MonitoringStationMap({
 
   return (
     <div className="mon-map-card">
-      <div className="mon-map-toolbar">
-        <label className="mon-map-layer">
-          <span>{t("mon.map.layer")}</span>
-          <select value={basemap} onChange={(e) => setBasemap(e.target.value as BasemapKey)}>
-            <option value="osm">{config.basemaps.osm.name}</option>
-            <option value="satellite">{config.basemaps.satellite.name}</option>
-          </select>
-        </label>
-      </div>
       <div ref={containerRef} className="mon-map-canvas" />
       <div className="mon-map-legend">
         <span className="mon-map-legend-title">{t("mon.map.legend")}</span>

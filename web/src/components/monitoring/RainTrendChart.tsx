@@ -53,7 +53,7 @@ export default function RainTrendChart({ stations, step }: { stations: RainStati
       </div>
 
       <div className="mon-trend-picker" role="group" aria-label={t("mon.trend.selectStations")}>
-        <span className="mon-trend-picker-hint">{t("mon.trend.selectStations")}</span>
+        {/* <span className="mon-trend-picker-hint">{t("mon.trend.selectStations")}</span> */}
         {stations.map((s) => {
           const on = selected.includes(s.code);
           const full = !on && selected.length >= MAX_SELECTED;

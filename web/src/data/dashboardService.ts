@@ -2,7 +2,6 @@ import type { AppData } from "../types";
 
 const SIX_AM_STEP = 24; // simulation.start = "00:00", stepMinutes = 15 -> 06:00 = step 24
 const TRAILING_24H_STEPS = 96; // 24h / 15min
-const GATE_CLOSE_RAIN_MM = 10;
 const SURCHARGE = 1.0;
 
 function manholeMuids(data: AppData): string[] {
@@ -59,39 +58,17 @@ export function maxWaterLevel(data: AppData, step: number): NodeWaterLevel {
   return best;
 }
 
-export interface PumpsAndGates {
-  activePumpCount: number;
-  totalPumpCount: number;
-  closedGateCount: number;
-  totalGateCount: number;
-}
-
 /**
  * `outlets.geojson` has no asset-type field, so pumps vs. gates is a
  * deterministic placeholder split (odd numeric muid -> pump, even -> gate)
- * until a real asset registry exists (see tasks/INDEX.md P6-01).
+ * until a real asset registry exists (see tasks/INDEX.md P6-01). Used by the
+ * GIS map to color/icon outlet markers; the Dashboard's pump/gate "active"
+ * counts no longer derive from this split (see Dashboard.tsx's
+ * `PUMPS_GATES_PLACEHOLDER` — that ratio was too fake even for a placeholder).
  */
 export function classifyOutlet(muid: unknown): "pump" | "gate" {
   const n = parseInt(String(muid).replace(/\D/g, ""), 10) || 0;
   return n % 2 === 1 ? "pump" : "gate";
-}
-
-/**
- * Active/closed state is a simplified function of current rainfall
- * intensity, not real telemetry - see `classifyOutlet` above for the
- * pump/gate split this counts.
- */
-export function pumpsAndGates(data: AppData, step: number): PumpsAndGates {
-  const rainNow = data.simulation.rainfall[step] ?? 0;
-  let totalPumpCount = 0;
-  let totalGateCount = 0;
-  for (const f of data.outlets.features) {
-    if (classifyOutlet(f.properties?.muid) === "pump") totalPumpCount += 1;
-    else totalGateCount += 1;
-  }
-  const activePumpCount = rainNow > 0 ? totalPumpCount : 0;
-  const closedGateCount = rainNow > GATE_CLOSE_RAIN_MM ? totalGateCount : 0;
-  return { activePumpCount, totalPumpCount, closedGateCount, totalGateCount };
 }
 
 /** Trailing window slice of the rainfall series ending at `step` (inclusive). */
@@ -121,7 +98,6 @@ export interface DashboardOverview {
   floodedRouteDelta: number;
   maxRainfallMm: number;
   maxWaterLevel: NodeWaterLevel;
-  pumpsAndGates: PumpsAndGates;
 }
 
 export function getDashboardOverview(data: AppData, step: number): DashboardOverview {
@@ -132,6 +108,5 @@ export function getDashboardOverview(data: AppData, step: number): DashboardOver
     floodedRouteDelta: floodedRouteDelta(data, step),
     maxRainfallMm: maxRainfallMm(data, step),
     maxWaterLevel: maxWaterLevel(data, step),
-    pumpsAndGates: pumpsAndGates(data, step),
   };
 }

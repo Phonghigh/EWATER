@@ -102,18 +102,6 @@ export default function GisMap() {
     <div
       className={`content-page2${focusMode ? " gis-focus-mode" : ""}${(bottomCollapsed || focusMode) ? " gis-bottom-collapsed" : ""}`}
     >
-      <GisTopBar
-        simulation={simulation}
-        step={step}
-        onStepChange={setStep}
-        baselineStep={liveNowStep}
-        playing={playing}
-        onTogglePlay={() => setPlaying((p) => !p)}
-        speed={speed}
-        onSpeedChange={setSpeed}
-        stations={stations}
-        onSelectStation={setFlyTarget}
-      />
       <div className="gis-body">
         {/* Docked left panel (2026-07-24 follow-up): a flex sibling of the map,
             so opening it pushes the map narrower instead of floating over it.
@@ -161,6 +149,18 @@ export default function GisMap() {
           )}
         </GisMapCanvas>
       </div>
+      <GisTopBar
+        simulation={simulation}
+        step={step}
+        onStepChange={setStep}
+        baselineStep={liveNowStep}
+        playing={playing}
+        onTogglePlay={() => setPlaying((p) => !p)}
+        speed={speed}
+        onSpeedChange={setSpeed}
+        stations={stations}
+        onSelectStation={setFlyTarget}
+      />
       {!focusMode && !bottomCollapsed && (
         <div className="gis-bottom-row">
           <RainForecastChart time={data.rainForecast.time} mm={data.rainForecast.precipitation} />
