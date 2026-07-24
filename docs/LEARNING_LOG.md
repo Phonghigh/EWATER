@@ -59,6 +59,10 @@ a task pushes them further than before.
 | A component can host a caller's floating UI via `children` without knowing what it is | not-started | 2026-07-23 | `GisMapCanvas.tsx` gained an optional `children` prop rendered inside its own `.gis-canvas-wrapper` (already `position: relative`, the same context every other floating control there anchors to) — `GisMap.tsx` passes the layer-panel toggle + panel as children instead of reaching into `GisMapCanvas`'s own JSX, keeping the layer-panel state exactly where it already lived. See [map-first-layout report](learn-log/FOLLOWUP-2026-07-23-map-first-layout.md) §4. |
 | Removing a feature can be the right answer, not just redesigning it | not-started | 2026-07-23 | Offered to rebuild the minimap around a moving-background/fixed-frame design matching what the user described; the user chose outright deletion instead once the layer panel became a floating overlay — `viewBounds`/`onBoundsChange` plumbing was deleted end-to-end rather than left dormant, per the project's P0-16 delete-unused-code policy. See [map-first-layout report](learn-log/FOLLOWUP-2026-07-23-map-first-layout.md) §4. |
 | A pattern proves itself general on its 2nd real use, not its 1st | not-started | 2026-07-23 | The `GisMapCanvas` `children`-overlay mechanism built for the left layer panel was reused as-is for the right info panel with no new abstraction needed — confirming it was a real generalization (map-canvas-owns-the-floating-slot) rather than something that happened to fit one specific panel. See [right-panel-overlay report](learn-log/FOLLOWUP-2026-07-23-right-panel-overlay.md) §4. |
+| Raw HTML popups can't use the app's React `Icon` component | not-started | 2026-07-23 | MapLibre `Popup.setHTML()` renders a literal string outside React's tree — enriching the manhole popup with a trend arrow reused the same `?raw`-imported-SVG-spliced-into-a-template-string trick already used for map markers, not a `<Icon/>` call (which would just print as inert text). See [P2-08..P2-20 report](learn-log/P2-08-P2-20-ux-redesign-cognitive-load.md) §4. |
+| The mount-once-effect ref guard is a reusable house style, not a one-off | not-started | 2026-07-23 | `stepRef`/`dataRef`/`onFocusStationRef` were added to `GisMapCanvas.tsx` following the exact same shape as the file's existing `tRef`/`modeRef` — confirms the "ref kept in sync every render, dereferenced inside a mount-once effect's handler" fix generalizes to any new stale-closure need in that file. See [P2-08..P2-20 report](learn-log/P2-08-P2-20-ux-redesign-cognitive-load.md) §4. |
+| Conditional non-rendering is safe to hide UI when its state lives one level up | not-started | 2026-07-23 | Focus Mode hides the layer/right/bottom panels via `{!focusMode && <X/>}` (full unmount) instead of CSS visibility, since none of those components hold state of their own that would be lost — it already lives in `GisMap.tsx` (`layerState`, `bottomCollapsed`), one level above where the conditional sits. See [P2-08..P2-20 report](learn-log/P2-08-P2-20-ux-redesign-cognitive-load.md) §4. |
+| Native `<datalist>` as honest, zero-dependency search groundwork | not-started | 2026-07-23 | Full place-name search needs a gazetteer this project doesn't have — `<input list=...>`+`<datalist>` gives free browser-native suggestions over real station muids today, without faking a search experience the data can't back up. See [P2-08..P2-20 report](learn-log/P2-08-P2-20-ux-redesign-cognitive-load.md) §4. |
 
 Status values: `not-started`, `shaky`, `understood`.
 
@@ -118,6 +122,10 @@ mindmap
       Component hosts caller UI via children
       Removing a feature can be the right call
       Pattern proves general on 2nd real use
+      Raw HTML popups skip the React Icon component
+      Mount-once ref guard as reusable house style
+      Conditional non-render safe when state lives up
+      Native datalist as honest search groundwork
 ```
 
 ## Session Journal
@@ -221,3 +229,19 @@ mindmap
   a generalization, not something that happened to fit one panel. Also
   deleted `GisMap.tsx`'s now-pointless `.gis-main-area` wrapper `<div>`.
   See [right-panel-overlay report](learn-log/FOLLOWUP-2026-07-23-right-panel-overlay.md).
+- Covered: user gave a full 18-point UX review of the GIS tab, specifically
+  targeting 50-60yo non-technical operations staff (cognitive load, not
+  aesthetics) — cryptic `+Nh` time presets, unclear Play button, 13px
+  checkboxes, 2 separate right-panel cards, color-only legend, thin popups,
+  no bottom-panel collapse, requested a new "Focus Mode." Entered plan mode,
+  explored the current implementation, designed a 13-task plan (P2-08..
+  P2-20), asked 3 clarifying questions (implement-all-now vs. phased scope,
+  search-box scope, legend-merge decision), got approval, then implemented
+  all 13 in one pass: bigger touch targets, section-header icons, basemap
+  swatch previews, a merged right panel, tick-marked opacity slider,
+  shape-differentiated legend, structured trend-aware popups, a compact
+  camera placeholder, a mini-timeline time bar with a labeled Play button,
+  a user-toggleable bottom-panel collapse, Focus Mode, and a station-muid
+  `<datalist>` search groundwork.
+- **Phase 2 (Bản đồ GIS) now 20/20 tasks done** (P2-01..P2-20). See
+  [P2-08..P2-20 report](learn-log/P2-08-P2-20-ux-redesign-cognitive-load.md).

@@ -45,20 +45,28 @@ export default function GisRightPanel({
 
   return (
     <div className="gis-right-panel">
-      <div className="gis-right-card">
+      <h3 className="gis-right-panel-title">{t("gis.right.panelTitle")}</h3>
+
+      <div className="gis-right-section">
         <h4 className="gis-right-section-title">{t("gis.right.selectedLayer")}</h4>
         <div className="gis-right-layer-name">{t("gis.legend.floodZone")}</div>
         <div className="gis-right-opacity-row">
           <span>{t("gis.right.opacity")}</span>
           <input
-            type="range" min={0} max={100} value={opacityPct}
+            type="range" min={0} max={100} value={opacityPct} list="gis-opacity-ticks"
             onChange={(e) => onFloodOpacityChange(Number(e.target.value) / 100)}
           />
+          <datalist id="gis-opacity-ticks">
+            <option value="0" /><option value="25" /><option value="50" /><option value="75" /><option value="100" />
+          </datalist>
           <span className="gis-right-opacity-value">{opacityPct}%</span>
         </div>
+        <div className="gis-right-opacity-hint">{t("gis.right.opacityHint")}</div>
       </div>
 
-      <div className="gis-right-card">
+      <hr className="gis-right-divider" />
+
+      <div className="gis-right-section">
         <h4 className="gis-right-section-title">{t("gis.right.statsTitle")}</h4>
         <div className="gis-right-stat-row"><span>{t("gis.right.floodArea")}</span><strong>{formatArea(stats.areaM2)}</strong></div>
         <div className="gis-right-stat-row"><span>{t("gis.right.avgDepth")}</span><strong>{stats.avgDepthM.toFixed(2)} m</strong></div>

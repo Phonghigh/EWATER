@@ -14,7 +14,7 @@ function clampStep(step: number, steps: number): number {
 }
 
 export default function GisTopBar({
-  simulation, step, onStepChange, baselineStep, playing, onTogglePlay, speed, onSpeedChange,
+  simulation, step, onStepChange, baselineStep, playing, onTogglePlay, speed, onSpeedChange, stationIds,
 }: {
   simulation: Simulation;
   step: number;
@@ -32,6 +32,11 @@ export default function GisTopBar({
   onTogglePlay: () => void;
   speed: number;
   onSpeedChange: (speed: number) => void;
+  /** Real station/culvert muids for a native `<datalist>` suggestion list
+   *  (P2-20, feedback #3) - groundwork only: no place-name/gazetteer search,
+   *  no click-through to "jump to station" yet, just typing a known muid
+   *  shows it in the browser's own suggestion dropdown. */
+  stationIds?: string[];
 }) {
   const { t } = useI18n();
   const stepsPerHour = 60 / simulation.stepMinutes;
@@ -46,22 +51,34 @@ export default function GisTopBar({
     <div className="gis-topbar">
       <div className="gis-topbar-search">
         <Icon name="search" size={18} />
-        <input type="text" placeholder={t("gis.searchPlaceholder")} />
+        <input type="text" placeholder={t("gis.searchPlaceholder")} list={stationIds?.length ? "gis-station-suggest" : undefined} />
+        {stationIds && stationIds.length > 0 && (
+          <datalist id="gis-station-suggest">
+            {stationIds.map((id) => <option key={id} value={id} />)}
+          </datalist>
+        )}
       </div>
 
       <div className="gis-topbar-time">
         <span className="gis-topbar-time-label">{t("gis.time")}</span>
-        {HOUR_PRESETS.map((h) => (
-          <button
-            key={h}
-            type="button"
-            className={`gis-topbar-jump-btn${activePreset === h ? " active" : ""}`}
-            onClick={() => jumpToPreset(h)}
-          >
-            {h === 0 ? t("gis.timeNow") : `+${h}h`}
-          </button>
-        ))}
-        <span className="gis-topbar-clock">{stepTimeLabel(simulation.start, simulation.stepMinutes, step)}</span>
+        <div className="gis-topbar-timeline">
+          {HOUR_PRESETS.map((h) => (
+            <button
+              key={h}
+              type="button"
+              className={`gis-topbar-jump-btn${activePreset === h ? " active" : ""}`}
+              onClick={() => jumpToPreset(h)}
+            >
+              {h === 0 ? t("gis.timeNow") : t(`gis.time.preset.h${h}`)}
+            </button>
+          ))}
+        </div>
+        <div className="gis-topbar-clock-group">
+          <span className="gis-topbar-clock">{stepTimeLabel(simulation.start, simulation.stepMinutes, step)}</span>
+          <span className="gis-topbar-clock-caption">
+            {step === baselineStep ? t("gis.time.liveLabel") : t("gis.time.simulatedLabel")}
+          </span>
+        </div>
       </div>
 
       <div className="gis-topbar-playback">
@@ -81,6 +98,7 @@ export default function GisTopBar({
           onClick={onTogglePlay}
         >
           <Icon name={playing ? "pause" : "play"} size={18} />
+          <span>{playing ? t("gis.pause") : t("gis.play")}</span>
         </button>
         <button
           type="button"

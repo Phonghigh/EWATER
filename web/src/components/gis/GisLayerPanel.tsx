@@ -64,7 +64,10 @@ export default function GisLayerPanel({
   return (
     <div className="gis-layer-panel">
       <div className="gis-layer-group">
-        <h4 className="gis-layer-group-title">{t("gis.layer.groupRealtime")}</h4>
+        <h4 className="gis-layer-group-title">
+          <Icon name="monitor" size={14} className="gis-layer-group-title-icon" />
+          {t("gis.layer.groupRealtime")}
+        </h4>
         {REALTIME_LAYERS.map((key) => (
           <label key={key} className="gis-layer-row">
             <input type="checkbox" checked={state.realtime[key]} onChange={() => toggleRealtime(key)} />
@@ -75,7 +78,10 @@ export default function GisLayerPanel({
       </div>
 
       <div className="gis-layer-group">
-        <h4 className="gis-layer-group-title">{t("gis.layer.groupForecast")}</h4>
+        <h4 className="gis-layer-group-title">
+          <Icon name="sliders" size={14} className="gis-layer-group-title-icon" />
+          {t("gis.layer.groupForecast")}
+        </h4>
         {FORECAST_LAYERS.map((key) => (
           <label key={key} className="gis-layer-row">
             <input type="checkbox" checked={state.forecast[key]} onChange={() => toggleForecast(key)} />
@@ -85,10 +91,14 @@ export default function GisLayerPanel({
       </div>
 
       <div className="gis-layer-group">
-        <h4 className="gis-layer-group-title">{t("gis.layer.groupBasemap")}</h4>
+        <h4 className="gis-layer-group-title">
+          <Icon name="map" size={14} className="gis-layer-group-title-icon" />
+          {t("gis.layer.groupBasemap")}
+        </h4>
         {BASEMAPS.map((key) => (
           <label key={key} className="gis-layer-row">
             <input type="radio" name="gis-basemap" checked={state.basemap === key} onChange={() => selectBasemap(key)} />
+            <span className={`gis-basemap-swatch gis-basemap-swatch--${key}`} />
             <span>
               {t(`gis.basemap.${key}`)}
               {BASEMAPS_WITHOUT_TILE_SOURCE.includes(key) && (

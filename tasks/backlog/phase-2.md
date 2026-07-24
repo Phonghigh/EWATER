@@ -261,3 +261,152 @@ label mới cho khối camera), `web/src/styles.css`.
 dùng muốn quay lại bộ 3-tab biểu đồ/trạm/công trình đầy đủ, đó là một quyết
 định mới cần ghi lại tương tự cách ghi chú 2026-07-23 này, không tự ý làm
 thêm.
+
+---
+
+## Đợt 2 (2026-07-23) — UX redesign giảm cognitive load cho cán bộ lớn tuổi
+
+Người dùng review tab GIS (8.8/10) và đưa ra 18 điểm cụ thể nhắm tới nhóm
+người dùng vận hành 50-60 tuổi (không phải developer). Toàn bộ được gom vào
+P2-08..P2-20 dưới đây — implement 1 đợt (đã xác nhận với user, không chia
+nhỏ thêm). Quyết định phạm vi:
+
+1. **Search (#3)** — chỉ `<datalist>` gợi ý muid trạm/cống thật có sẵn trong
+   `data.manholes`/`data.outlets`. Không search tên địa điểm/phường (chưa có
+   dữ liệu gazetteer), không filter bản đồ, không click-through "nhảy tới
+   trạm" (việc tương lai).
+2. **Legend (#7, #8)** — GIỮ legend tách riêng góc dưới-phải map (không gộp
+   vào `GisRightPanel`) vì đây là tham chiếu thụ động cần luôn hiển thị,
+   khác với right panel (nội dung chủ động mở/đóng). Chỉ gộp 2 card cũ
+   ("Thông tin lớp" + "Thống kê") thành 1. Legend cải thiện riêng bằng hình
+   dạng swatch (tròn/diamond) thay vì chỉ màu.
+3. **Layer grouping (#4)** — 3 nhóm hiện có (Quan trắc/Dự báo/Nền bản đồ) đã
+   đúng cấu trúc dữ liệu thật, không thêm toggle giả (không có layer
+   "boundary"/"camera" nào tồn tại). Chỉ làm rõ hơn về thị giác.
+4. Không thêm npm dependency mới. Icon mới (`trend-up`/`trend-down`/
+   `trend-flat`/`focus`) lấy từ `@material-symbols/svg-400` đã cài sẵn.
+
+### P2-08 — Motion baseline
+
+**Touches.** `web/src/styles.css`. Thêm `--gis-transition: 200ms ease` +
+1 block `@media (prefers-reduced-motion: reduce)` liệt kê tường minh mọi
+class `.gis-*` sẽ có transition ở các task sau. Không đổi JSX/i18n.
+
+### P2-09 — Layer panel: checkbox lớn hơn + section header rõ ràng
+
+**Touches.** `GisLayerPanel.tsx`, `styles.css`. `.gis-layer-row input`
+13px→22px (chuẩn touch-target 20-24px). Thêm icon 14px trước mỗi tiêu đề
+nhóm (`monitor`/`sliders`/`map` — glyph đã có sẵn trong `Icon.tsx`, không
+thêm import). `.gis-layer-panel` width 210→230px. Không đổi i18n (copy 3
+nhóm hiện tại đã đủ rõ).
+
+### P2-10 — Basemap swatch preview
+
+**Touches.** `GisLayerPanel.tsx`, `styles.css`. Swatch gradient CSS 26×18px
+cạnh mỗi radio basemap — không phải thumbnail thật (chỉ osm/satellite có
+tile source thật). `googleSatellite` dùng lại gradient satellite ở opacity
+thấp hơn, không bịa hình khác biệt giả. Không đổi i18n.
+
+### P2-11 — Toolbar trái trong map: icon/nút lớn hơn
+
+**Touches.** `GisMapCanvas.tsx`, `styles.css`. `.gis-canvas-tool-btn`
+34px→40px, icon 18px→22px (6 nút: select/pan/distance/area/zoomIn/zoomOut).
+Giữ nguyên tooltip native `title=`. Không đổi i18n.
+
+### P2-12 — Gộp 2 card panel phải thành 1
+
+**Touches.** `GisRightPanel.tsx`, `styles.css`. `.gis-right-panel` giờ tự
+mang chrome (background/blur/shadow/radius/padding) thay vì 2
+`.gis-right-card` con; phân cách bằng `<hr class="gis-right-divider">`.
+i18n mới: `gis.right.panelTitle` (vi "Thông tin bản đồ" / en "Map info").
+
+### P2-13 — Opacity slider: tick mark + hint
+
+**Touches.** `GisRightPanel.tsx`, `styles.css`. Slider có sẵn (đã wire
+`heatmap-opacity`) chỉ polish: `<datalist>` 5 mốc 0/25/50/75/100 (native
+tick), caption hướng dẫn. i18n mới: `gis.right.opacityHint`.
+
+### P2-14 — Legend: phân biệt bằng hình dạng
+
+**Touches.** `GisMapCanvas.tsx`, `styles.css`. 3 dòng ok/warn/surcharge →
+swatch tròn (khớp hình marker circle thật); dòng vùng ngập → swatch diamond
+(khác point vì là vùng/heatmap). Thuần visual, không đổi i18n.
+
+### P2-15 — Popup & marker label phong phú hơn
+
+**Touches.** `GisMapCanvas.tsx`, `styles.css`, `strings.ts`, `Icon.tsx`.
+Thêm icon `trend-up`/`trend-down`/`trend-flat` (arrow_upward/arrow_downward/
+trending_flat từ `@material-symbols/svg-400`, import raw để inline vào
+popup HTML vì MapLibre Popup không render React). Popup manhole: trạng thái
+(badge màu) + giá trị (m, từ `invertLevel + fillWeight*(ground-invert)`) +
+xu hướng (so `nodeFill[muid][step]` với `step-1`, step 0 = "ổn định", không
+bịa số) + thời điểm cập nhật (giờ mô phỏng tại step hiện tại, gọi đúng tên
+"giờ mô phỏng" chứ không giả vờ là real-time ingestion) + nút "Theo dõi trạm
+này" (dùng cho P2-19). Popup pump/gate: tối giản (id + cập nhật lúc), không
+trend giả. `.gis-water-level-label` tăng font/padding/shadow. i18n mới:
+`gis.popup.value/trend/trendUp/trendDown/trendStable/updatedAt/
+focusStation`.
+
+### P2-16 — Camera card thu gọn
+
+**Touches.** `GisCameraCard.tsx` (không đổi JSX, chỉ CSS), `styles.css`.
+`.gis-bottom-row` cột 3 đổi `1fr` → `minmax(200px,240px)`, `align-items:
+start`; `.gis-camera-card` min-height ~84px; icon/text trong `EmptyState`
+thu nhỏ qua CSS descendant selector (`.gis-camera-card .empty-state`). Nội
+dung giữ nguyên (vẫn "chưa có nguồn camera thật"), không bịa dữ liệu.
+
+### P2-17 — Time control bar: timeline rõ ràng + Play có nhãn
+
+**Touches.** `GisTopBar.tsx`, `styles.css`, `strings.ts`. 8 nút preset đổi
+từ `+Nh` sang cụm từ đầy đủ ("Sau 1 giờ"...), bọc `.gis-topbar-timeline` có
+đường nối `::before` để đọc như mini-timeline — hành vi click
+(`jumpToPreset`) không đổi. Caption dưới đồng hồ: "Giờ thực tế" khi
+`step===baselineStep`, "Giờ mô phỏng" khi khác. Nút Play: icon-only → icon +
+nhãn chữ hiển thị (không chỉ tooltip); sửa **giá trị** 2 key có sẵn
+`gis.play`/`gis.pause` (không phải key mới) thành "Chạy mô phỏng"/"Tạm dừng
+mô phỏng" (en: "Run simulation"/"Pause simulation"). i18n mới:
+`gis.time.preset.h1/h3/h4/h5/h6/h12/h24`, `gis.time.liveLabel`,
+`gis.time.simulatedLabel`.
+
+### P2-18 — Bottom panel: thu gọn/mở rộng do người dùng điều khiển
+
+**Touches.** `GisMap.tsx`, `styles.css`, `strings.ts`. State mới
+`bottomCollapsed`. Nút toggle pill phía trên `.gis-bottom-row`; khi
+collapsed, cả 3 card ẩn hẳn (không render), `.gis-body`/`.gis-canvas-wrapper`
+giãn `min-height:82vh` qua class `.gis-bottom-collapsed` trên root
+`.content-page2`. `ResizeObserver` có sẵn trong `GisMapCanvas.tsx` tự gọi
+`map.resize()` khi wrapper đổi kích thước — không cần gọi thủ công thêm.
+i18n mới: `gis.bottomPanel.collapse/expand`.
+
+### P2-19 — Focus Mode
+
+**Touches.** `GisMap.tsx`, `GisMapCanvas.tsx`, `Icon.tsx`, `styles.css`,
+`strings.ts`. Phụ thuộc P2-15 (nút "Theo dõi trạm này") + P2-18 (tái dùng
+CSS pattern thu gọn). State mới `focusMode` trong `GisMap.tsx`. Bật: ẩn
+`GisLayerPanel` + `GisRightPanel` + bottom row (không phá state, chỉ không
+render), map giãn `min-height:90vh` qua `.gis-focus-mode`. 2 entry point:
+(a) nút góc bản đồ mới (icon `center_focus_strong`), (b) nút trong popup
+marker gọi `onFocusStation` callback (dùng ref pattern `onFocusStationRef`
+giống `tRef`/`modeRef` có sẵn để tránh stale closure trong effect chỉ chạy
+1 lần lúc mount). Thoát Focus Mode khôi phục trạng thái panel/bottom-row
+trước đó (không reset `bottomCollapsed`). i18n mới:
+`gis.focusMode.enter/exit`.
+
+### P2-20 — Search: datalist gợi ý mã trạm (groundwork, không filter)
+
+**Touches.** `GisTopBar.tsx`, `GisMap.tsx`. `GisMap.tsx` tính `stationIds`
+từ `data.manholes`/`data.outlets` đã load, truyền xuống `GisTopBar` render
+`<datalist>` gắn qua `list=` trên input search có sẵn. Không filter bản đồ,
+không click-through, dùng lại `gis.searchPlaceholder` (không key mới). Ghi
+rõ đây là groundwork — hành vi "nhảy tới trạm" là việc tương lai, chưa làm.
+
+**Done when (toàn bộ đợt 2).**
+- `cd web && npx tsc --noEmit` sạch.
+- `node scripts/check-i18n.mjs` sạch (132 key, vi/en khớp).
+- `cd web && npm run build` sạch.
+- Vào `/gis-map`, bật `LangToggle`: không còn chữ "kẹt" 1 ngôn ngữ ở bất kỳ
+  UI nào vừa sửa (timeline, Play, layer panel, popup, camera, Focus Mode).
+- Checkbox layer panel to rõ (~22px), toolbar icon to rõ (~22px trong nút
+  40px), panel phải chỉ còn 1 khối, legend có hình dạng khác biệt theo
+  dòng, popup click marker thấy đủ 4 dòng (trạng thái/giá trị/xu hướng/cập
+  nhật), nút thu gọn bottom-row hoạt động, Focus Mode ẩn/hiện đúng panel.

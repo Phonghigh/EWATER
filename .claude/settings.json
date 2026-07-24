@@ -38,7 +38,12 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(grep -Ei \"^\\(search|play_arrow|pause|skip_next|skip_previous|speed|schedule|fast_forward|history|update|replay\\)\\\\.svg$\")",
       "Bash(grep -Ei \"^\\(zoom_in|zoom_out|straighten|square_foot|near_me|arrow_selector_tool|open_with|pan_tool|download|fullscreen|fullscreen_exit|layers|near_me\\)\\\\.svg$\")",
-      "Bash(xargs grep -l \"HeatmapLayerSpecification\")"
+      "Bash(xargs grep -l \"HeatmapLayerSpecification\")",
+      "Bash(npm run dev -- --port 5183 > /tmp/gis-dev.log 2>&1 & *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5183/)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
     ]
   },
   "hooks": {

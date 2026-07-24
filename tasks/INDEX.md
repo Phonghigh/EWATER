@@ -55,7 +55,23 @@ sections mirror `tasks/backlog/phase-N.md` 1:1).
 - [x] **P2-06** — Nối link Dashboard → `/gis-map` (đóng P1-03) — audit: link đã có sẵn từ P1-03, xác nhận vẫn đúng sau khi P2-01..P2-05 đổi scope trang · *deps:* P2-01 · *done:* điều hướng đúng vị trí.
 - [x] **P2-07** — i18n `gis.*` đầy đủ + check-i18n sạch + LangToggle test · *deps:* P2-01…P2-06 · *done:* sạch (108/108 key vi/en khớp, không key nào lệch).
 
-**Phase 2 (Bản đồ GIS) complete: 7/7 tasks done.**
+**Cập nhật 2026-07-23 (đợt 2 — UX redesign cho cán bộ lớn tuổi, giảm cognitive load).** Người dùng chấm tab GIS 8.8/10 nhưng nêu 18 điểm cụ thể (xem `tasks/PROGRESS.md` cùng ngày). P2-08..P2-20 dưới đây thực hiện toàn bộ, chi tiết từng task ở dưới file này.
+
+- [x] **P2-08** — Motion baseline: `--gis-transition` token + `prefers-reduced-motion` block cho toàn bộ `.gis-*` · *deps:* P2-07 · *done:* build sạch, không đổi hành vi trực quan.
+- [x] **P2-09** — Panel trái: checkbox/radio 13px→22px, header 3 nhóm có icon rõ ràng · *deps:* P2-08 · *done:* checkbox ≥20px, nhóm đọc rõ như section.
+- [x] **P2-10** — Basemap: swatch preview (gradient CSS) cạnh mỗi radio · *deps:* P2-09 · *done:* 4 swatch hiện đúng, không bịa ảnh thật.
+- [x] **P2-11** — Toolbar trái trong map: nút 34px→40px, icon 18px→22px · *deps:* P2-08 · *done:* nút không còn chật.
+- [x] **P2-12** — Panel phải: gộp 2 card ("Thông tin lớp"+"Thống kê") thành 1 card `gis-right-panel` + tiêu đề chung · *deps:* P2-08 · *done:* chỉ còn 1 khối viền duy nhất.
+- [x] **P2-13** — Opacity slider: `<datalist>` 5 mốc 0/25/50/75/100 + caption hướng dẫn · *deps:* P2-12 · *done:* tick hiện, caption đúng 2 ngôn ngữ.
+- [x] **P2-14** — Legend: swatch tròn cho 3 mức severity, swatch diamond cho vùng ngập (phân biệt cả hình dạng, không chỉ màu) · *deps:* P2-08 · *done:* 4 dòng legend có hình dạng khác biệt.
+- [x] **P2-15** — Popup marker + nhãn mực nước: cấu trúc rõ (trạng thái/giá trị/xu hướng/cập nhật lúc), nút "Theo dõi trạm này"; icon trend mới trong `Icon.tsx` · *deps:* P2-08 · *done:* click marker thấy đủ field thật (không bịa số), nhãn pill to/đậm hơn.
+- [x] **P2-16** — Camera card: cột hẹp hơn (`minmax(200px,240px)`), min-height ~84px thay vì full-height · *deps:* P2-08 · *done:* camera rõ ràng nhỏ hơn 2 chart cạnh nó.
+- [x] **P2-17** — Thanh thời gian: preset đổi thành cụm từ đầy đủ + track nối liền (mini-timeline), caption "Giờ thực tế"/"Giờ mô phỏng", nút Play có nhãn chữ ("Chạy mô phỏng"/"Tạm dừng mô phỏng") · *deps:* P2-08 · *done:* không còn ký hiệu `+Nh`, Play có chữ hiển thị (không chỉ tooltip).
+- [x] **P2-18** — Panel dưới: nút thu gọn/mở rộng do người dùng bấm (`bottomCollapsed` state), map giãn `min-height:82vh` khi thu gọn · *deps:* P2-08 · *done:* bấm nút ẩn/hiện đúng 3 card, map co giãn mượt (ResizeObserver có sẵn tự resize).
+- [x] **P2-19** — Focus Mode: nút góc bản đồ + nút "Theo dõi trạm này" trong popup (P2-15) đều bật `focusMode`, ẩn layer/right panel + bottom row, map giãn `min-height:90vh` · *deps:* P2-15, P2-18 · *done:* bật/tắt đúng, thoát khôi phục trạng thái panel trước đó.
+- [x] **P2-20** — Search: `<datalist>` gợi ý các muid trạm/cống thật (không search tên địa điểm, chưa có gazetteer) · *deps:* P2-08 · *done:* gõ muid thật hiện gợi ý native, không filter bản đồ.
+
+**Phase 2 (Bản đồ GIS) complete: 20/20 tasks done (7 khung ban đầu + 13 UX-redesign).**
 
 ## Phase 3 — Quan trắc thời gian thực (Tab 3)
 - [ ] **P3-01** — Route `/monitoring/:tab` + `PageHeader` 9 sub-tab · *deps:* P0-13 · *done:* điều hướng ok.

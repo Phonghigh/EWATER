@@ -45,6 +45,10 @@ import fullscreenExit from "@material-symbols/svg-400/outlined/fullscreen_exit.s
 import layers from "@material-symbols/svg-400/outlined/layers.svg?raw";
 import chevronLeft from "@material-symbols/svg-400/outlined/chevron_left.svg?raw";
 import chevronRight from "@material-symbols/svg-400/outlined/chevron_right.svg?raw";
+import arrowUpward from "@material-symbols/svg-400/outlined/arrow_upward.svg?raw";
+import arrowDownward from "@material-symbols/svg-400/outlined/arrow_downward.svg?raw";
+import trendingFlat from "@material-symbols/svg-400/outlined/trending_flat.svg?raw";
+import centerFocusStrong from "@material-symbols/svg-400/outlined/center_focus_strong.svg?raw";
 
 export type IconName =
   | "home" | "dashboard" | "monitor" | "map" | "report"
@@ -56,7 +60,8 @@ export type IconName =
   | "search" | "play" | "pause" | "skip-next" | "skip-previous"
   | "select" | "pan" | "zoom-in" | "zoom-out" | "ruler" | "area"
   | "download" | "fullscreen" | "fullscreen-exit"
-  | "layers" | "chevron-left" | "chevron-right";
+  | "layers" | "chevron-left" | "chevron-right"
+  | "trend-up" | "trend-down" | "trend-flat" | "focus";
 
 /** Maps this app's semantic icon names to the imported Material Symbols SVG
  *  markup - kept as an indirection layer so call sites don't need to know
@@ -100,6 +105,10 @@ const RAW: Record<IconName, string> = {
   layers,
   "chevron-left": chevronLeft,
   "chevron-right": chevronRight,
+  "trend-up": arrowUpward,
+  "trend-down": arrowDownward,
+  "trend-flat": trendingFlat,
+  focus: centerFocusStrong,
 };
 
 export default function Icon({ name, size = 18, className }: {

@@ -5,11 +5,15 @@ import type { FeatureCollection } from "geojson";
 import warningIconRaw from "@material-symbols/svg-400/outlined/warning.svg?raw";
 import pumpIconRaw from "@material-symbols/svg-400/outlined/water_pump.svg?raw";
 import gateIconRaw from "@material-symbols/svg-400/outlined/gate.svg?raw";
+import trendUpIconRaw from "@material-symbols/svg-400/outlined/arrow_upward.svg?raw";
+import trendDownIconRaw from "@material-symbols/svg-400/outlined/arrow_downward.svg?raw";
+import trendFlatIconRaw from "@material-symbols/svg-400/outlined/trending_flat.svg?raw";
 import Icon, { type IconName } from "../Icon";
 import { useI18n } from "../../i18n/I18nContext";
 import { classifyOutlet } from "../../data/dashboardService";
 import { topWaterLevelNodes, activeFloodZoneCentroids } from "../../data/gisService";
 import { polylineLengthM, polygonAreaM2 } from "../../lib/geo";
+import { stepTimeLabel } from "../../lib/simTime";
 import { floodHeatmapPaint } from "../../lib/floodHeatmap";
 import type { AppData, MapStyleConfig } from "../../types";
 import type { GisLayerState, BasemapKey } from "./GisLayerPanel";
@@ -67,7 +71,7 @@ const TOOLS: { mode: ToolMode; icon: IconName }[] = [
  *  table), so those checkboxes exist and can be toggled but don't change
  *  anything on the map yet. That gap is inherited from P2-02, not new here. */
 export default function GisMapCanvas({
-  data, step, layerState, floodOpacity = 0.35, children,
+  data, step, layerState, floodOpacity = 0.35, children, focusMode = false, onToggleFocusMode, onFocusStation,
 }: {
   data: AppData;
   step: number;
@@ -79,6 +83,16 @@ export default function GisMapCanvas({
    *  follow-up) directly over the map without it competing for row width
    *  in the parent layout. */
   children?: ReactNode;
+  /** Focus Mode (P2-19) - whether the caller (`GisMap.tsx`) currently has it
+   *  on, so this corner button reflects/toggles the *page*-level state
+   *  (hiding the layer/right panels + bottom row lives outside this
+   *  component's own DOM, so the state itself has to live in `GisMap.tsx`). */
+  focusMode?: boolean;
+  onToggleFocusMode?: () => void;
+  /** "Theo dõi trạm này" popup button (P2-15/P2-19) - only manhole popups
+   *  offer it, since that's the only point layer with a water-level trend
+   *  worth focusing on. */
+  onFocusStation?: () => void;
 }) {
   const { t } = useI18n();
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -105,6 +119,15 @@ export default function GisMapCanvas({
   tRef.current = t;
   const modeRef = useRef(mode);
   modeRef.current = mode;
+  // Same stale-closure guard for the popup trend calc (needs the *current*
+  // step, not whatever it was at mount) and the "Theo dõi trạm này" button
+  // (needs the latest `onFocusStation` callback identity).
+  const stepRef = useRef(step);
+  stepRef.current = step;
+  const onFocusStationRef = useRef(onFocusStation);
+  onFocusStationRef.current = onFocusStation;
+  const dataRef = useRef(data);
+  dataRef.current = data;
 
   // Init map once.
   useEffect(() => {
@@ -234,29 +257,76 @@ export default function GisMapCanvas({
           : tRef.current("gis.legend.ok");
 
       function showPopup(e: maplibregl.MapLayerMouseEvent, html: string) {
-        new maplibregl.Popup().setLngLat(e.lngLat).setHTML(html).addTo(map);
+        const popup = new maplibregl.Popup().setLngLat(e.lngLat).setHTML(html).addTo(map);
+        // Popups render raw HTML (no React), so the "Theo dõi trạm này"
+        // button's click handler has to be wired up imperatively after the
+        // element exists in the DOM, same as any other MapLibre popup
+        // customization — `onFocusStationRef` avoids a stale callback if
+        // `onFocusStation` changes identity between renders.
+        popup.getElement()?.querySelector("#gis-popup-focus-btn")?.addEventListener("click", () => {
+          onFocusStationRef.current?.();
+        });
       }
+
+      // Real trend, not a fabricated one: compares the same fill ratio the
+      // heatmap/circle color already use, at the current step vs. the step
+      // right before it (no previous step at step 0 -> "stable").
+      function waterLevelTrend(muid: string): "up" | "down" | "stable" {
+        const step = stepRef.current;
+        if (step <= 0) return "stable";
+        const series = dataRef.current.simulation.nodeFill[muid];
+        const now = series?.[step] ?? 0;
+        const prev = series?.[step - 1] ?? now;
+        const delta = now - prev;
+        if (delta > 0.01) return "up";
+        if (delta < -0.01) return "down";
+        return "stable";
+      }
+      const trendIcon = { up: trendUpIconRaw, down: trendDownIconRaw, stable: trendFlatIconRaw };
+      const trendLabelKey = { up: "gis.popup.trendUp", down: "gis.popup.trendDown", stable: "gis.popup.trendStable" } as const;
 
       map.on("click", "manholes-circle", (e) => {
         const f = e.features?.[0];
         if (!f) return;
         const props = f.properties ?? {};
+        const muid = String(props.muid);
+        const invert = Number(props.invertLevel ?? 0);
+        const ground = Number(props.groundLevel ?? 0);
+        const fillWeight = Number(props.fillWeight ?? 0);
+        const levelM = invert + fillWeight * (ground - invert);
+        const trend = waterLevelTrend(muid);
         showPopup(e, `
-          <strong>${tRef.current("gis.layer.waterLevel")}: ${props.muid}</strong><br/>
-          ${tRef.current("gis.popup.status")}: ${severityLabel(String(props.fillState))}
+          <div class="gis-popup">
+            <div class="gis-popup-title">${tRef.current("gis.layer.waterLevel")}: ${muid}</div>
+            <div class="gis-popup-row"><span>${tRef.current("gis.popup.status")}</span><strong class="gis-popup-badge gis-popup-badge--${props.fillState}">${severityLabel(String(props.fillState))}</strong></div>
+            <div class="gis-popup-row"><span>${tRef.current("gis.popup.value")}</span><strong>${levelM.toFixed(2)} m</strong></div>
+            <div class="gis-popup-row"><span>${tRef.current("gis.popup.trend")}</span><span class="gis-popup-row-icon">${trendIcon[trend]} ${tRef.current(trendLabelKey[trend])}</span></div>
+            <div class="gis-popup-updated">${tRef.current("gis.popup.updatedAt")}: ${stepTimeLabel(dataRef.current.simulation.start, dataRef.current.simulation.stepMinutes, stepRef.current)}</div>
+            <button type="button" id="gis-popup-focus-btn" class="gis-popup-focus-btn">${tRef.current("gis.popup.focusStation")}</button>
+          </div>
         `);
       });
       map.on("click", "outlets-pump", (e) => {
         const f = e.features?.[0];
         if (!f) return;
         const props = f.properties ?? {};
-        showPopup(e, `<strong>${tRef.current("gis.layer.pumpStation")}: ${props.muid}</strong>`);
+        showPopup(e, `
+          <div class="gis-popup">
+            <div class="gis-popup-title">${tRef.current("gis.layer.pumpStation")}: ${props.muid}</div>
+            <div class="gis-popup-updated">${tRef.current("gis.popup.updatedAt")}: ${stepTimeLabel(dataRef.current.simulation.start, dataRef.current.simulation.stepMinutes, stepRef.current)}</div>
+          </div>
+        `);
       });
       map.on("click", "outlets-gate", (e) => {
         const f = e.features?.[0];
         if (!f) return;
         const props = f.properties ?? {};
-        showPopup(e, `<strong>${tRef.current("gis.layer.gate")}: ${props.muid}</strong>`);
+        showPopup(e, `
+          <div class="gis-popup">
+            <div class="gis-popup-title">${tRef.current("gis.layer.gate")}: ${props.muid}</div>
+            <div class="gis-popup-updated">${tRef.current("gis.popup.updatedAt")}: ${stepTimeLabel(dataRef.current.simulation.start, dataRef.current.simulation.stepMinutes, stepRef.current)}</div>
+          </div>
+        `);
       });
 
       // Pointer cursor on hover over any clickable marker, only while the
@@ -455,19 +525,30 @@ export default function GisMapCanvas({
             title={t(`gis.tool.${m}`)}
             onClick={() => selectTool(m)}
           >
-            <Icon name={icon} size={18} />
+            <Icon name={icon} size={22} />
           </button>
         ))}
         <div className="gis-canvas-tool-sep" />
         <button type="button" className="gis-canvas-tool-btn" title={t("gis.tool.zoomIn")} onClick={() => mapRef.current?.zoomIn()}>
-          <Icon name="zoom-in" size={18} />
+          <Icon name="zoom-in" size={22} />
         </button>
         <button type="button" className="gis-canvas-tool-btn" title={t("gis.tool.zoomOut")} onClick={() => mapRef.current?.zoomOut()}>
-          <Icon name="zoom-out" size={18} />
+          <Icon name="zoom-out" size={22} />
         </button>
       </div>
 
       <div className="gis-canvas-corner">
+        {onToggleFocusMode && (
+          <button
+            type="button"
+            className={`gis-canvas-corner-btn gis-focus-toggle-btn${focusMode ? " active" : ""}`}
+            title={focusMode ? t("gis.focusMode.exit") : t("gis.focusMode.enter")}
+            onClick={onToggleFocusMode}
+          >
+            <Icon name="focus" size={16} />
+            <span>{focusMode ? t("gis.focusMode.exit") : t("gis.focusMode.enter")}</span>
+          </button>
+        )}
         <button type="button" className="gis-canvas-corner-btn" title={t("gis.exportMap")} onClick={exportMap}>
           <Icon name="download" size={16} />
           <span>{t("gis.exportMap")}</span>
@@ -495,18 +576,18 @@ export default function GisMapCanvas({
             markers, not a second hardcoded copy that could drift out of
             sync with what's actually being colored. */}
         <div className="gis-canvas-legend-row">
-          <span className="gis-canvas-legend-swatch" style={{ background: data.config.colors.simOk }} />
+          <span className="gis-canvas-legend-swatch gis-canvas-legend-swatch--circle" style={{ background: data.config.colors.simOk }} />
           {t("gis.legend.ok")} <span className="gis-canvas-legend-range">(&lt; {Math.round(data.config.simThresholds.warn * 100)}%)</span>
         </div>
         <div className="gis-canvas-legend-row">
-          <span className="gis-canvas-legend-swatch" style={{ background: data.config.colors.simWarn }} />
+          <span className="gis-canvas-legend-swatch gis-canvas-legend-swatch--circle" style={{ background: data.config.colors.simWarn }} />
           {t("gis.legend.warn")} <span className="gis-canvas-legend-range">({Math.round(data.config.simThresholds.warn * 100)}–{Math.round(data.config.simThresholds.surcharge * 100)}%)</span>
         </div>
         <div className="gis-canvas-legend-row">
-          <span className="gis-canvas-legend-swatch" style={{ background: data.config.colors.simSurcharge }} />
+          <span className="gis-canvas-legend-swatch gis-canvas-legend-swatch--circle" style={{ background: data.config.colors.simSurcharge }} />
           {t("gis.legend.surcharge")} <span className="gis-canvas-legend-range">(&ge; {Math.round(data.config.simThresholds.surcharge * 100)}%)</span>
         </div>
-        <div className="gis-canvas-legend-row"><span className="gis-canvas-legend-swatch" style={{ background: data.config.colors.flood, opacity: floodOpacity }} />{t("gis.legend.floodZone")}</div>
+        <div className="gis-canvas-legend-row"><span className="gis-canvas-legend-swatch gis-canvas-legend-swatch--diamond" style={{ background: data.config.colors.flood, opacity: floodOpacity }} />{t("gis.legend.floodZone")}</div>
       </div>
     </div>
   );

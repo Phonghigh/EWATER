@@ -120,6 +120,21 @@ body {
 .page-subtab2:hover { background: #eef4fa; }
 .page-subtab2.active { background: var(--accent-light); color: #fff; border-color: var(--accent-light); }
 
+/* GIS map (Tab 2) - UX redesign (P2-08..P2-20). One shared transition token
+   so every hover/expand/collapse added below moves at the same 200ms pace
+   (feedback: keep motion tight, 150-300ms, nothing decorative) - and one
+   reduced-motion block turning all of it off for users who ask, rather than
+   re-deriving that policy per rule. */
+:root { --gis-transition: 200ms ease; }
+@media (prefers-reduced-motion: reduce) {
+  .gis-layer-panel, .gis-right-panel, .gis-canvas-legend, .gis-bottom-row,
+  .gis-topbar-timeline, .gis-camera-card, .gis-canvas-wrapper,
+  .gis-canvas-corner-btn, .gis-layer-toggle-btn, .gis-bottom-toggle-btn,
+  .gis-layer-row input, .gis-topbar-jump-btn {
+    transition: none !important;
+  }
+}
+
 /* GIS map (Tab 2) top toolbar - P2-01 */
 .gis-topbar {
   display: flex; align-items: center; flex-wrap: wrap; gap: 14px;
@@ -135,16 +150,28 @@ body {
 }
 .gis-topbar-time { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .gis-topbar-time-label { font-size: 12px; font-weight: 600; color: #64748b; margin-right: 2px; }
+/* Timeline track (P2-17) - a connecting line behind the preset buttons so
+   they read as positions on one timeline rather than isolated chips; the
+   line sits at z-index 0, buttons above it at z-index 1. */
+.gis-topbar-timeline { position: relative; display: flex; align-items: center; gap: 4px; padding: 3px 2px; flex-wrap: wrap; }
+.gis-topbar-timeline::before {
+  content: ""; position: absolute; left: 8px; right: 8px; top: 50%; height: 2px;
+  background: #e2e8f0; z-index: 0;
+}
 .gis-topbar-jump-btn {
+  position: relative; z-index: 1;
   border: 1px solid #cbd5e1; background: #fff; color: #334155; border-radius: 6px;
   padding: 5px 9px; font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: background var(--gis-transition), color var(--gis-transition), box-shadow var(--gis-transition);
 }
 .gis-topbar-jump-btn:hover { background: #eef4fa; }
-.gis-topbar-jump-btn.active { background: var(--accent-light); color: #fff; border-color: var(--accent-light); }
+.gis-topbar-jump-btn.active { background: var(--accent-light); color: #fff; border-color: var(--accent-light); box-shadow: 0 0 0 3px rgba(29,78,216,.15); }
+.gis-topbar-clock-group { display: flex; flex-direction: column; align-items: flex-start; gap: 0; margin-left: 4px; }
 .gis-topbar-clock {
-  font-size: 13px; font-weight: 700; color: var(--navy); margin-left: 4px;
+  font-size: 13px; font-weight: 700; color: var(--navy);
   font-variant-numeric: tabular-nums;
 }
+.gis-topbar-clock-caption { font-size: 10.5px; color: #94a3b8; }
 .gis-topbar-playback { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 .gis-topbar-icon-btn {
   display: flex; align-items: center; justify-content: center;
@@ -153,7 +180,13 @@ body {
 }
 .gis-topbar-icon-btn:hover:not(:disabled) { background: #eef4fa; }
 .gis-topbar-icon-btn:disabled { opacity: .4; cursor: not-allowed; }
-.gis-topbar-icon-btn--primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+/* Play/pause gets a visible text label now, not just an icon+tooltip
+   (feedback #2 - "Play" alone didn't say what it plays), so it needs to
+   grow past the other square icon buttons instead of staying a fixed square. */
+.gis-topbar-icon-btn--primary {
+  width: auto; gap: 6px; padding: 0 14px;
+  background: var(--accent); border-color: var(--accent); color: #fff; font-size: 13px; font-weight: 600;
+}
 .gis-topbar-icon-btn--primary:hover { background: var(--accent-light); }
 .gis-topbar-speed-label { font-size: 12px; font-weight: 600; color: #64748b; margin-left: 4px; }
 .gis-topbar-speed-group { display: flex; gap: 3px; }
@@ -194,19 +227,40 @@ body {
 }
 .gis-layer-toggle-btn:hover { background: #eef4fa; }
 .gis-layer-panel {
-  flex: 0 1 auto; width: 210px; max-height: 360px;
+  flex: 0 1 auto; width: 230px; max-height: 380px;
   background: rgba(255,255,255,.97); backdrop-filter: blur(4px);
   border-radius: 10px; box-shadow: 0 2px 10px rgba(15,42,67,.18);
-  padding: 12px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto;
+  padding: 12px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto;
 }
-.gis-layer-group { display: flex; flex-direction: column; gap: 5px; }
+.gis-layer-group { display: flex; flex-direction: column; gap: 8px; }
+.gis-layer-group + .gis-layer-group { margin-top: 2px; padding-top: 10px; border-top: 1px solid #e2e8f0; }
 .gis-layer-group-title {
-  margin: 0 0 2px; font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .3px;
+  margin: 0; display: flex; align-items: center; gap: 6px;
+  font-size: 11.5px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: .3px;
 }
-.gis-layer-row { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #334155; cursor: pointer; }
-.gis-layer-row input { accent-color: var(--accent); width: 13px; height: 13px; }
+.gis-layer-group-title-icon { color: var(--accent); flex: none; }
+.gis-layer-row { display: flex; align-items: center; gap: 9px; font-size: 13px; color: #334155; cursor: pointer; padding: 2px 0; }
+/* Bumped from 13px to 22px (feedback #5: too small for 50-60yo operators to
+   tap accurately - accessibility touch-target guidance is 20-24px). */
+.gis-layer-row input {
+  accent-color: var(--accent); width: 22px; height: 22px; flex: none;
+  transition: transform var(--gis-transition);
+}
+.gis-layer-row input:hover { transform: scale(1.05); }
 .gis-layer-row-icon { color: #64748b; flex: none; }
 .gis-layer-row-note { color: #94a3b8; font-size: 11px; }
+
+/* Basemap swatch previews (P2-10, feedback #6) - CSS-gradient stand-ins, not
+   real tile thumbnails: only osm/satellite have a configured tile source
+   (see GisLayerPanel.tsx's comment), so a photo-real preview for "light"/
+   "googleSatellite" would misrepresent what selecting them actually shows
+   today. googleSatellite reuses the satellite gradient at lower opacity to
+   visually echo its "(sắp có)" note instead of inventing a distinct look. */
+.gis-basemap-swatch { width: 26px; height: 18px; border-radius: 4px; flex: none; border: 1px solid rgba(15,42,67,.15); }
+.gis-basemap-swatch--light { background: linear-gradient(135deg,#f8fafc,#dbeafe); }
+.gis-basemap-swatch--satellite { background: linear-gradient(135deg,#14532d,#78350f); }
+.gis-basemap-swatch--googleSatellite { background: linear-gradient(135deg,#14532d,#78350f); opacity: .55; }
+.gis-basemap-swatch--osm { background: linear-gradient(135deg,#fef3c7,#fde68a); }
 
 /* GIS map canvas + floating controls - P2-03. No bordered card chrome
    (matches FloodMapPreview.tsx's map-first convention), everything floats
@@ -218,11 +272,14 @@ body {
   position: absolute; top: 12px; left: 12px; z-index: 1;
   background: rgba(255,255,255,.95); backdrop-filter: blur(4px);
   border-radius: 8px; box-shadow: 0 2px 10px rgba(15,42,67,.18);
-  display: flex; flex-direction: column; padding: 4px;
+  display: flex; flex-direction: column; gap: 3px; padding: 4px;
 }
+/* Bumped 34px/18px icon -> 40px/22px (feedback #11: too small, buttons
+   crowded together for older users to hit reliably). */
 .gis-canvas-tool-btn {
-  width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
   border: none; background: transparent; color: #334155; border-radius: 6px; cursor: pointer;
+  transition: background var(--gis-transition), color var(--gis-transition);
 }
 .gis-canvas-tool-btn:hover { background: #eef4fa; }
 .gis-canvas-tool-btn.active { background: var(--accent); color: #fff; }
@@ -261,13 +318,40 @@ body {
 .gis-canvas-legend-row { display: flex; align-items: center; gap: 7px; padding: 2px 0; color: #334155; }
 .gis-canvas-legend-range { color: #94a3b8; font-size: 11px; margin-left: -2px; }
 .gis-canvas-legend-swatch { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+/* Shape, not just color, per row (P2-14, feedback #8 - colorblind users
+   need a second cue). ok/warn/surcharge match the actual round map marker
+   shape; the flood zone is an area (heatmap), so it gets a diamond instead
+   of a point shape to read as visually distinct from the 3 point rows. */
+.gis-canvas-legend-swatch--circle { border-radius: 50%; }
+.gis-canvas-legend-swatch--diamond { border-radius: 2px; transform: rotate(45deg); width: 10px; height: 10px; }
 
+/* Bigger/bolder station pill (P2-15, feedback #9 - "246 / 1.61m" was hard
+   to read at the original size). */
 .gis-water-level-label {
-  background: #fff; border-radius: 8px; padding: 4px 9px;
-  font-size: 11.5px; font-weight: 700; color: var(--navy);
-  box-shadow: 0 2px 8px rgba(15,42,67,.22); white-space: nowrap;
+  background: #fff; border-radius: 8px; padding: 5px 10px;
+  font-size: 13px; font-weight: 700; color: var(--navy);
+  box-shadow: 0 3px 10px rgba(15,42,67,.28); white-space: nowrap;
   border: 1px solid #e2e8f0;
 }
+
+/* Structured popup content (P2-15) - MapLibre popups render raw HTML (no
+   React), so these classes are applied via string templates in
+   GisMapCanvas.tsx, not JSX. */
+.gis-popup { font-size: 12.5px; color: #334155; min-width: 165px; }
+.gis-popup-title { font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+.gis-popup-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 1px 0; }
+.gis-popup-row-icon { display: inline-flex; align-items: center; gap: 3px; }
+.gis-popup-row-icon svg { width: 13px; height: 13px; fill: currentColor; vertical-align: -2px; }
+.gis-popup-badge { padding: 1px 7px; border-radius: 4px; color: #fff; font-size: 11px; font-weight: 600; }
+.gis-popup-badge--ok { background: var(--accent-light); }
+.gis-popup-badge--warn { background: #d97706; }
+.gis-popup-badge--surcharge { background: #dc2626; }
+.gis-popup-focus-btn {
+  margin-top: 6px; width: 100%; border: 1px solid #cbd5e1; background: #fff; color: var(--navy);
+  border-radius: 6px; padding: 5px 8px; font-size: 11.5px; font-weight: 600; cursor: pointer;
+}
+.gis-popup-focus-btn:hover { background: #eef4fa; }
+.gis-popup-updated { margin-top: 4px; padding-top: 4px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 11px; }
 .gis-warning-marker {
   width: 24px; height: 24px; border-radius: 50%;
   background: #dc2626; color: #fff; display: flex; align-items: center; justify-content: center;
@@ -281,16 +365,19 @@ body {
    a flex sibling of the map). Now floats over the map's top-right corner,
    below the export/fullscreen corner buttons (2026-07-23 follow-up, 3rd
    round), same treatment as `.gis-layer-overlay` on the opposite side. */
+/* P2-12: the 2 previously-separate `.gis-right-card`s (layer info + stats)
+   merged into 1 card - `.gis-right-panel` now carries the card chrome
+   directly, sections inside are plain divs split by `.gis-right-divider`. */
 .gis-right-panel {
   position: absolute; top: 58px; right: 12px; z-index: 2;
   width: 220px; max-height: calc(100% - 170px); overflow-y: auto;
-  display: flex; flex-direction: column; gap: 10px;
-}
-.gis-right-card {
   background: rgba(255,255,255,.97); backdrop-filter: blur(4px);
   border-radius: 10px; box-shadow: 0 2px 10px rgba(15,42,67,.18);
-  padding: 12px; display: flex; flex-direction: column; gap: 8px; flex: none;
+  padding: 12px; display: flex; flex-direction: column;
 }
+.gis-right-panel-title { margin: 0 0 10px; font-size: 13px; font-weight: 700; color: var(--navy); }
+.gis-right-section { display: flex; flex-direction: column; gap: 8px; }
+.gis-right-divider { margin: 12px 0; border: none; border-top: 1px solid #e2e8f0; }
 .gis-right-section-title {
   margin: 0; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .3px;
 }
@@ -298,18 +385,47 @@ body {
 .gis-right-opacity-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #334155; }
 .gis-right-opacity-row input[type="range"] { flex: 1; accent-color: var(--accent); }
 .gis-right-opacity-value { font-weight: 700; color: var(--navy); width: 36px; text-align: right; }
+.gis-right-opacity-hint { font-size: 11px; color: #94a3b8; margin-top: -2px; }
 .gis-right-stat-row {
   display: flex; align-items: baseline; justify-content: space-between; font-size: 12.5px; color: #64748b;
   padding: 3px 0; border-bottom: 1px dashed #e2e8f0;
 }
 .gis-right-stat-row strong { color: var(--navy); font-size: 14px; }
 
-/* GIS map bottom panel - P2-05 */
-.gis-bottom-row { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-.gis-camera-card .empty-state { padding: 24px; }
+/* GIS map bottom panel - P2-05. Camera column narrower + shorter than the 2
+   chart columns (P2-16, feedback #13 - an empty placeholder shouldn't take
+   as much space as real charts). */
+.gis-bottom-row { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr minmax(200px, 240px); align-items: start; gap: 14px; }
+.gis-camera-card { min-height: 84px; }
+.gis-camera-card .empty-state { padding: 12px; gap: 4px; }
+.gis-camera-card .empty-state .icon { width: 22px !important; height: 22px !important; }
+.gis-camera-card .empty-state p { margin: 0; font-size: 11.5px; line-height: 1.4; }
 @media (max-width: 1100px) {
   .gis-bottom-row { grid-template-columns: 1fr; }
+  .gis-camera-card { min-height: 0; }
 }
+
+/* Bottom panel collapse toggle (P2-18, feedback #12/#16) - lets the user
+   reclaim the map's height instead of the 3-card row only ever shrinking via
+   the 1100px breakpoint above. */
+.gis-bottom-toggle-row { display: flex; justify-content: center; margin-top: 8px; }
+.gis-bottom-toggle-btn {
+  display: flex; align-items: center; gap: 4px; padding: 5px 14px; border-radius: 999px;
+  border: 1px solid #e2e8f0; background: #fff; font-size: 12px; font-weight: 600; color: #64748b; cursor: pointer;
+  transition: background var(--gis-transition);
+}
+.gis-bottom-toggle-btn:hover { background: #eef4fa; }
+.content-page2.gis-bottom-collapsed .gis-body,
+.content-page2.gis-bottom-collapsed .gis-canvas-wrapper { min-height: 82vh; }
+
+/* Focus Mode (P2-19, feedback #15) - hides the layer/right panels + bottom
+   row entirely (siblings, not just visually dimmed) so the map is close to
+   the whole viewport; reuses the collapse rule above for the bottom-row
+   height reclaim, plus its own taller min-height since focus mode also
+   drops the side panels that the plain bottom-collapse leaves in place. */
+.content-page2.gis-focus-mode .gis-body,
+.content-page2.gis-focus-mode .gis-canvas-wrapper { min-height: 90vh; }
+.gis-focus-toggle-btn.active { background: var(--accent); color: #fff; }
 
 /* login */
 @keyframes login-card-in {
