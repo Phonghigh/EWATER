@@ -46,7 +46,7 @@ export default function Monitoring() {
   const culvRows = useMemo(() => culvertRows(culverts, step), [culverts, step]);
   const situation = useMemo(() => monSituation(rows), [rows]);
 
-  const [chartsOpen, setChartsOpen] = useState(false);
+  const [chartsOpen, setChartsOpen] = useState(true);
 
   /** Chọn/bỏ chọn 1 trạm (bảng + marker), luôn re-fly khi chọn. */
   function handleSelect(code: string) {

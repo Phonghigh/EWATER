@@ -798,11 +798,13 @@ body {
 
 .mon-overlay-stack {
   position: absolute; top: 12px; right: 12px; z-index: 3;
-  display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
-  max-width: min(420px, 42%);
+  display: flex; flex-direction: column; align-items: stretch; gap: 10px;
+  width: min(520px, 48%);
 }
+/* Cả 2 panel fill 100% bề rộng stack → 2 bảng luôn bằng nhau (thay vì mỗi bảng
+   co theo nội dung riêng). */
 .mon-overlay-panel {
-  display: flex; flex-direction: column; overflow: hidden; width: fit-content; max-width: 100%;
+  display: flex; flex-direction: column; overflow: hidden; width: 100%;
   background: rgba(255,255,255,.97); border-radius: 10px;
   box-shadow: 0 2px 10px rgba(15,42,67,.18);
 }
@@ -810,16 +812,15 @@ body {
   font-size: 12.5px; font-weight: 700; color: var(--navy);
   padding: 9px 12px 6px;
 }
-/* table-layout: auto — mỗi cột rộng vừa nội dung (header & data cùng track nên luôn
-   thẳng hàng); nowrap để không xuống hàng; max-width trên cell là trần chặn khi nội
-   dung quá dài (ví dụ tên trạm dài) thay vì đẩy bảng tràn ra ngoài overlay. Bảng để
-   width:auto (không ép 100%) để panel co theo đúng nội dung, tránh dư khoảng trắng. */
+/* Bảng fill 100% panel (stack có bề rộng cố định) → 2 bảng bằng nhau; table-layout
+   auto để cột co theo nội dung trong bề rộng đó; nowrap + max-width trên cell chặn
+   nội dung quá dài (tên trạm) thay vì tràn overlay. */
 .mon-overlay-panel .mon-table-wrap { max-height: 300px; overflow-x: hidden; }
 /* Accessibility (feedback 2026-07-24): chữ + hàng to hơn cho màn hình đặt xa /
    người lớn tuổi, header đậm hơn — vẫn giữ gọn vì bảng nổi trên bản đồ. */
-.mon-overlay-panel .mon-table { font-size: 13px; table-layout: auto; width: auto; }
+.mon-overlay-panel .mon-table { font-size: 13px; table-layout: auto; width: 100%; }
 .mon-overlay-panel .mon-table td, .mon-overlay-panel .mon-table th {
-  padding: 7px 14px; white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis;
+  padding: 7px 11px; white-space: nowrap; max-width: 180px; overflow: hidden; text-overflow: ellipsis;
 }
 .mon-overlay-panel .mon-table thead th { font-weight: 700; }
 .mon-overlay-panel .mon-th-btn { white-space: nowrap; }

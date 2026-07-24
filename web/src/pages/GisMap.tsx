@@ -59,10 +59,10 @@ export default function GisMap() {
   // User-toggleable collapse for the bottom analytics row (P2-18, feedback
   // #12) - separate from the >1100px responsive breakpoint already in
   // styles.css, which only kicks in for narrow viewports. Defaults to
-  // collapsed (2026-07-24 feedback): on a GIS page the map is the priority,
-  // so the 3 forecast/camera cards start hidden behind the "▲ Phân tích"
-  // toggle and only open on demand.
-  const [bottomCollapsed, setBottomCollapsed] = useState(true);
+  // expanded (2026-07-24 feedback): the 3 forecast/camera analytics cards
+  // show on load on both tabs; the "▼ Phân tích" toggle collapses them to
+  // give the map full height on demand.
+  const [bottomCollapsed, setBottomCollapsed] = useState(false);
   // Focus Mode (P2-19, feedback #15) - hides layer/right panels + bottom row
   // so the map gets ~90-95% of the viewport; doesn't touch `bottomCollapsed`
   // so exiting focus mode restores whatever the user's manual bottom-row
