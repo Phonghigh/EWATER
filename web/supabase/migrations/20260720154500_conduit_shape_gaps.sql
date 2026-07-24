@@ -22,7 +22,7 @@ comment on column network_links.shape is
   'CIRCULAR hay IRREGULAR (đoạn sông dùng mặt cắt transects). NULL = chưa biết - nguồn MIKE không có field này.';
 
 -- ---------------------------------------------------------------------
--- 2. swmm_conduits — dữ liệu CONDUITS+XSECTIONS+LOSSES thật từ SWMM,
+-- 2. swmm_conduits - dữ liệu CONDUITS+XSECTIONS+LOSSES thật từ SWMM,
 --    tự thân (không FK network_links/network_nodes) vì khác hệ ID.
 -- ---------------------------------------------------------------------
 

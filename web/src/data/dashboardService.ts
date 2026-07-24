@@ -35,7 +35,7 @@ export function floodedRouteDelta(data: AppData, step: number): number {
   return floodedRouteCount(data, step) - floodedRouteCount(data, SIX_AM_STEP);
 }
 
-/** Trailing 24h accumulated rainfall (area-average — source has no per-station breakdown). */
+/** Trailing 24h accumulated rainfall (area-average - source has no per-station breakdown). */
 export function maxRainfallMm(data: AppData, step: number): number {
   const from = Math.max(0, step - TRAILING_24H_STEPS + 1);
   return data.simulation.rainfall.slice(from, step + 1).reduce((sum, v) => sum + v, 0);
@@ -69,17 +69,24 @@ export interface PumpsAndGates {
 /**
  * `outlets.geojson` has no asset-type field, so pumps vs. gates is a
  * deterministic placeholder split (odd numeric muid -> pump, even -> gate)
- * until a real asset registry exists (see tasks/INDEX.md P6-01). Active/closed
- * state is likewise a simplified function of current rainfall intensity, not
- * real telemetry.
+ * until a real asset registry exists (see tasks/INDEX.md P6-01).
+ */
+export function classifyOutlet(muid: unknown): "pump" | "gate" {
+  const n = parseInt(String(muid).replace(/\D/g, ""), 10) || 0;
+  return n % 2 === 1 ? "pump" : "gate";
+}
+
+/**
+ * Active/closed state is a simplified function of current rainfall
+ * intensity, not real telemetry - see `classifyOutlet` above for the
+ * pump/gate split this counts.
  */
 export function pumpsAndGates(data: AppData, step: number): PumpsAndGates {
   const rainNow = data.simulation.rainfall[step] ?? 0;
   let totalPumpCount = 0;
   let totalGateCount = 0;
   for (const f of data.outlets.features) {
-    const n = parseInt(String(f.properties?.muid).replace(/\D/g, ""), 10) || 0;
-    if (n % 2 === 1) totalPumpCount += 1;
+    if (classifyOutlet(f.properties?.muid) === "pump") totalPumpCount += 1;
     else totalGateCount += 1;
   }
   const activePumpCount = rainNow > 0 ? totalPumpCount : 0;

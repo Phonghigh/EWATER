@@ -24,15 +24,15 @@ function windowSumMm(precipitation: number[], hours: number): number {
 }
 
 /** Weather-forecast card built from the real `rainForecast` series (P0-19,
- *  no mock JSON) — no temperature shown since it has no real source
+ *  no mock JSON) - no temperature shown since it has no real source
  *  anywhere in this project (see tasks/backlog/phase-1.md P1-05 "Reality
  *  check"). "Xác suất mưa lớn" (mockup's fabricated 85% figure, no real
  *  probability model behind it) is replaced by a real, honestly-derived
  *  statistic with the same label: the share of the next 24h forecast to
- *  reach the "heavy rain" threshold (`HEAVY_RAIN_MM`), as a percentage —
+ *  reach the "heavy rain" threshold (`HEAVY_RAIN_MM`), as a percentage -
  *  a real computed rate, not an invented forecast probability. Index 0
  *  (`generatedAt`) is treated as this series' own reference point, same
- *  placeholder pattern as P1-02/P1-03's `step = simulation.steps - 1` —
+ *  placeholder pattern as P1-02/P1-03's `step = simulation.steps - 1` -
  *  there is no shared live "now" yet. */
 export default function WeatherForecastCard({ rainForecast }: { rainForecast: RainForecast }) {
   const t = useT();

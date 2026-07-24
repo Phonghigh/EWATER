@@ -19,7 +19,7 @@ function resolvePageTitleKey(pathname: string): string | null {
 
 /** Date + weather moved out of the global top bar and into Dashboard's own
  *  summary row (matches the reference mockup's layout, where that content
- *  sits under the page title, not in the persistent shell chrome) — see
+ *  sits under the page title, not in the persistent shell chrome) - see
  *  `pages/Dashboard.tsx`. The current page's title now lives here instead,
  *  persistent across scroll instead of living in each page's own
  *  `PageHeader` row (which left a bare, near-empty strip on pages like

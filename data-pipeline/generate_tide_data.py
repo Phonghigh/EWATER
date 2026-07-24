@@ -8,7 +8,7 @@ Output (../shared/data/):
       "seed": 42, "generatedAt": "<ISO8601>",
       "time": [...same as rain-forecast.json...], "levelM": [meters, ...] }
 
-Vĩnh Long has no real tide gauge — it sits ~80-100 km inland on a Mekong
+Vĩnh Long has no real tide gauge - it sits ~80-100 km inland on a Mekong
 tributary, well outside the coverage of any free tide/marine API. This
 script instead generates a deterministic (seeded RNG), semi-diurnal
 (~12h25m period) sine curve as a stand-in, with a deliberately modest
@@ -50,7 +50,7 @@ def main():
         level.append(round(v, 3))
 
     out = {
-        "note": "DEMO DATA — synthetic semi-diurnal tide, not a real gauge "
+        "note": "DEMO DATA - synthetic semi-diurnal tide, not a real gauge "
                 "reading (no tide station exists this far up the Mekong "
                 "tributary system).",
         "periodHours": round(PERIOD_HOURS, 4),

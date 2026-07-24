@@ -10,17 +10,17 @@ function hourLabel(iso: string): string {
 }
 
 /** Water-level (tide) forecast line chart, real `tide.levelM` series
- *  (P0-19) — synthetic in origin but a real Supabase row, not a
+ *  (P0-19) - synthetic in origin but a real Supabase row, not a
  *  client-fabricated number (see tasks/backlog/phase-1.md P1-06 "Reality
  *  check"). Window options (6H/12H/24H/72H) match the reference mockup's
  *  "Diễn biến mực nước" toggle exactly, and both fit cleanly since the
- *  source series is 72 real hourly points — 72H is the full series. */
+ *  source series is 72 real hourly points - 72H is the full series. */
 export default function WaterLevelForecastChart({ time, levelM }: { time: string[]; levelM: number[] }) {
   const t = useT();
   const [windowH, setWindowH] = useState(24);
   const n = Math.min(windowH, time.length);
   const series = time.slice(0, n).map((iso, i) => ({ label: hourLabel(iso), value: levelM[i] }));
-  // Narrow 1/4-width side column — cap to ~6 evenly-spaced labels so they
+  // Narrow 1/4-width side column - cap to ~6 evenly-spaced labels so they
   // don't overlap into an unreadable smear (see RainForecastChart's same fix).
   const MAX_LABELS = 6;
   const tickInterval = n <= MAX_LABELS ? 0 : Math.ceil(n / MAX_LABELS) - 1;

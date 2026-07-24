@@ -9,7 +9,7 @@ export interface NavItem {
 
 /** Shared route table: Sidebar renders it as the nav list, TopBar uses it
  *  to resolve the current route's title (see TopBar.tsx's `resolvePageTitle`)
- *  — one source of truth for "which path maps to which page label" instead
+ *  - one source of truth for "which path maps to which page label" instead
  *  of two separately-maintained lists. */
 export const NAV_ITEMS: NavItem[] = [
   { to: "/", labelKey: "nav.dashboard", icon: "dashboard" },

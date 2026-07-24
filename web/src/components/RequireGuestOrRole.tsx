@@ -5,8 +5,8 @@ import { useAuth } from "../context/AuthContext";
 
 /** Gate for the one route guests can see (Dashboard, "/"): renders children
  *  for any signed-in role OR a visitor who explicitly chose "continue as
- *  guest" on the Login page (`guestMode`). Anyone else — i.e. a fresh
- *  visitor who hasn't been through Login at all — is sent to /login first,
+ *  guest" on the Login page (`guestMode`). Anyone else - i.e. a fresh
+ *  visitor who hasn't been through Login at all - is sent to /login first,
  *  so the app always opens on the login screen, not a silently-guest
  *  Dashboard. */
 export default function RequireGuestOrRole({ children }: { children: ReactNode }) {

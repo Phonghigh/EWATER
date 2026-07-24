@@ -6,19 +6,13 @@ import WaterLevelForecastChart from "../components/WaterLevelForecastChart";
 import { useAppData } from "../context/AppDataContext";
 import { useI18n } from "../i18n/I18nContext";
 import { getDashboardOverview } from "../data/dashboardService";
+import { stepTimeLabel } from "../lib/simTime";
+import { useCurrentSimStep } from "../lib/useCurrentSimStep";
 
-/** Time-of-day label for a simulation step (start + step * stepMinutes). */
-function stepTimeLabel(start: string, stepMinutes: number, step: number): string {
-  const totalMin = (start ? parseInt(start.split(":")[0], 10) * 60 + parseInt(start.split(":")[1], 10) : 0) + step * stepMinutes;
-  const h = Math.floor(totalMin / 60) % 24;
-  const m = totalMin % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
-
-/** Today's real calendar date, localized to the active UI language — moved
+/** Today's real calendar date, localized to the active UI language - moved
  *  here from the global TopBar (see TopBar.tsx) to match the reference
  *  mockup's layout, where date/weather sits under the page title, not in
- *  the persistent shell chrome. Still a static mock 26°C — no live weather
+ *  the persistent shell chrome. Still a static mock 26°C - no live weather
  *  API wired (out of scope for this redesign, see tasks/backlog/phase-0.md
  *  P0-08). */
 function todayLabel(lang: string): string {
@@ -30,10 +24,10 @@ type Tone = "red" | "orange" | "blue" | "cyan" | "teal" | "green";
 
 // Temporary fixed display values for "max water level"/"max rainfall",
 // overriding `dashboardService`'s computed area-average/no-station-identity
-// numbers (see docs/learn-log/P1-01-dashboard-service.md — no per-station
+// numbers (see docs/learn-log/P1-01-dashboard-service.md - no per-station
 // rain data exists in this project's real source). Explicit user request
 // (2026-07-22) to show a specific station reading instead, ahead of a real
-// per-station data source landing — revisit once one does.
+// per-station data source landing - revisit once one does.
 const DEMO_MAX_WATER_LEVEL_M = 1.42;
 const DEMO_MAX_RAINFALL_MM = 132;
 
@@ -45,13 +39,13 @@ function StatCard({ icon, tone, label, value, unit, sub, secondary, valueTone, d
   unit?: string;
   sub: string;
   /** De-emphasized styling for supporting KPIs (rain/pumps/gates) so the
-   *  primary ones (flood points/routes/water level) win the first glance —
+   *  primary ones (flood points/routes/water level) win the first glance -
    *  government-GIS review: fewer things competing for attention. */
   secondary?: boolean;
   /** Color the number itself for count-based safety indicators (0 = safe,
    *  >0 = danger) so the reading doesn't require parsing the sub-label. */
   valueTone?: "safe" | "danger";
-  /** Card isn't backed by trustworthy data yet — show a locked "coming
+  /** Card isn't backed by trustworthy data yet - show a locked "coming
    *  soon" placeholder instead of `value`/`sub` rather than a number that
    *  looks real but isn't (same "don't fabricate" stance as elsewhere in
    *  this dashboard, e.g. dashboardService's documented placeholders). */
@@ -83,10 +77,11 @@ export default function Dashboard() {
   const { t, lang } = useI18n();
   const data = useAppData();
 
-  // No shared playback/step control exists yet (that's P2-01's job). Until
-  // then "current" is the last available simulation step — the most recent
-  // real data point, not a fabricated one.
-  const step = data.simulation.steps - 1;
+  // Real wall-clock time-of-day mapped onto the simulation's fixed 24h
+  // cycle (2026-07-23 follow-up) — replaces the old `steps - 1` placeholder
+  // that always showed the storm's peak/final state regardless of when the
+  // page was actually opened. Live-updating (recomputed every minute).
+  const step = useCurrentSimStep(data.simulation);
   const overview = getDashboardOverview(data, step);
   const updatedAt = stepTimeLabel(data.simulation.start, data.simulation.stepMinutes, step);
 
@@ -166,7 +161,7 @@ export default function Dashboard() {
 
       {/* Map-dominant layout: the flood map gets 3/4 of the width (as large
           as the layout can give it), the remaining 1/4 stacks the 3 smaller
-          panels — weather summary + the 2 forecast charts — instead of the
+          panels - weather summary + the 2 forecast charts - instead of the
           old 2-col-row-then-full-width-row layout. */}
       <div className="dash-main-row">
         <div className="dash-map-col">

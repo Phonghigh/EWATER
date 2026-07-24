@@ -2,7 +2,7 @@ import PageHeader from "../components/layout/PageHeader";
 import EmptyState from "../components/EmptyState";
 import { useT } from "../i18n/I18nContext";
 
-/** Temporary placeholder for a route whose real page hasn't landed yet — see
+/** Temporary placeholder for a route whose real page hasn't landed yet - see
  *  tasks/INDEX.md for which phase builds it. Replaced page-by-page as each
  *  phase completes (App.tsx swaps the route's element, this file itself
  *  should shrink to zero remaining call sites by the end of Phase 9). */

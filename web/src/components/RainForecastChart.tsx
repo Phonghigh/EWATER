@@ -10,7 +10,7 @@ function hourLabel(iso: string): string {
 }
 
 /** Rain-forecast bar chart, real `rainForecast` series (P0-19). The source
- *  series is hourly (`stepHours: 1`) — the reference mockup's 1H/3H/6H/24H
+ *  series is hourly (`stepHours: 1`) - the reference mockup's 1H/3H/6H/24H
  *  toggle would show 1/3/6 bars for its first three options, which reads as
  *  broken rather than a trend (same call already made for the water-level
  *  chart's window set, see docs/learn-log/P1-06-forecast-charts.md §5).
@@ -23,7 +23,7 @@ export default function RainForecastChart({ time, mm }: { time: string[]; mm: nu
   const n = Math.min(windowH, time.length);
   const series = time.slice(0, n).map((iso, i) => ({ label: hourLabel(iso), value: mm[i] }));
   // This card lives in the narrow 1/4-width side column, not a full-width
-  // chart — even 12 labels overlap into an unreadable smear there. Cap to
+  // chart - even 12 labels overlap into an unreadable smear there. Cap to
   // ~6 evenly-spaced labels regardless of how many bars are shown.
   const MAX_LABELS = 6;
   const tickInterval = n <= MAX_LABELS ? 0 : Math.ceil(n / MAX_LABELS) - 1;

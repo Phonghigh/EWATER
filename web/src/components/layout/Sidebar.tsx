@@ -7,7 +7,7 @@ import { NAV_ITEMS } from "../../nav/navItems";
 /** Left sidebar: brand header + role-aware nav list. Always mounted (guests
  *  included). "Quản trị hệ thống" is hidden outright for non-admins (showing
  *  then bouncing would be a confusing dead end). Every other item is staff-
- *  only (authority/admin) — a guest (no `profile`) sees them as disabled,
+ *  only (authority/admin) - a guest (no `profile`) sees them as disabled,
  *  non-clickable entries instead of a live link that just redirects to
  *  /login on click, so the access boundary is visible before the click, not
  *  after. */

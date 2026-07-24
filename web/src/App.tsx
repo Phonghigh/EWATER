@@ -11,6 +11,7 @@ import RequireGuestOrRole from "./components/RequireGuestOrRole";
 import AppShell from "./components/layout/AppShell";
 import ComingSoon from "./pages/ComingSoon";
 import Dashboard from "./pages/Dashboard";
+import GisMap from "./pages/GisMap";
 
 const Login = lazy(() => import("./pages/Login"));
 
@@ -18,7 +19,7 @@ const Login = lazy(() => import("./pages/Login"));
 // plan): "/" is guest-visible; everything else needs authority or admin;
 // "/admin/*" needs admin. Each ComingSoon placeholder below is replaced by
 // its real page as that page's phase lands (Phase 1 = Dashboard, Phase 2 =
-// GIS map, ... Phase 9 = Admin) — see tasks/INDEX.md.
+// GIS map, ... Phase 9 = Admin) - see tasks/INDEX.md.
 const STAFF_ROLES = ["authority", "admin"] as const;
 
 function Shell() {
@@ -55,7 +56,7 @@ function Shell() {
                   path="/gis-map"
                   element={
                     <RequireRole roles={[...STAFF_ROLES]}>
-                      <ComingSoon title={t("nav.gisMap")} />
+                      <GisMap />
                     </RequireRole>
                   }
                 />

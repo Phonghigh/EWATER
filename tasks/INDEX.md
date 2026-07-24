@@ -47,13 +47,15 @@ sections mirror `tasks/backlog/phase-N.md` 1:1).
 - [x] **P1-07** — i18n `dash.*` đầy đủ + check-i18n sạch + LangToggle test · *deps:* P1-02, P1-03, P1-05, P1-06 · *done:* sạch.
 
 ## Phase 2 — Bản đồ GIS (Tab 2)
-- [ ] **P2-01** — Thanh trên: search + dải thời gian (dùng `store.currentStep`) + play/step/tốc độ · *deps:* P0-13 · *done:* playback đổi step đúng.
-- [ ] **P2-02** — Panel trái "Lớp dữ liệu" (checkbox nhóm + nền bản đồ + bookmark mock) · *deps:* P2-01 · *done:* toggle lớp hoạt động.
-- [ ] **P2-03** — Bản đồ chính (dựng mới bằng MapLibre GL, viết lại từ đầu — không tái dùng `MapView.tsx` cũ đã xóa) + toolbar đo/vẽ đơn giản + minimap · *deps:* P2-02, P0-19 · *done:* marker/lớp lấy từ Supabase (`network_nodes_geojson`/`network_links_geojson`/`rivers_geojson` — đã có dữ liệu thật, không cần tự suy diễn lại từ đầu như ghi chú cũ P0-16).
-- [ ] **P2-04** — Panel phải: thông tin lớp chọn + thống kê ngập + công cụ phân tích · *deps:* P2-03 · *done:* số liệu đúng theo step hiện tại.
-- [ ] **P2-05** — Panel dưới: biểu đồ/thông tin trạm/thông tin công trình + camera placeholder · *deps:* P2-04 · *done:* chọn trạm cập nhật đúng panel.
-- [ ] **P2-06** — Nối link Dashboard → `/gis-map` (đóng P1-03) · *deps:* P2-01 · *done:* điều hướng đúng vị trí.
-- [ ] **P2-07** — i18n `gis.*` đầy đủ + check-i18n sạch + LangToggle test · *deps:* P2-01…P2-06 · *done:* sạch.
+- [x] **P2-01** — Thanh trên: search + dải thời gian (preset tuyệt đối "Hiện tại"/+1h/+3h/+4h/+5h/+6h/+12h/+24h từ baseline, đã đổi 2026-07-23 — không phải nút lùi giờ như mockup gốc) + play/step/tốc độ (state cục bộ trong `GisMap.tsx` — `store.currentStep` toàn cục không còn tồn tại, đã xoá ở P0-16) · *deps:* P0-13 · *done:* playback đổi step đúng.
+- [x] **P2-02** — Panel trái "Lớp dữ liệu": 3 nhóm phẳng — Quan trắc thời gian thực (checkbox), Dự báo & mô hình (checkbox), Nền bản đồ (radio, 4 lựa chọn: sáng/vệ tinh/Google Satellite/OSM — 2 trong 4 chưa có tile source thật, đánh dấu "sắp có") — không tab con, không nút "Quản lý lớp", không bookmark (quyết định 2026-07-23, chi tiết `tasks/backlog/phase-2.md`) · *deps:* P2-01 · *done:* toggle lớp hoạt động.
+- [x] **P2-03** — Bản đồ chính (MapLibre thật, 2 raster layer osm/satellite pre-add + toggle visibility thay vì `setStyle`) + thanh công cụ nổi 6 nút (Chọn/Di chuyển/Phóng to/Thu nhỏ/Đo khoảng cách/Đo diện tích — đo bằng haversine/shoelace tự viết, không thêm dep) + góc trên phải (Xuất bản đồ mock/Toàn màn hình thật) + legend mức độ ngập (3 mức + vùng ngập, tái dùng màu `FloodMapPreview` — không phải thang độ sâu theo mét vì `flood_zones` không có dữ liệu depth-bucket thật) · *deps:* P2-02, P0-19 · *done:* marker/lớp lấy từ Supabase thật (manholes theo `nodeFill`, outlets theo `classifyOutlet`); `rainStation`/nhóm "Dự báo & mô hình" toggle được nhưng chưa có geometry thật để vẽ (ghi rõ trong code, không bịa).
+- [x] **P2-04** — Panel phải: thông tin lớp chọn (vùng ngập hiện tại + thanh trượt độ trong suốt, đổi opacity map thật) + thống kê ngập (diện tích từ geometry × severity[step] > 0; độ sâu TB/lớn nhất tái dùng công thức `(fill-1)*(ground-invert)` của `dashboardService.ts`) + minimap (tĩnh, không live-sync viewport) — bỏ khối "Công cụ phân tích", quyết định 2026-07-23 · *deps:* P2-03 · *done:* số liệu đúng theo step hiện tại.
+- [x] **P2-05** — Panel dưới: dùng lại `RainForecastChart`/`WaterLevelForecastChart` (đã có từ P1-06, tái dùng nguyên component không sửa) thay cho bộ biểu đồ/thông tin trạm/thông tin công trình của mockup gốc + camera trực tiếp = coming-soon placeholder nêu rõ lý do (chưa có camera registry tới Phase 6), quyết định 2026-07-23 · *deps:* P2-04 · *done:* 2 chart hiển thị đúng dữ liệu thật.
+- [x] **P2-06** — Nối link Dashboard → `/gis-map` (đóng P1-03) — audit: link đã có sẵn từ P1-03, xác nhận vẫn đúng sau khi P2-01..P2-05 đổi scope trang · *deps:* P2-01 · *done:* điều hướng đúng vị trí.
+- [x] **P2-07** — i18n `gis.*` đầy đủ + check-i18n sạch + LangToggle test · *deps:* P2-01…P2-06 · *done:* sạch (108/108 key vi/en khớp, không key nào lệch).
+
+**Phase 2 (Bản đồ GIS) complete: 7/7 tasks done.**
 
 ## Phase 3 — Quan trắc thời gian thực (Tab 3)
 - [ ] **P3-01** — Route `/monitoring/:tab` + `PageHeader` 9 sub-tab · *deps:* P0-13 · *done:* điều hướng ok.

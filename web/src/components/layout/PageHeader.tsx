@@ -13,7 +13,7 @@ interface Props {
 }
 
 /** Shared "TAB N. TÊN TRANG" header + optional sub-tab row, used by every
- *  page from Phase 1 onward. Purely presentational — no data fetching. */
+ *  page from Phase 1 onward. Purely presentational - no data fetching. */
 export default function PageHeader({ title, tabs, right }: Props) {
   return (
     <div className="page-header2">

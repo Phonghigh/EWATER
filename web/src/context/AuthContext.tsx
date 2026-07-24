@@ -4,7 +4,7 @@ import {
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabaseClient";
 
-// No "citizen" role anymore (the redesign dropped the citizen /my-area flow —
+// No "citizen" role anymore (the redesign dropped the citizen /my-area flow -
 // see tasks/backlog/phase-0.md P0-04). A null `session`/`profile` now means
 // "guest": still a valid, supported state (guests can view the Dashboard),
 // not just a loading/unauthenticated placeholder.
@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   // "Guest mode" is an explicit choice (the Login page's "continue as
-  // guest" button), not the default for an unauthenticated visitor — see
+  // guest" button), not the default for an unauthenticated visitor - see
   // RequireGuestOrRole, which sends anyone without a session AND without
   // this flag to /login first. Persisted per-tab (sessionStorage) so a
   // page refresh doesn't bounce a guest back to the login screen.

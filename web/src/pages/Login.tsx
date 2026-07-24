@@ -14,7 +14,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Always land on "/" — Dashboard is the same page for every role (guest
+  // Always land on "/" - Dashboard is the same page for every role (guest
   // included), it just renders more once signed in. No "from" deep-link
   // handling: captured from whichever role was previously logged out, which
   // can be wrong for the next role that signs in.

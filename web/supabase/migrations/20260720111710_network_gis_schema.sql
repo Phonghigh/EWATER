@@ -97,7 +97,7 @@ create table flood_zones (
 create index flood_zones_geom_idx on flood_zones using gist (geom);
 
 -- ---------------------------------------------------------------------
--- 6. Kịch bản mô phỏng ngập (simulation.json) — 1 run = 1 lần chạy mô phỏng.
+-- 6. Kịch bản mô phỏng ngập (simulation.json) - 1 run = 1 lần chạy mô phỏng.
 --    rainfall và nodeFill/severity đều là mảng theo step -> lưu dạng
 --    numeric[] gắn theo run, khớp thẳng với cấu trúc JSON gốc, tránh nổ
 --    hàng (834 node x 97 step) khi chỉ cần đọc nguyên chuỗi để phát lại.
@@ -124,7 +124,7 @@ alter table flood_zones
   add column severity numeric[] not null default '{}'; -- length = steps
 
 -- ---------------------------------------------------------------------
--- 7. Dự báo mưa (rain-forecast.json) — chuỗi thời gian thực từ open-meteo.
+-- 7. Dự báo mưa (rain-forecast.json) - chuỗi thời gian thực từ open-meteo.
 --    Chuẩn hoá theo (ts, giá trị) để truy vấn theo khoảng thời gian dễ hơn
 --    mảng phẳng, vì đây là dữ liệu refresh định kỳ chứ không phát lại 1 lần.
 -- ---------------------------------------------------------------------
@@ -146,7 +146,7 @@ create table rain_forecast_points (
 );
 
 -- ---------------------------------------------------------------------
--- 8. Mực nước triều demo (tide-demo.json) — DỮ LIỆU GIẢ LẬP, không phải
+-- 8. Mực nước triều demo (tide-demo.json) - DỮ LIỆU GIẢ LẬP, không phải
 --    trạm đo thật (xem "note" gốc trong file). Giữ nguyên cảnh báo này
 --    trong cột note để không ai nhầm sang dữ liệu thật khi truy vấn DB.
 -- ---------------------------------------------------------------------
